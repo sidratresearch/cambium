@@ -1,0 +1,49 @@
+[project]
+name = "cambium"
+version = "0.1.0"
+description = "A light touch markdown static site generator"
+authors = [
+    { name = "Sidrat Research", email = "info@sidratresearch.com" },
+    { name = "Mubdi Rahman", email = "mubdi@sidratresearch.com" },
+    { name = "Tai Withers", email = "tai@sidratresearch.com" },
+    { name = "Hansen Jiang", email = "tai@sidratresearch.com" },
+    { name = "Jennifer Scora", email = "jscora@sidratresearch.com" },
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+readme = "README.md"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Internet :: WWW/HTTP :: Site Management",
+    "Topic :: Text Processing :: Markup :: Markdown",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Content Management System",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "marko (>=2.2.2,<3.0.0)",
+    "pyyaml (>=6.0.3,<7.0.0)",
+    "typer (>=0.25.1,<0.26.0)",
+]
+
+[project.urls]
+Homepage = "https://github.com/sidratresearch/cambium"
+Issues = "https://github.com/sidratresearch/cambium/issues"
+
+[dependency-groups]
+dev = [
+    "black (>=26.3.1,<27.0.0)",
+    "pytest (>=9.0.3,<10.0.0)",
+    "tox (>=4.53.1,<5.0.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# WSL stuff
+*:Zone.Identifier
+
+# Local Dev Tools
+.vscode/
