@@ -1,0 +1,15 @@
+@font-face{
+    font-family: 'Source Sans 3 VF';
+    font-weight: 200 900;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('SourceSans3VF-Upright.otf.woff2') format('woff2-variations'),
+}
+
+@font-face{
+    font-family: 'Source Sans 3 VF';
+    font-weight: 200 900;
+    font-style: italic;
+    font-stretch: normal;
+    src: url('SourceSans3VF-Italic.otf.woff2') format('woff2-variations'),
+}
