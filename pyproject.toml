@@ -1,6 +1,6 @@
 [project]
 name = "cambium"
-version = "0.1.0"
+version = "0.1.1"
 description = "A light touch markdown static site generator"
 authors = [
     { name = "Sidrat Research", email = "info@sidratresearch.com" },
