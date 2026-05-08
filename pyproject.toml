@@ -6,7 +6,7 @@ authors = [
     { name = "Sidrat Research", email = "info@sidratresearch.com" },
     { name = "Mubdi Rahman", email = "mubdi@sidratresearch.com" },
     { name = "Tai Withers", email = "tai@sidratresearch.com" },
-    { name = "Hansen Jiang", email = "tai@sidratresearch.com" },
+    { name = "Hansen Jiang", email = "hansen@sidratresearch.com" },
     { name = "Jennifer Scora", email = "jscora@sidratresearch.com" },
 ]
 license = "MIT"
