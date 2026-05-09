@@ -1,0 +1,42 @@
+/* Default Styles for Cambium */
+
+@import url(../fonts/source-sans-3VF.css);
+
+:root {
+  --default-font: "Source Sans 3 VF", sans-serif;
+  --default-bg-color: white;
+  --default-font-color: #222222;
+  --default-font-size: 14pt;
+}
+
+html {
+  font-family: var(--default-font);
+  background-color: var(--default-bg-color);
+  color: var(--default-font-color);
+  font-size: var(--default-font-size);
+}
+
+body {
+  padding: 1.5em 2em 1.5em;
+  margin: 0;
+  line-height: 1.4;
+}
+
+h1 {
+  font-weight: 700;
+  font-size: 3rem;
+  margin-top: 0rem;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-weight: 400;
+  font-size: 2rem;
+  margin-top: 0rem;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  margin-top: 0rem;
+  margin-bottom: 1rem;
+}
