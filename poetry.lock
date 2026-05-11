@@ -140,6 +140,21 @@ files = [
 ]
 
 [[package]]
+name = "isort"
+version = "8.0.1"
+description = "A Python utility / library to sort Python imports."
+optional = false
+python-versions = ">=3.10.0"
+groups = ["dev"]
+files = [
+    {file = "isort-8.0.1-py3-none-any.whl", hash = "sha256:28b89bc70f751b559aeca209e6120393d43fbe2490de0559662be7a9787e3d75"},
+    {file = "isort-8.0.1.tar.gz", hash = "sha256:171ac4ff559cdc060bcfff550bc8404a486fee0caab245679c2abe7cb253c78d"},
+]
+
+[package.extras]
+colors = ["colorama"]
+
+[[package]]
 name = "markdown-it-py"
 version = "4.2.0"
 description = "Python port of markdown-it. Markdown parsing, done right!"
@@ -584,4 +599,4 @@ python-discovery = ">=1.2.2"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "98b0aef8849e5f6a23e920e339cb203f2bff466f6df2789f132701603313a66d"
+content-hash = "8e92ece5d8ab3d7715cf5d0ba6035cf8b211308066bdeafb376195879dc19839"
