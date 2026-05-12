@@ -9,6 +9,8 @@
   --default-font-size: 14pt;
 }
 
+/* Base Elements */
+
 html {
   font-family: var(--default-font);
   background-color: var(--default-bg-color);
@@ -28,6 +30,7 @@ h1 {
   font-size: 3.5rem;
   margin-top: 0rem;
   margin-bottom: 1rem;
+  line-height: 1.1;
 }
 
 h2 {
@@ -58,4 +61,33 @@ ul {
 
 ul li {
   padding-bottom: 0.25rem;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* Containers */
+
+div.container {
+  max-width: 1200px !important;
+  width: 100%;
+  margin: auto;
+}
+
+/* Mobile Styling */
+
+@media (max-width: 600px) {
+  :root {
+    --default-font-size: 14pt;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+
 }
