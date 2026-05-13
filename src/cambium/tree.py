@@ -156,13 +156,15 @@ class TreeSpan:
             if not leaf.transform_markdown:
                 continue
 
-            markdown = leaf.initial_path.read_text()
-            html = markdown_to_html(markdown)
             output_path = self.config["tempdirs"][
                 "transform"
             ].name / leaf.final_path.relative_to(self.build_directory)
+
+            markdown = leaf.latest_path.read_text()
+            html = markdown_to_html(markdown)
+
             output_path.write_text(html)
-            print(f"{output_path} saved.")
+            leaf.latest_path = output_path
 
         return
 
@@ -177,6 +179,7 @@ class Leaf:
     initial_path: Path
 
     # generated attrs
+    latest_path: Path
     final_path: Path
     final_directory: Path
     transform_markdown: bool = False
