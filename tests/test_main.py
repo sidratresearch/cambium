@@ -1,2 +1,2 @@
 def test_heartbeat():
-    return 1
+    assert 1
