@@ -44,7 +44,40 @@ class TreeSpan:
         ]
         # print(self.directories_in_build)
 
-        self.leaves = []
+        self.leaves = []  # turn into deque
+        for directory in self.directories_in_build:
+            directory_leaves = self._make_leaves_from_directory(directory)
+            for leaf in directory_leaves:
+                self.leaves.append(leaf)
+            # append to leaves
+
+        # print("\n".join([str(l.initial_path) for l in self.leaves]))
+
+        # deal w/ ghost index
+
+    def _get_files(self, directory: Path) -> list[Path]:
+        """
+        Get a list of files that can be leaves
+        """
+        non_hidden = [f for f in directory.glob("[!.]*") if not f.is_dir()]
+        return non_hidden
+
+    def _make_leaves_from_directory(self, directory: Path) -> list[Leaf]:
+        leaves = []
+
+        # these are all relative to source directory
+        directory_files = self._get_files(directory)
+
+        for path in directory_files:
+            leaves.append(
+                Leaf(
+                    initial_path=path,
+                    source_directory=self.source_directory,
+                    build_directory=self.build_directory,
+                )
+            )
+
+        return leaves
 
     def _get_directories_in_build(self, parent_directory: Path) -> list[Path]:
         """
@@ -89,7 +122,24 @@ class Leaf:
     final_directory: Path | None = None
 
     def __post_init__(self, source_directory: Path, build_directory: Path) -> None:
+        # print(f"Initializing leaf for {self.initial_path}")
+
+        path_in_build = build_directory / self.initial_path
+
         # set the final_path depending on the type of file this is
+        if self.initial_path.suffix == ".md":
+            # TODO: choose how to deal with .MD .markdown etc
+            self.final_path = path_in_build.with_suffix(".html")
+        else:
+            self.final_path = path_in_build
+
+        self.final_directory = self.final_path.parent
+
+        # run hook conditional functions to decide if hooks should be run later on
+
+        # print(f"\t-> {self.final_path.relative_to(build_directory)}")
+
+        return
 
         # set the final_directory if final_path is set
 
