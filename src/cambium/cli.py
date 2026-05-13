@@ -1,8 +1,10 @@
 import typer
 
+from cambium.tree import TreeSpan
+
 app = typer.Typer()
 
 
 @app.command()
 def main():
-    return
+    treespan = TreeSpan()
