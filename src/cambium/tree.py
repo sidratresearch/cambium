@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from collections import deque
 from pathlib import Path
 
 
@@ -22,7 +23,7 @@ class TreeSpan:
     """
 
     source_directory: Path
-    leaves: list[Leaf]
+    leaves: deque[Leaf]
     build_directory: Path
     directories_in_build: list[Path]
 
@@ -41,6 +42,7 @@ class TreeSpan:
             },
             "pre_hooks": [],  # currently set up to be a list of Hook objects
             "post_hooks": [],  # currently set up to be a list of Hook objects
+            "max_leaves": 10000,  # maximum length of leaf deque
         }
 
         self.directories_in_build = [
@@ -48,11 +50,12 @@ class TreeSpan:
             for p in self._get_directories_in_build(self.source_directory)
         ]
 
-        self.leaves = []  # turn into deque
+        self.leaves = deque(maxlen=self.config["max_leaves"])
         for directory in self.directories_in_build:
             directory_leaves = self._make_leaves_from_directory(directory)
-            for leaf in directory_leaves:
-                self.leaves.append(leaf)
+            if len(self.leaves) + len(directory_leaves) > self.leaves.maxlen:
+                raise ValueError("self.leaves will drop items")
+            self.leaves.extend(directory_leaves)  # appends each item
 
         # print("\n".join([str(l.initial_path) for l in self.leaves]))
 
@@ -82,6 +85,11 @@ class TreeSpan:
         return keep
 
     def _make_leaves_from_directory(self, directory: Path) -> list[Leaf]:
+        """
+        Given a directory, make a Leaf out of every file in that directory
+
+        Not sure if this should a TreeSpan method or a separate utility fn that gets passed config
+        """
         leaves = []
 
         # these are all relative to source directory
