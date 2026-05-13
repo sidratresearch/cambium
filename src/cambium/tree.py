@@ -39,20 +39,20 @@ class TreeSpan:
                 "globs": [],
                 "filenames": [],
             },
+            "pre_hooks": [],  # currently set up to be a list of Hook objects
+            "post_hooks": [],  # currently set up to be a list of Hook objects
         }
 
         self.directories_in_build = [
             p.relative_to(self.source_directory)
             for p in self._get_directories_in_build(self.source_directory)
         ]
-        # print(self.directories_in_build)
 
         self.leaves = []  # turn into deque
         for directory in self.directories_in_build:
             directory_leaves = self._make_leaves_from_directory(directory)
             for leaf in directory_leaves:
                 self.leaves.append(leaf)
-            # append to leaves
 
         # print("\n".join([str(l.initial_path) for l in self.leaves]))
 
@@ -93,6 +93,8 @@ class TreeSpan:
                     initial_path=path,
                     source_directory=self.source_directory,
                     build_directory=self.build_directory,
+                    pre_hooks=self.config["pre_hooks"],
+                    post_hooks=self.config["post_hooks"],
                 )
             )
 
@@ -134,12 +136,16 @@ class Leaf:
     # generated attrs
     final_path: Path
     final_directory: Path
+    pre_hooks: list[str]
+    post_hooks: list[str]
 
     def __init__(
         self,
         initial_path: Path,
         source_directory: Path,
         build_directory: Path,
+        pre_hooks: list[Hook],
+        post_hooks: list[Hook],
     ) -> None:
         self.initial_path = initial_path
         # print(f"Initializing leaf for {self.initial_path}")
@@ -156,7 +162,23 @@ class Leaf:
         self.final_directory = self.final_path.parent
 
         # run hook conditional functions to decide if hooks should be run later on
+        self.pre_hooks = [
+            hook.identifier for hook in pre_hooks if hook.should_hook_run(self)
+        ]
+        self.post_hooks = [
+            hook.identifier for hook in post_hooks if hook.should_hook_run(self)
+        ]
 
         # print(f"\t-> {self.final_path.relative_to(build_directory)}")
 
         return
+
+
+class Hook:
+    identifier: str = ""
+
+    def should_hook_run(self, leaf: Leaf) -> bool:
+        raise NotImplementedError
+
+    def apply(self, leaf: Leaf, tree: TreeSpan) -> None:
+        raise NotImplementedError
