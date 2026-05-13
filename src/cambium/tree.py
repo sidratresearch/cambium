@@ -146,6 +146,7 @@ class Leaf:
     # generated attrs
     final_path: Path
     final_directory: Path
+    transform_markdown: bool = False
     pre_hooks: list[str]
     post_hooks: list[str]
 
@@ -163,9 +164,11 @@ class Leaf:
         path_in_build = build_directory / self.initial_path
 
         # set the final_path depending on the type of file this is
+        # TODO: don't do this to files in /static/
         if self.initial_path.suffix == ".md":
             # TODO: choose how to deal with .MD .markdown etc
             self.final_path = path_in_build.with_suffix(".html")
+            self.transform_markdown = True
         else:
             self.final_path = path_in_build
 
