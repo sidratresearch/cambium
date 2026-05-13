@@ -219,6 +219,7 @@ class Leaf:
         post_hooks: list[Hook],
     ) -> None:
         self.initial_path = initial_path
+        self.latest_path = initial_path
         # print(f"Initializing leaf for {self.initial_path}")
 
         path_in_build = build_directory / self.initial_path
