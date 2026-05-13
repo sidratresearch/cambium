@@ -176,6 +176,33 @@ class TreeSpan:
 
 
 class Leaf:
+    """
+
+    Attributes
+    ----------
+    initial_path : Path
+        Passed during initialization, this stores the absolute path to the original
+        version of the file
+        Should be read-only
+    latest_path : Path
+        The absolute path to the most up-to-date version of the file. When a markdown
+        file is converted to HTML, the path to a temporary .html file is put here
+    final_path : Path
+        The absolute path that this Leaf will result in, in the build directory
+        Is this read only? or can hooks modify this? - Thinking especially if MD-to-HTML
+        is a hook
+    final_directory : Path
+        Parent directory of final_path
+    transform_markdown : bool
+        True if this is a markdown file that should be parsed to HTML, false otherwise
+    pre_hooks : list[str]
+        Ordered list of Hook.identifier that should be applied before running the
+        markdown transformation
+    post_hooks : list[str]
+        Ordered list of Hook.identifier that should be applied after running the
+        markdown transformation
+    """
+
     initial_path: Path
 
     # generated attrs
