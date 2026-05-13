@@ -35,7 +35,11 @@ class TreeSpan:
         self.build_directory = self.source_directory / "_build"
 
         self.config = {
-            "ignore": {"directories": ["_build/", "__pycache__"], "globs": []}
+            "ignore": {
+                "directories": ["_build/", "__pycache__"],
+                "globs": [],
+                "filenames": [],
+            },
         }
 
         self.directories_in_build = [
@@ -58,9 +62,25 @@ class TreeSpan:
     def _get_files(self, directory: Path) -> list[Path]:
         """
         Get a list of files that can be leaves
+
+        Not sure if this should a TreeSpan method or a separate utility fn that gets passed config
         """
         non_hidden = [f for f in directory.glob("[!.]*") if not f.is_dir()]
-        return non_hidden
+
+        keep = []
+        for file in non_hidden:
+            # filter based on named files to ignore
+            ignore_patterns = self.config["ignore"]["filenames"]
+            ignored_by_filename = any(
+                [file.match(pattern) for pattern in ignore_patterns]
+            )
+
+            # TODO: add glob ignores or other patterns here
+
+            if not ignored_by_filename:
+                keep.append(file)
+
+        return keep
 
     def _make_leaves_from_directory(self, directory: Path) -> list[Leaf]:
         leaves = []
