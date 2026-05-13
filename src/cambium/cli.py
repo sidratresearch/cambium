@@ -8,3 +8,4 @@ app = typer.Typer()
 @app.command()
 def main():
     treespan = TreeSpan()
+    treespan.transform()

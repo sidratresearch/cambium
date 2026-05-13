@@ -5,6 +5,8 @@ import tempfile
 from collections import deque
 from pathlib import Path
 
+from cambium.md_transform import markdown_to_html
+
 
 class TreeSpan:
     """
@@ -138,6 +140,26 @@ class TreeSpan:
                     without_ignores.append(child)
 
         return without_ignores
+
+
+    def transform(self) -> None:
+        tempdir_name = self.config["tempdirs"]["transform"].name
+        for directory in self.directories_in_build:
+            (tempdir_name / directory).mkdir()
+
+        for leaf in self.leaves:
+            if not leaf.transform_markdown:
+                continue
+
+            markdown = leaf.initial_path.read_text()
+            html = markdown_to_html(markdown)
+            output_path = self.config["tempdirs"][
+                "transform"
+            ].name / leaf.final_path.relative_to(self.build_directory)
+            output_path.write_text(html)
+            print(f"{output_path} saved.")
+
+        return
 
 
 class Leaf:
