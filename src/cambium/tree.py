@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from dataclasses import InitVar, dataclass
 from pathlib import Path
 
 
@@ -129,19 +128,20 @@ class TreeSpan:
         return without_ignores
 
 
-@dataclass(kw_only=True)
 class Leaf:
     initial_path: Path
 
-    # post init attrs - must appear in same order as in the post init call
-    source_directory: InitVar[Path]
-    build_directory: InitVar[Path]
-
     # generated attrs
-    final_path: Path | None = None
-    final_directory: Path | None = None
+    final_path: Path
+    final_directory: Path
 
-    def __post_init__(self, source_directory: Path, build_directory: Path) -> None:
+    def __init__(
+        self,
+        initial_path: Path,
+        source_directory: Path,
+        build_directory: Path,
+    ) -> None:
+        self.initial_path = initial_path
         # print(f"Initializing leaf for {self.initial_path}")
 
         path_in_build = build_directory / self.initial_path
@@ -158,9 +158,5 @@ class Leaf:
         # run hook conditional functions to decide if hooks should be run later on
 
         # print(f"\t-> {self.final_path.relative_to(build_directory)}")
-
-        return
-
-        # set the final_directory if final_path is set
 
         return
