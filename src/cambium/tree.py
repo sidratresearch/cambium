@@ -141,6 +141,11 @@ class TreeSpan:
 
         return without_ignores
 
+    def apply_pre_hooks(self) -> None:
+        """
+        Iterate through each leaf and apply, in order, the pre hooks that it calls for
+        """
+        raise NotImplementedError()
 
     def transform(self) -> None:
         tempdir_name = self.config["tempdirs"]["transform"].name
@@ -160,6 +165,12 @@ class TreeSpan:
             print(f"{output_path} saved.")
 
         return
+
+    def apply_post_hooks(self) -> None:
+        """
+        Iterate through each leaf and apply, in order, the post hooks that it calls for
+        """
+        raise NotImplementedError()
 
 
 class Leaf:
@@ -213,7 +224,7 @@ class Hook:
     identifier: str = ""
 
     def should_hook_run(self, leaf: Leaf) -> bool:
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def apply(self, leaf: Leaf, tree: TreeSpan) -> None:
-        raise NotImplementedError
+        raise NotImplementedError()
