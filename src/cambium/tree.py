@@ -1,18 +1,36 @@
 from __future__ import annotations
 
 import os
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass
 from pathlib import Path
 
 
-@dataclass()
 class TreeSpan:
-    source_directory: Path = field(init=False)
-    leaves: list[Leaf] = field(init=False)
-    build_directory: Path = field(init=False)
+    """
+    Create a tree structure
+    Be aware of *all* of the files that cambium will touch
+    Not care about files/directories that are ignored by builtin or config
 
-    def __post_init__(self) -> None:
-        self.source_directory = Path(os.getcwd())
+    Hold information on what actions need to be taken (on treewide and/or leaf-wide scales)
+        Determines these also (transformations, parsing/collecting information, copy static files, templating, etc)
+    Populates "ghost" files in output directory for files that we want to exist, even if they aren't in input (index.html)
+    Identify what file should be end up at "index.html" in a directory (if no index, turn README into index)
+
+    Have information showing the final output directory structure (iterable)
+    Have lookup tables to correlate [input file]->[output file] and vice versa, and [input file]->[output directory]
+    Iterators to operate on every leaf (file/directory)
+
+    """
+
+    source_directory: Path
+    leaves: list[Leaf]
+    build_directory: Path
+
+    def __init__(self, source_directory: Path | None = None) -> None:
+        if source_directory is None:
+            self.source_directory = Path(os.getcwd())
+        else:
+            self.source_directory = source_directory
         self.build_directory = self.source_directory / "_build"
 
         leaf_paths = get_leaf_paths(self.source_directory)
