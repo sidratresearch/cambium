@@ -33,44 +33,38 @@ class TreeSpan:
             self.source_directory = source_directory
         self.build_directory = self.source_directory / "_build"
 
-        leaf_paths = get_leaf_paths(self.source_directory)
-        self.leaves = [
-            Leaf(
-                initial_path=path,
-                source_directory=self.source_directory,
-                build_directory=self.build_directory,
+        self.config = {"ignore": {"directories": ["_build/"], "globs": []}}
+
+        self.directories_in_build = self._get_directories(self.source_directory)
+
+        self.leaves = []
+
+    def _get_directories(self, parent_directory: Path) -> list[Path]:
+        """
+        Get a flat list of directories, which includes all (and only) what will be present in _build
+        """
+        # get all top level directories that aren't .hidden
+        non_hidden = list(parent_directory.glob("[!.]*/"))
+
+        without_ignores = []
+        for directory in non_hidden:
+
+            # filter based on named directories to ignore
+            ignore_patterns = self.config["ignore"]["directories"]
+            ignored_by_directory = any(
+                [directory.match(pattern) for pattern in ignore_patterns]
             )
-            for path in leaf_paths
-        ]
 
-def get_leaf_paths(directory: Path) -> list[Path]:
-    """Recursively searches `directory` and returns a list of all filepaths that
-    cambium should be aware of
+            # TODO: add glob ignores or other patterns here
 
-    Parameters
-    ----------
-    directory : Path
+            if not ignored_by_directory:
+                # save that directory, and any children
+                without_ignores.append(directory)
+                children = self._get_directories(directory)
+                for child in children:
+                    without_ignores.append(child)
 
-
-    Returns
-    -------
-    list[Path]
-    """
-    paths = []
-    for child in directory.iterdir():
-        # TODO: add tests for this, and make extensible
-        if (child.name == "_build") and (child.is_dir()):
-            continue
-        if child.name.startswith(".") and not child.name == ".cambium":
-            continue
-
-        if child.is_dir():
-            for subchild in get_leaf_paths(child):
-                paths.append(subchild)
-        else:
-            paths.append(child)
-
-    return paths
+        return without_ignores
 
 
 @dataclass(kw_only=True)
