@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import tempfile
 from collections import deque
 from pathlib import Path
 
@@ -43,6 +44,7 @@ class TreeSpan:
             "pre_hooks": [],  # currently set up to be a list of Hook objects
             "post_hooks": [],  # currently set up to be a list of Hook objects
             "max_leaves": 10000,  # maximum length of leaf deque
+            "tempdirs": {"transform": tempfile.TemporaryDirectory()},
         }
 
         self.directories_in_build = [
