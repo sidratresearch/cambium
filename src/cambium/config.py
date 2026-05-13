@@ -28,7 +28,7 @@ class CambiumConfiguration(BaseModel):
 
 
 class WorkingConfiguration(object):
-    """The Internal Working Cambrium Configuration Object
+    """The Internal Working Cambium Configuration Object
 
     Contains all working configurations parameters, resolved to their appropriate location for
     a Cambium Run
@@ -36,4 +36,7 @@ class WorkingConfiguration(object):
     """
 
     def __init__(self):
+        pass
+
+    def _resolve_path(self):
         pass
