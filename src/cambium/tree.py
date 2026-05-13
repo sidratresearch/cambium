@@ -25,6 +25,7 @@ class TreeSpan:
     source_directory: Path
     leaves: list[Leaf]
     build_directory: Path
+    directories_in_build: list[Path]
 
     def __init__(self, source_directory: Path | None = None) -> None:
         if source_directory is None:
@@ -33,15 +34,23 @@ class TreeSpan:
             self.source_directory = source_directory
         self.build_directory = self.source_directory / "_build"
 
-        self.config = {"ignore": {"directories": ["_build/"], "globs": []}}
+        self.config = {
+            "ignore": {"directories": ["_build/", "__pycache__"], "globs": []}
+        }
 
-        self.directories_in_build = self._get_directories(self.source_directory)
+        self.directories_in_build = [
+            p.relative_to(self.source_directory)
+            for p in self._get_directories_in_build(self.source_directory)
+        ]
+        # print(self.directories_in_build)
 
         self.leaves = []
 
-    def _get_directories(self, parent_directory: Path) -> list[Path]:
+    def _get_directories_in_build(self, parent_directory: Path) -> list[Path]:
         """
         Get a flat list of directories, which includes all (and only) what will be present in _build
+
+        Not sure if this should a TreeSpan method or a separate utility fn that gets passed config
         """
         # get all top level directories that aren't .hidden
         non_hidden = list(parent_directory.glob("[!.]*/"))
@@ -60,7 +69,7 @@ class TreeSpan:
             if not ignored_by_directory:
                 # save that directory, and any children
                 without_ignores.append(directory)
-                children = self._get_directories(directory)
+                children = self._get_directories_in_build(directory)
                 for child in children:
                     without_ignores.append(child)
 
