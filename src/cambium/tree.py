@@ -4,6 +4,7 @@ import os
 import tempfile
 from collections import deque
 from pathlib import Path
+from typing import Callable
 
 from cambium.md_transform import markdown_to_html
 
@@ -141,6 +142,15 @@ class TreeSpan:
 
         return without_ignores
 
+    def apply_to_leaves(self, function: Callable[[Leaf, TreeSpan], None]) -> None:
+        """
+        Generic method to apply some function across all leaves.
+        If we support multithreading for some operations, this is where it will happen
+        Which means `function` should be thread-safe
+        """
+        for leaf in self.leaves:
+            function(leaf, self)
+
     def apply_pre_hooks(self) -> None:
         """
         Iterate through each leaf and apply, in order, the pre hooks that it calls for
@@ -152,20 +162,7 @@ class TreeSpan:
         for directory in self.directories_in_build:
             (tempdir_name / directory).mkdir()
 
-        for leaf in self.leaves:
-            if not leaf.transform_markdown:
-                continue
-
-            output_path = self.config["tempdirs"][
-                "transform"
-            ].name / leaf.final_path.relative_to(self.build_directory)
-
-            markdown = leaf.latest_path.read_text()
-            html = markdown_to_html(markdown)
-
-            output_path.write_text(html)
-            leaf.latest_path = output_path
-
+        self.apply_to_leaves(transform_markdown_leaf_to_html)
         return
 
     def apply_post_hooks(self) -> None:
@@ -258,3 +255,21 @@ class Hook:
 
     def apply(self, leaf: Leaf, tree: TreeSpan) -> None:
         raise NotImplementedError()
+
+
+def transform_markdown_leaf_to_html(leaf: Leaf, tree: TreeSpan) -> None:
+    """
+    Function to read a markdown leaf and write transformed HTML to a temp file
+    """
+    if not leaf.transform_markdown:
+        return
+
+    output_path = tree.config["tempdirs"][
+        "transform"
+    ].name / leaf.final_path.relative_to(tree.build_directory)
+
+    markdown = leaf.latest_path.read_text()
+    html = markdown_to_html(markdown)
+
+    output_path.write_text(html)
+    leaf.latest_path = output_path  # TODO: confirm that updating references like this works as expected
