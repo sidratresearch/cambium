@@ -70,8 +70,6 @@ class TreeSpan:
         # run all tree hooks, passing them the entire tree structure to modify
         # initial leaves have input file = output file
         for stage in self.config["stages"]:
-            if not stage.has_tree_hook:
-                continue
             stage.tree_hook(self)
 
         # TODO: write ghost index.html tree hook
@@ -277,10 +275,10 @@ class Leaf:
         return self.final_path.parent
 
 
-# TODO: should this class be decorated as abstract or something?
+# TODO: it's technically correct to have Stage inherit from ABC and decorate tree_hook
+# as @abstractmethod, but I'm not convinced it's worth it
 class Stage:
     identifier: str = ""
-    has_tree_hook: bool = False
 
     @staticmethod
     def tree_hook(tree: TreeSpan) -> None:
@@ -292,6 +290,8 @@ class Stage:
         transforms, and post-hooks as necessary
 
         Because tree hooks don't edit the contents of any file, they should not modify leaf.latest_path
+
+        the tree_hook method is required because it is the function that registers the Stage into the pre/transform/post hooks for a leaf, and therefore if the tree_hook is not run, nothing else will be either
         """
         raise NotImplementedError()
 
@@ -334,7 +334,6 @@ class Stage:
 
 class TransformMarkdown(Stage):
     identifier: str = "TransformMarkdown"  # can we use __name__ or something?
-    has_tree_hook: bool = True
 
     @staticmethod
     @override
