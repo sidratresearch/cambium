@@ -26,17 +26,12 @@ class TreeSpan:
 
     """
 
-    source_directory: Path
+    root_directory: Path
     leaves: deque[Leaf]
     build_directory: Path
     directories_in_build: list[Path]
 
-    def __init__(self, source_directory: Path | None = None) -> None:
-        if source_directory is None:
-            self.source_directory = Path(os.getcwd())
-        else:
-            self.source_directory = source_directory
-        self.build_directory = self.source_directory / "_build"
+    def __init__(self) -> None:
 
         self.config = {
             "ignore": {
@@ -47,11 +42,15 @@ class TreeSpan:
             "max_leaves": 10000,  # maximum length of leaf deque
             "tempdirs": {"transform": tempfile.TemporaryDirectory()},
             "stages": [],  # list of Stage objects
+            "root_directory": Path(os.getcwd()),  # absolute path to the input directory
         }
 
+        self.root_directory = self.config["root_directory"]  # for now, speedy access
+        self.build_directory = self.root_directory / "_build"
+
         self.directories_in_build = [
-            p.relative_to(self.source_directory)
-            for p in self._get_directories_in_build(self.source_directory)
+            p.relative_to(self.root_directory)
+            for p in self._get_directories_in_build(self.root_directory)
         ]
 
         self.leaves = deque(maxlen=self.config["max_leaves"])
@@ -111,8 +110,8 @@ class TreeSpan:
         for path in directory_files:
             leaves.append(
                 Leaf(
-                    initial_path=path,
-                    source_directory=self.source_directory,
+                    initial_path=path.relative_to(self.root_directory),
+                    source_directory=self.root_directory,
                     build_directory=self.build_directory,
                 )
             )
@@ -124,6 +123,8 @@ class TreeSpan:
         Get a flat list of directories, which includes all (and only) what will be present in _build
 
         Not sure if this should a TreeSpan method or a separate utility fn that gets passed config
+
+        Returns absolute paths
         """
         # get all top level directories that aren't .hidden
         non_hidden = list(parent_directory.glob("[!.]*/"))
@@ -201,26 +202,26 @@ class Leaf:
     Attributes
     ----------
     initial_path : Path
-        Passed during initialization, this stores the absolute path to the original
-        version of the file
-        Should be read-only
+        Read-only attribute that stores the path to the original version of the file, relative to the root_directory
     latest_path : Path
         The absolute path to the most up-to-date version of the file. When a markdown
         file is converted to HTML, the path to a temporary .html file is put here
+        This needs to be absolute because of the temp folder?
+        Can be modified by hooks
     final_path : Path
-        The absolute path that this Leaf will result in, in the build directory
-        Is this read only? or can hooks modify this? - Thinking especially if MD-to-HTML
-        is a hook
+        Stores the path to the final version of the file, relative to the build_directory
+        Should only be modified by Tree Hooks
     final_directory : Path
         Parent directory of final_path
-    transform_markdown : bool
-        True if this is a markdown file that should be parsed to HTML, false otherwise
-    pre_hooks : list[str]
+    pre_hooks : list[Stage]
         Ordered list of Stage.identifier that should be applied before running the
-        markdown transformation
-    post_hooks : list[str]
+        markdown transformation, populated by tree hooks
+        TODO: str vs Stage typing
+    transforms : list[Stage]
+        Ordered list of major transformations
+    post_hooks : list[Stage]
         Ordered list of Stage.identifier that should be applied after running the
-        markdown transformation
+        markdown transformation, populated by tree hooks
     """
 
     initial_path: Path
@@ -240,31 +241,30 @@ class Leaf:
 
     def __init__(
         self,
-        initial_path: Path,
-        source_directory: Path,
-        build_directory: Path,
+        initial_path: Path,  # relative to root
     ) -> None:
         self.initial_path = initial_path
         self.latest_path = initial_path
+        self.final_path = initial_path
         # print(f"Initializing leaf for {self.initial_path}")
-
-        path_in_build = build_directory / self.initial_path
 
         # set the final_path depending on the type of file this is
         # move this into tree-hook portion of MarkdownToHTMLStage
         # TODO: don't do this to files in /static/
-        if self.initial_path.suffix == ".md":
-            # TODO: choose how to deal with .MD .markdown etc
-            self.final_path = path_in_build.with_suffix(".html")
-            # self.transform_markdown = True
-        else:
-            self.final_path = path_in_build
-
-        self.final_directory = self.final_path.parent
+        # if self.initial_path.suffix == ".md":
+        #     # TODO: choose how to deal with .MD .markdown etc
+        #     self.final_path = path_in_build.with_suffix(".html")
+        #     # self.transform_markdown = True
+        # else:
+        #     self.final_path = path_in_build
 
         # run hook conditional functions to decide if hooks should be run later on
 
         return
+
+    @property
+    def final_directory(self) -> Path:
+        return self.final_path.parent
 
 
 class Stage:
