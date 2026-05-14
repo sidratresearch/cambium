@@ -5,7 +5,8 @@ from typing import Optional, Annotated
 from pathlib import Path
 import tempfile
 
-from pydantic import BaseModel, FilePath
+from pydantic import BaseModel
+import yaml
 
 builtin_paths_to_ignore: list[str] = [".cambium/", "_build/", ".*", "static/"]
 """Built-in Cambium Directories to Ignore"""
@@ -22,6 +23,9 @@ class CambiumConfiguration(BaseModel):
 
     root_directory: Optional[str] = "."
     "Root Directory of Content"
+
+    build_directory: Optional[str] = "_build/"
+    "Build Directory of Output"
 
     paths_to_ignore: Optional[list[str]] = []
     "List of Files and Directories to Ignore"
@@ -59,8 +63,8 @@ class WorkingConfiguration(object):
     def __init__(self, input_config: Optional[CambiumConfiguration] = None):
 
         # Setting Temporary Directory
-        self.tmp_dir = tempfile.TemporaryDirectory(prefix="cambium_")
-        self.tmp_dir_path = Path(self.tmp_dir.name)
+        self.tmp_dir_obj = tempfile.TemporaryDirectory(prefix="cambium_")
+        self.tmp_dir = Path(self.tmp_dir_obj.name)
 
         # Setting Input Configuration if set, otherwise use default:
         if input_config is not None:
@@ -71,14 +75,27 @@ class WorkingConfiguration(object):
         # Populating Ignore Lists
         self.populate_ignore_lists()
 
+        # Creating Path object for root directory and testing
+        self.root_dir = Path(self.input_config.root_directory)
+        assert (
+            self.root_dir.exists()
+        ), f"The specified root directory, {self.root_dir} does not exist"
+
+        # Creating Path object for build directory
+        self.build_dir = Path(self.input_config.build_directory)
+
+        # Exposing Simple Parameters (that require no additional processing)
+        self.stages = self.input_config.stages
+        self.max_leaves = self.input_config.max_leaves
+
     def __del__(self):
         """Clean up All Lingering Directories"""
 
         # Cleaning up temporary directory
-        self.tmp_dir.cleanup()
+        self.tmp_dir_obj.cleanup()
 
     def __repr__(self):
-        return f"""Cambium Working Configuration:\nTemporary Directory Path: {self.tmp_dir_path}"""
+        return f"""Cambium Working Configuration:\nTemporary Directory Path: {self.tmp_dir}"""
 
     def populate_ignore_lists(self):
         """Combining ignore lists and putting in appropriate dictionary"""
@@ -122,3 +139,71 @@ def initialize_configuration(
 
     global current_config
     current_config = WorkingConfiguration(input_configuration)
+
+
+def read_input_configuration(
+    cli_path_loc: Optional[str | Path] = None,
+) -> Optional[CambiumConfiguration]:
+    """Attempt to read input configuration from either command line argument or
+    expected default location, and return to
+
+    Parameters
+    ----------
+    cli_path : Optional[str | Path], optional
+        Path to config file as provided on the command line, by default None
+
+    Returns
+    -------
+    Optional[CambiumConfiguration]
+        If a config file was found, return a CambiumConfiguration object
+    """
+
+    config_default_path = Path(".cambium/config.yaml")
+
+    # Attempting to read CLI provided config
+    if cli_path_loc is not None:
+        cli_path = Path(cli_path_loc)
+        assert (
+            cli_path.exists()
+        ), f"Provided configuration file location {cli_path_loc} does not exist"
+
+        return translate_yaml_configuration(cli_path)
+
+    # Attempting to read default config path
+
+    if config_default_path.exists():
+        return translate_yaml_configuration(config_default_path)
+    else:
+        return None
+
+
+def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
+    """Reads a YAML Configuration and Populates a CambiumConfiguration with
+    the appropriate parameters
+
+    Parameters
+    ----------
+    config_path : Path
+        The location of the Cambium YAML configuration file
+
+    Returns
+    -------
+    CambiumConfiguration
+        The interpreted Cambium configuration object
+    """
+
+    # Opening and reading yaml config
+    with open(config_path, "r") as file:
+        config_yaml = yaml.safe_load(file)
+
+    # Extracting required dictionary parameters from the YAML
+    configuration_parameters = CambiumConfiguration.model_fields.keys()
+
+    input_dict = {}
+
+    for key in configuration_parameters:
+        if key in config_yaml:
+            input_dict[key] = config_yaml[key]
+
+    # Creating the CambiumConfiguration object:
+    return CambiumConfiguration(**input_dict)
