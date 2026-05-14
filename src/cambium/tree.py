@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import tempfile
 from collections import deque
 from pathlib import Path
@@ -40,8 +41,8 @@ class TreeSpan:
                 "filenames": [],
             },
             "max_leaves": 10000,  # maximum length of leaf deque
-            "tempdirs": {"transform": tempfile.TemporaryDirectory()},
-            "stages": [],  # list of Stage objects
+            "tempdir": tempfile.TemporaryDirectory(),
+            "stages": [TransformMarkdown],  # list of Stage objects
             "root_directory": Path(os.getcwd()),  # absolute path to the input directory
         }
 
@@ -71,6 +72,14 @@ class TreeSpan:
         # markdown to html tree hook changes output file path/extension where necessary
         # then ghost index.html tree hook
 
+        # between tree hooks and pre hooks we need to copy all files into a tempdir so that pre-hooks and transformers can all use latest_path as relative to temp dir
+        for directory in self.directories_in_build:
+            (self.config["tempdir"].name / directory).mkdir()
+        for leaf in self.leaves:
+            shutil.copy(
+                self.root_directory / leaf.initial_path,
+                self.config["tempdir"].name / leaf.initial_path,
+            )
 
     def _add_leaves(self, new_leaves: list[Leaf]) -> None:
         """Extend the `self.leaves` deque, with a guard on maxlen"""
@@ -113,13 +122,7 @@ class TreeSpan:
         directory_files = self._get_files(directory)
 
         for path in directory_files:
-            leaves.append(
-                Leaf(
-                    initial_path=path.relative_to(self.root_directory),
-                    source_directory=self.root_directory,
-                    build_directory=self.build_directory,
-                )
-            )
+            leaves.append(Leaf(initial_path=path))
 
         return leaves
 
@@ -181,15 +184,11 @@ class TreeSpan:
         """
         Iterate through each leaf, applying the Stage transforms it requests
         """
-        tempdir_name = self.config["tempdirs"]["transform"].name
-        for directory in self.directories_in_build:
-            (tempdir_name / directory).mkdir()
-
         # TODO: figure out how to work this in with apply_to_leaves
         # maybe each leaf has a method called apply_transforms?
         for leaf in self.leaves:
-            for transform_stage in leaf.transform_stages:
-                transform_stage.transform(leaf)
+            for transform_stage in leaf.transforms:
+                transform_stage.transform(leaf, self.config)
 
         # self.apply_to_leaves(transform_markdown_leaf_to_html)
         return
@@ -236,20 +235,9 @@ class Leaf:
         self,
         initial_path: Path,  # relative to root
     ) -> None:
-        self.initial_path = initial_path
-        self.latest_path = initial_path
-        self.final_path = initial_path
-        # print(f"Initializing leaf for {self.initial_path}")
-
-        # set the final_path depending on the type of file this is
-        # move this into tree-hook portion of MarkdownToHTMLStage
-        # TODO: don't do this to files in /static/
-        # if self.initial_path.suffix == ".md":
-        #     # TODO: choose how to deal with .MD .markdown etc
-        #     self.final_path = path_in_build.with_suffix(".html")
-        #     # self.transform_markdown = True
-        # else:
-        #     self.final_path = path_in_build
+        self.initial_path: Path = initial_path
+        self.latest_path: Path = initial_path
+        self.final_path: Path = initial_path
 
         self.pre_hooks: list[Stage] = []
         self.transforms: list[Stage] = []
@@ -324,6 +312,36 @@ class Stage:
         information that was written by this Stage's `pre_hook`
         """
         raise NotImplementedError()
+
+
+class TransformMarkdown(Stage):
+    identifier = "TransformMarkdown"  # can we use __name__ or something?
+    has_tree_hook = True
+    has_transform = True
+
+    @staticmethod
+    def tree_hook(tree: TreeSpan) -> None:
+        # TODO: could refactor this to use tree.apply_to_leaves
+        for leaf in tree.leaves:
+            print(leaf.initial_path, leaf.transforms)
+            if leaf.latest_path.parts[0] == "static":
+                continue
+            if leaf.latest_path.suffix.lower() != ".md":
+                continue
+
+            leaf.final_path = leaf.latest_path.with_suffix(".html")
+            leaf.transforms.append(TransformMarkdown)
+
+    @staticmethod
+    def transform(leaf: Leaf, working_config) -> None:
+        output_path = working_config["tempdir"].name / leaf.final_path
+
+        markdown = (working_config["tempdir"].name / leaf.latest_path).read_text()
+        html = markdown_to_html(markdown)
+
+        output_path.write_text(html)
+        leaf.latest_path = output_path  # TODO: confirm that updating references like this works as expected
+        print(output_path)
 
 
 def transform_markdown_leaf_to_html(leaf: Leaf, tree: TreeSpan) -> None:
