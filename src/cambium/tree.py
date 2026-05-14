@@ -204,14 +204,17 @@ class TreeSpan:
 class Leaf:
     """
 
-    Attributes
+    Parameters
     ----------
     initial_path : Path
         Read-only attribute that stores the path to the original version of the file, relative to the root_directory
+
+    Attributes
+    ----------
     latest_path : Path
-        The absolute path to the most up-to-date version of the file. When a markdown
-        file is converted to HTML, the path to a temporary .html file is put here
-        This needs to be absolute because of the temp folder?
+        The path to the most up-to-date version of the file. When a markdown file
+        is converted to HTML, the path to a temporary .html file is put here
+        WARNING This is relative to the treewide tempdir - which means that all files need to be copied into that tempdir
         Can be modified by hooks
     final_path : Path
         Stores the path to the final version of the file, relative to the build_directory
@@ -228,21 +231,6 @@ class Leaf:
         Ordered list of Stage.identifier that should be applied after running the
         markdown transformation, populated by tree hooks
     """
-
-    initial_path: Path
-
-    # generated attrs
-    latest_path: Path
-    final_path: Path
-    final_directory: Path
-
-    # these should be populated by `Stage.tree_hook()`
-    pre_hooks: list[Stage] = []
-    post_hooks: list[Stage] = []
-    transforms: list[Stage] = []
-
-    # TODO: status attributes for pre_hook, transform, and post_hook "chapters"
-    # status can be incomplete, complete, skip, failed
 
     def __init__(
         self,
@@ -263,7 +251,12 @@ class Leaf:
         # else:
         #     self.final_path = path_in_build
 
-        # run hook conditional functions to decide if hooks should be run later on
+        self.pre_hooks: list[Stage] = []
+        self.transforms: list[Stage] = []
+        self.post_hooks: list[Stage] = []
+
+        # TODO: status attributes for pre_hook, transform, and post_hook "chapters"
+        # status can be incomplete, complete, skip, failed
 
         return
 
@@ -272,6 +265,7 @@ class Leaf:
         return self.final_path.parent
 
 
+# TODO: should this class be decorated as abstract or something?
 class Stage:
     identifier: str = ""
     has_tree_hook: bool = False
@@ -282,17 +276,21 @@ class Stage:
     def should_hook_run(self, leaf: Leaf) -> bool:
         raise NotImplementedError()
 
-    def tree_hook(self, tree: TreeSpan) -> None:
+    @staticmethod
+    def tree_hook(tree: TreeSpan) -> None:
         """
         Function to run which can modify the tree structure, adding and removing
         leaves and directories
 
         Function should also modify each leaf to add itself to the list of pre-hooks,
         transforms, and post-hooks as necessary
+
+        Because tree hooks don't edit the contents of any file, they should not modify leaf.latest_path
         """
         raise NotImplementedError()
 
-    def pre_hook(self, leaf: Leaf) -> None:
+    @staticmethod
+    def pre_hook(leaf: Leaf) -> None:
         """
         Function run on a single leaf, prior to any major transformations
 
@@ -302,7 +300,8 @@ class Stage:
         """
         raise NotImplementedError()
 
-    def transform(self, leaf: Leaf) -> None:
+    @staticmethod
+    def transform(leaf: Leaf, working_config) -> None:
         """
         Function run on a single leaf, applying a  major transformation (md -> html)
 
@@ -314,7 +313,8 @@ class Stage:
         """
         raise NotImplementedError()
 
-    def post_hook(self, leaf: Leaf) -> None:
+    @staticmethod
+    def post_hook(leaf: Leaf) -> None:
         """
         Function run on a single leaf, after any major transformations
 
