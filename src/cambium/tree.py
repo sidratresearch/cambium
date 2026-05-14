@@ -45,7 +45,7 @@ class TreeSpan:
             },
             "max_leaves": 10000,  # maximum length of leaf deque
             "tempdir": tempfile.TemporaryDirectory(),  # would be nice to have a secondary config item so we don't need to call .name
-            "stages": [TransformMarkdown],  # list of Stage objects
+            "stages": [TransformMarkdown, AddPlaceholderIndex],  # list of Stage objects
             "root_directory": Path(os.getcwd()),  # absolute path to the input directory
         }
 
@@ -77,6 +77,8 @@ class TreeSpan:
         for directory in self.directories_in_build:
             (self.config["tempdir"].name / directory).mkdir()
         for leaf in self.leaves:
+            if leaf.initial_path_mocked:
+                continue
             shutil.copy(
                 self.root_directory / leaf.initial_path,
                 self.config["tempdir"].name / leaf.initial_path,
@@ -95,6 +97,10 @@ class TreeSpan:
         final_paths = [leaf.final_path for leaf in self.leaves]
         if len(final_paths) > len(set(final_paths)):
             raise ValueError("Collision in leaf output paths")
+
+    def add_leaf(self, leaf: Leaf) -> None:
+        self._add_leaves([leaf])
+        self._check_leaf_collisions()
 
     def _add_leaves(self, new_leaves: list[Leaf]) -> None:
         """Extend the `self.leaves` deque, with a guard on maxlen"""
@@ -242,6 +248,9 @@ class Leaf:
     ----------
     initial_path : Path
         Read-only attribute that stores the path to the original version of the file, relative to the root_directory
+    initial_path_mocked : bool
+        Flag indicating that there is no originating file (i.e., that root_directory / initial_path does not exist)
+        Don't like this very much, but the other option is to make initial_path optional and deal with that
 
     Attributes
     ----------
@@ -269,8 +278,11 @@ class Leaf:
     def __init__(
         self,
         initial_path: Path,  # relative to root
+        initial_path_mocked: bool = False,
     ) -> None:
         self.initial_path: Path = initial_path
+        self._initial_path_mocked: bool = initial_path_mocked
+
         self.latest_path: Path = initial_path
         # TODO: maybe final_path should be read-only and to change it you have to make a new leaf?
         self.final_path: Path = initial_path
@@ -283,6 +295,11 @@ class Leaf:
         # status can be incomplete, complete, skip, failed
 
         return
+
+    @property
+    def initial_path_mocked(self) -> bool:
+        """Whether `Leaf.initial_path` has been "mocked" (doesn't exist)"""
+        return self._initial_path_mocked
 
     @property
     def final_directory(self) -> Path:
@@ -378,3 +395,33 @@ class TransformMarkdown(Stage):
 
         output_path.write_text(html)
         leaf.latest_path = output_path
+
+
+class AddPlaceholderIndex(Stage):
+    indentifier = "AddPlaceholderIndex"
+
+    @staticmethod
+    def tree_hook(tree: TreeSpan) -> None:
+        leaves_by_final_directory = tree.leaves_by_final_directory
+
+        for directory in [Path("."), *tree.directories_in_build]:
+            # get list of leaves that will output to that directory
+            leaves = leaves_by_final_directory[directory]
+            leaf_filenames = [leaf.final_path.name for leaf in leaves]
+
+            if "index.html" not in leaf_filenames:
+                AddPlaceholderIndex._create_index_leaf(directory, tree)
+
+    @staticmethod
+    def _create_index_leaf(directory: Path, tree: TreeSpan) -> None:
+        # TODO: figure out what to do about this
+        initial_path = Path(f".cambium/{AddPlaceholderIndex.identifier}/index.html")
+        source_file = tree.config["tempdir"].name / initial_path
+        source_file.parent.mkdir(parents=True, exist_ok=True)
+        source_file.write_text("")
+
+        index_leaf = Leaf(initial_path=initial_path, initial_path_mocked=True)
+        index_leaf.latest_path = source_file
+        index_leaf.final_path = directory / "index.html"
+
+        tree.add_leaf(index_leaf)
