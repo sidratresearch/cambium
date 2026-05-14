@@ -61,7 +61,8 @@ class TreeSpan:
                 raise ValueError("self.leaves will drop items")
             self.leaves.extend(directory_leaves)  # appends each item
 
-        # print("\n".join([str(l.initial_path) for l in self.leaves]))
+        # TODO: error collection for leaf generation
+        # if there are errors in inital leaf generation, raise them now
 
         # run all tree hooks, passing them the entire tree structure to modify
         # initial leaves have input file = output file
@@ -159,6 +160,14 @@ class TreeSpan:
     def apply_pre_hooks(self) -> None:
         """
         Iterate through each leaf and apply, in order, the pre hooks that it calls for
+
+        If a pre-hook fails, the remaining pre-hooks for that Leaf should not be run,
+        and the status indicators for transform and post-hooks should be set to skip
+
+        If a pre-hook errors, we either
+        - raise that error for that leaf immediately, OR
+        - collect errors across all leaves, and raise them collectively (maybe better
+            for multithreading)
         """
         raise NotImplementedError()
 
@@ -225,6 +234,9 @@ class Leaf:
     pre_hooks: list[Stage] = []
     post_hooks: list[Stage] = []
     transforms: list[Stage] = []
+
+    # TODO: status attributes for pre_hook, transform, and post_hook "chapters"
+    # status can be incomplete, complete, skip, failed
 
     def __init__(
         self,
