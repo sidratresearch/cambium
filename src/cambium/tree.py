@@ -7,6 +7,8 @@ from collections import deque
 from pathlib import Path
 from typing import Callable
 
+from typing_extensions import override
+
 from cambium.md_transform import markdown_to_html
 
 
@@ -27,6 +29,7 @@ class TreeSpan:
 
     """
 
+    # These work as class attributes so long as we never have multiple instances of TreeSpan
     root_directory: Path
     leaves: deque[Leaf]
     build_directory: Path
@@ -41,7 +44,7 @@ class TreeSpan:
                 "filenames": [],
             },
             "max_leaves": 10000,  # maximum length of leaf deque
-            "tempdir": tempfile.TemporaryDirectory(),
+            "tempdir": tempfile.TemporaryDirectory(),  # would be nice to have a secondary config item so we don't need to call .name
             "stages": [TransformMarkdown],  # list of Stage objects
             "root_directory": Path(os.getcwd()),  # absolute path to the input directory
         }
@@ -58,6 +61,7 @@ class TreeSpan:
         self._add_leaves(self._make_leaves_from_directory(Path(".")))
         for directory in self.directories_in_build:
             directory_leaves = self._make_leaves_from_directory(directory)
+
             self._add_leaves(directory_leaves)
 
         # TODO: error collection for leaf generation
@@ -70,8 +74,7 @@ class TreeSpan:
                 continue
             stage.tree_hook(self)
 
-        # markdown to html tree hook changes output file path/extension where necessary
-        # then ghost index.html tree hook
+        # TODO: write ghost index.html tree hook
 
         # between tree hooks and pre hooks we need to copy all files into a tempdir so that pre-hooks and transformers can all use latest_path as relative to temp dir
         for directory in self.directories_in_build:
@@ -88,11 +91,11 @@ class TreeSpan:
             raise ValueError("self.leaves will drop items")
         self.leaves.extend(new_leaves)  # appends each item
 
-    def _get_files(self, directory: Path) -> list[Path]:
+    def _get_leaf_files(self, directory: Path) -> list[Path]:
         """
         Get a list of files that can be leaves
 
-        Not sure if this should a TreeSpan method or a separate utility fn that gets passed config
+        Not sure if this should a TreeSpan method or a separate utility (or staticmethod) fn that gets passed config
         """
         non_hidden = [f for f in directory.glob("[!.]*") if not f.is_dir()]
 
@@ -116,11 +119,13 @@ class TreeSpan:
         Given a directory, make a Leaf out of every file in that directory
 
         Not sure if this should a TreeSpan method or a separate utility fn that gets passed config
+
+        This really doesn't need to be a dedicated function
         """
         leaves = []
 
         # these are all relative to source directory
-        directory_files = self._get_files(directory)
+        directory_files = self._get_leaf_files(directory)
 
         for path in directory_files:
             leaves.append(Leaf(initial_path=path))
@@ -131,9 +136,9 @@ class TreeSpan:
         """
         Get a flat list of directories, which includes all (and only) what will be present in _build
 
-        Not sure if this should a TreeSpan method or a separate utility fn that gets passed config
+        Not sure if this should a TreeSpan method or a separate utility fn (or staticmethod) that gets passed config
 
-        Returns absolute paths
+        Returns absolute paths (required as it's recursive)
         """
         # get all top level directories that aren't .hidden
         non_hidden = list(parent_directory.glob("[!.]*/"))
@@ -202,7 +207,7 @@ class TreeSpan:
 
     def finalize(self) -> None:
         """
-        Copy final leaf versions to build, and to any other cleanup
+        Copy final leaf versions to build, and do any other cleanup
         """
 
         if self.build_directory.exists():
@@ -276,12 +281,6 @@ class Leaf:
 class Stage:
     identifier: str = ""
     has_tree_hook: bool = False
-    has_pre_hook: bool = False
-    has_transform: bool = False
-    has_post_hook: bool = False
-
-    def should_hook_run(self, leaf: Leaf) -> bool:
-        raise NotImplementedError()
 
     @staticmethod
     def tree_hook(tree: TreeSpan) -> None:
@@ -334,15 +333,17 @@ class Stage:
 
 
 class TransformMarkdown(Stage):
-    identifier = "TransformMarkdown"  # can we use __name__ or something?
-    has_tree_hook = True
-    has_transform = True
+    identifier: str = "TransformMarkdown"  # can we use __name__ or something?
+    has_tree_hook: bool = True
 
     @staticmethod
+    @override
     def tree_hook(tree: TreeSpan) -> None:
+        """
+        Update final path and list of transforms for markdown leaves.
+        """
         # TODO: could refactor this to use tree.apply_to_leaves
         for leaf in tree.leaves:
-            print(leaf.initial_path, leaf.transforms)
             if leaf.latest_path.parts[0] == "static":
                 continue
             if leaf.latest_path.suffix.lower() != ".md":
@@ -352,30 +353,15 @@ class TransformMarkdown(Stage):
             leaf.transforms.append(TransformMarkdown)
 
     @staticmethod
+    @override
     def transform(leaf: Leaf, working_config) -> None:
+        """
+        Use Marko to write an HTML version of a markdown leaf.
+        """
         output_path = working_config["tempdir"].name / leaf.final_path
 
         markdown = (working_config["tempdir"].name / leaf.latest_path).read_text()
         html = markdown_to_html(markdown)
 
         output_path.write_text(html)
-        leaf.latest_path = output_path  # TODO: confirm that updating references like this works as expected
-        print(output_path)
-
-
-def transform_markdown_leaf_to_html(leaf: Leaf, tree: TreeSpan) -> None:
-    """
-    Function to read a markdown leaf and write transformed HTML to a temp file
-    """
-    if not leaf.transform_markdown:
-        return
-
-    output_path = tree.config["tempdirs"][
-        "transform"
-    ].name / leaf.final_path.relative_to(tree.build_directory)
-
-    markdown = leaf.latest_path.read_text()
-    html = markdown_to_html(markdown)
-
-    output_path.write_text(html)
-    leaf.latest_path = output_path  # TODO: confirm that updating references like this works as expected
+        leaf.latest_path = output_path
