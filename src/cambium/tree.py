@@ -213,7 +213,6 @@ class TreeSpan:
             for transform_stage in leaf.transforms:
                 transform_stage.transform(leaf, self.config)
 
-        # self.apply_to_leaves(transform_markdown_leaf_to_html)
         return
 
     def apply_post_hooks(self) -> None:
@@ -264,13 +263,13 @@ class Leaf:
         Should only be modified by Tree Hooks
     final_directory : Path
         Parent directory of final_path
-    pre_hooks : list[Stage]
+    pre_hooks : list[[typeStage]]
         Ordered list of Stage.identifier that should be applied before running the
         markdown transformation, populated by tree hooks
         TODO: str vs Stage typing
-    transforms : list[Stage]
+    transforms : list[[typeStage]]
         Ordered list of major transformations
-    post_hooks : list[Stage]
+    post_hooks : list[type[Stage]]
         Ordered list of Stage.identifier that should be applied after running the
         markdown transformation, populated by tree hooks
     """
@@ -280,21 +279,26 @@ class Leaf:
         initial_path: Path,  # relative to root
         initial_path_mocked: bool = False,
     ) -> None:
-        self.initial_path: Path = initial_path
+        self._initial_path: Path = initial_path
         self._initial_path_mocked: bool = initial_path_mocked
 
         self.latest_path: Path = initial_path
         # TODO: maybe final_path should be read-only and to change it you have to make a new leaf?
         self.final_path: Path = initial_path
 
-        self.pre_hooks: list[Stage] = []
-        self.transforms: list[Stage] = []
-        self.post_hooks: list[Stage] = []
+        self.pre_hooks: list[type[Stage]] = []
+        self.transforms: list[type[Stage]] = []
+        self.post_hooks: list[type[Stage]] = []
 
         # TODO: status attributes for pre_hook, transform, and post_hook "chapters"
         # status can be incomplete, complete, skip, failed
 
         return
+
+    @property
+    def initial_path(self) -> Path:
+        """Path of originating file, relative to TreeSpan.root_directory"""
+        return self._initial_path
 
     @property
     def initial_path_mocked(self) -> bool:
@@ -303,6 +307,7 @@ class Leaf:
 
     @property
     def final_directory(self) -> Path:
+        """Parent directory of `Leaf.final_path`"""
         return self.final_path.parent
 
 
@@ -372,15 +377,20 @@ class TransformMarkdown(Stage):
         """
         Update final path and list of transforms for markdown leaves.
         """
-        # TODO: could refactor this to use tree.apply_to_leaves
-        for leaf in tree.leaves:
-            if leaf.latest_path.parts[0] == "static":
-                continue
-            if leaf.latest_path.suffix.lower() != ".md":
-                continue
+        tree.apply_to_leaves(TransformMarkdown._tree_hook_for_leaf)
 
-            leaf.final_path = leaf.latest_path.with_suffix(".html")
-            leaf.transforms.append(TransformMarkdown)
+    @staticmethod
+    def _tree_hook_for_leaf(leaf: Leaf, _: TreeSpan) -> None:
+        """
+        Update final path and list of transforms for a single leaf, if applicable
+        """
+        if leaf.latest_path.parts[0] == "static":
+            return
+        if leaf.latest_path.suffix.lower() != ".md":
+            return
+
+        leaf.final_path = leaf.latest_path.with_suffix(".html")
+        leaf.transforms.append(TransformMarkdown)
 
     @staticmethod
     @override
