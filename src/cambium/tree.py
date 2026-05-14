@@ -44,10 +44,9 @@ class TreeSpan:
                 "globs": [],
                 "filenames": [],
             },
-            "pre_hooks": [],  # currently set up to be a list of Hook objects
-            "post_hooks": [],  # currently set up to be a list of Hook objects
             "max_leaves": 10000,  # maximum length of leaf deque
             "tempdirs": {"transform": tempfile.TemporaryDirectory()},
+            "stages": [],  # list of Stage objects
         }
 
         self.directories_in_build = [
@@ -64,7 +63,15 @@ class TreeSpan:
 
         # print("\n".join([str(l.initial_path) for l in self.leaves]))
 
-        # deal w/ ghost index
+        # run all tree hooks, passing them the entire tree structure to modify
+        # initial leaves have input file = output file
+        for stage in self.config["stages"]:
+            if not stage.has_tree_hook:
+                continue
+            stage.tree_hook(self)
+
+        # markdown to html tree hook changes output file path/extension where necessary
+        # then ghost index.html tree hook
 
     def _get_files(self, directory: Path) -> list[Path]:
         """
@@ -106,8 +113,6 @@ class TreeSpan:
                     initial_path=path,
                     source_directory=self.source_directory,
                     build_directory=self.build_directory,
-                    pre_hooks=self.config["pre_hooks"],
-                    post_hooks=self.config["post_hooks"],
                 )
             )
 
@@ -158,11 +163,20 @@ class TreeSpan:
         raise NotImplementedError()
 
     def transform(self) -> None:
+        """
+        Iterate through each leaf, applying the Stage transforms it requests
+        """
         tempdir_name = self.config["tempdirs"]["transform"].name
         for directory in self.directories_in_build:
             (tempdir_name / directory).mkdir()
 
-        self.apply_to_leaves(transform_markdown_leaf_to_html)
+        # TODO: figure out how to work this in with apply_to_leaves
+        # maybe each leaf has a method called apply_transforms?
+        for leaf in self.leaves:
+            for transform_stage in leaf.transform_stages:
+                transform_stage.transform(leaf)
+
+        # self.apply_to_leaves(transform_markdown_leaf_to_html)
         return
 
     def apply_post_hooks(self) -> None:
@@ -193,10 +207,10 @@ class Leaf:
     transform_markdown : bool
         True if this is a markdown file that should be parsed to HTML, false otherwise
     pre_hooks : list[str]
-        Ordered list of Hook.identifier that should be applied before running the
+        Ordered list of Stage.identifier that should be applied before running the
         markdown transformation
     post_hooks : list[str]
-        Ordered list of Hook.identifier that should be applied after running the
+        Ordered list of Stage.identifier that should be applied after running the
         markdown transformation
     """
 
@@ -206,17 +220,17 @@ class Leaf:
     latest_path: Path
     final_path: Path
     final_directory: Path
-    transform_markdown: bool = False
-    pre_hooks: list[str]
-    post_hooks: list[str]
+
+    # these should be populated by `Stage.tree_hook()`
+    pre_hooks: list[Stage] = []
+    post_hooks: list[Stage] = []
+    transforms: list[Stage] = []
 
     def __init__(
         self,
         initial_path: Path,
         source_directory: Path,
         build_directory: Path,
-        pre_hooks: list[Hook],
-        post_hooks: list[Hook],
     ) -> None:
         self.initial_path = initial_path
         self.latest_path = initial_path
@@ -225,36 +239,73 @@ class Leaf:
         path_in_build = build_directory / self.initial_path
 
         # set the final_path depending on the type of file this is
+        # move this into tree-hook portion of MarkdownToHTMLStage
         # TODO: don't do this to files in /static/
         if self.initial_path.suffix == ".md":
             # TODO: choose how to deal with .MD .markdown etc
             self.final_path = path_in_build.with_suffix(".html")
-            self.transform_markdown = True
+            # self.transform_markdown = True
         else:
             self.final_path = path_in_build
 
         self.final_directory = self.final_path.parent
 
         # run hook conditional functions to decide if hooks should be run later on
-        self.pre_hooks = [
-            hook.identifier for hook in pre_hooks if hook.should_hook_run(self)
-        ]
-        self.post_hooks = [
-            hook.identifier for hook in post_hooks if hook.should_hook_run(self)
-        ]
-
-        # print(f"\t-> {self.final_path.relative_to(build_directory)}")
 
         return
 
 
-class Hook:
+class Stage:
     identifier: str = ""
+    has_tree_hook: bool = False
+    has_pre_hook: bool = False
+    has_transform: bool = False
+    has_post_hook: bool = False
 
     def should_hook_run(self, leaf: Leaf) -> bool:
         raise NotImplementedError()
 
-    def apply(self, leaf: Leaf, tree: TreeSpan) -> None:
+    def tree_hook(self, tree: TreeSpan) -> None:
+        """
+        Function to run which can modify the tree structure, adding and removing
+        leaves and directories
+
+        Function should also modify each leaf to add itself to the list of pre-hooks,
+        transforms, and post-hooks as necessary
+        """
+        raise NotImplementedError()
+
+    def pre_hook(self, leaf: Leaf) -> None:
+        """
+        Function run on a single leaf, prior to any major transformations
+
+        This function can write to temporary directories
+        It can write updated versions of the leaf content (e.g., parse custom markdown
+        syntax), or other meta content (e.g., markdown headers)
+        """
+        raise NotImplementedError()
+
+    def transform(self, leaf: Leaf) -> None:
+        """
+        Function run on a single leaf, applying a  major transformation (md -> html)
+
+        This function can write to temporary directories
+        It can write updated versions of the leaf content (like the new HTML),
+        or other meta content (e.g., markdown headers). It probably shouldn't be
+        writing other meta content, that should be a pre or post hook, but writing
+        guardrails for that seems overkill
+        """
+        raise NotImplementedError()
+
+    def post_hook(self, leaf: Leaf) -> None:
+        """
+        Function run on a single leaf, after any major transformations
+
+        This function can write to and read from temporary directories
+        It can write updated versions of the leaf content (e.g., parse custom markdown
+        syntax), or other meta content (e.g., markdown headers). It may want to read
+        information that was written by this Stage's `pre_hook`
+        """
         raise NotImplementedError()
 
 
