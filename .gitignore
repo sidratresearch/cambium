@@ -223,5 +223,6 @@ __marimo__/
 # Local Dev Tools
 .vscode/
 
-# Temporary Files
+# Temporary Files and Local Builds
 tmp/
+_build/
