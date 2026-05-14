@@ -9,3 +9,4 @@ app = typer.Typer()
 def main():
     treespan = TreeSpan()
     treespan.transform()
+    treespan.finalize()

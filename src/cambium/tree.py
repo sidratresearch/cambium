@@ -200,6 +200,24 @@ class TreeSpan:
         """
         raise NotImplementedError()
 
+    def finalize(self) -> None:
+        """
+        Copy final leaf versions to build, and to any other cleanup
+        """
+
+        if self.build_directory.exists():
+            shutil.rmtree(self.build_directory)  # TODO: make this configurable?
+        self.build_directory.mkdir()
+
+        for directory in self.directories_in_build:
+            (self.build_directory / directory).mkdir()
+
+        for leaf in self.leaves:
+            shutil.copy(
+                self.config["tempdir"].name / leaf.latest_path,
+                self.build_directory / leaf.final_path,
+            )
+
 
 class Leaf:
     """
