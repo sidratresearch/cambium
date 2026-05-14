@@ -56,9 +56,7 @@ class TreeSpan:
         self.leaves = deque(maxlen=self.config["max_leaves"])
         for directory in self.directories_in_build:
             directory_leaves = self._make_leaves_from_directory(directory)
-            if len(self.leaves) + len(directory_leaves) > self.leaves.maxlen:
-                raise ValueError("self.leaves will drop items")
-            self.leaves.extend(directory_leaves)  # appends each item
+            self._add_leaves(directory_leaves)
 
         # TODO: error collection for leaf generation
         # if there are errors in inital leaf generation, raise them now
@@ -72,6 +70,13 @@ class TreeSpan:
 
         # markdown to html tree hook changes output file path/extension where necessary
         # then ghost index.html tree hook
+
+
+    def _add_leaves(self, new_leaves: list[Leaf]) -> None:
+        """Extend the `self.leaves` deque, with a guard on maxlen"""
+        if len(self.leaves) + len(new_leaves) > self.leaves.maxlen:
+            raise ValueError("self.leaves will drop items")
+        self.leaves.extend(new_leaves)  # appends each item
 
     def _get_files(self, directory: Path) -> list[Path]:
         """
