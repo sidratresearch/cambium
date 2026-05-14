@@ -1,12 +1,16 @@
 """Cambium Configuration File Handling"""
 
 from __future__ import annotations
-from typing import Optional, Annotated
+from typing import Optional, Annotated, Literal
 from pathlib import Path
 import tempfile
+import logging
 
 from pydantic import BaseModel
 import yaml
+
+logger = logging.getLogger(__name__)
+
 
 builtin_paths_to_ignore: list[str] = [".cambium/", "_build/", ".*", "static/"]
 """Built-in Cambium Directories to Ignore"""
@@ -32,6 +36,10 @@ class CambiumConfiguration(BaseModel):
 
     extensions_to_ignore: Optional[list[str]] = []
     "File Extensions to Ignore"
+
+    logging_level: Optional[
+        Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+    ] = "INFO"
 
     stages: Optional[list[str]] = ["md_transform"]
     "Ordered List of Stages to Use"
@@ -87,6 +95,7 @@ class WorkingConfiguration(object):
         # Exposing Simple Parameters (that require no additional processing)
         self.stages = self.input_config.stages
         self.max_leaves = self.input_config.max_leaves
+        self.logging_level = self.input_config.logging_level
 
     def __del__(self):
         """Clean up All Lingering Directories"""
