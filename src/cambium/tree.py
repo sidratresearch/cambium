@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
-from collections import deque
+from collections import defaultdict, deque
 from pathlib import Path
 from typing import Callable
 
@@ -61,8 +61,8 @@ class TreeSpan:
         self._add_leaves(self._make_leaves_from_directory(Path(".")))
         for directory in self.directories_in_build:
             directory_leaves = self._make_leaves_from_directory(directory)
-
             self._add_leaves(directory_leaves)
+        self._check_leaf_collisions()
 
         # TODO: error collection for leaf generation
         # if there are errors in inital leaf generation, raise them now
@@ -71,8 +71,7 @@ class TreeSpan:
         # initial leaves have input file = output file
         for stage in self.config["stages"]:
             stage.tree_hook(self)
-
-        # TODO: write ghost index.html tree hook
+            self._check_leaf_collisions()
 
         # between tree hooks and pre hooks we need to copy all files into a tempdir so that pre-hooks and transformers can all use latest_path as relative to temp dir
         for directory in self.directories_in_build:
@@ -82,6 +81,20 @@ class TreeSpan:
                 self.root_directory / leaf.initial_path,
                 self.config["tempdir"].name / leaf.initial_path,
             )
+
+    @property
+    def leaves_by_final_directory(self) -> dict[Path, list[Leaf]]:
+        result = defaultdict(list)
+        for leaf in self.leaves:
+            # TODO: do we want to do this by UUID or something so we aren't storing a second copy of every leaf in memory?
+            result[leaf.final_directory].append(leaf)
+
+        return result
+
+    def _check_leaf_collisions(self) -> None:
+        final_paths = [leaf.final_path for leaf in self.leaves]
+        if len(final_paths) > len(set(final_paths)):
+            raise ValueError("Collision in leaf output paths")
 
     def _add_leaves(self, new_leaves: list[Leaf]) -> None:
         """Extend the `self.leaves` deque, with a guard on maxlen"""
@@ -259,6 +272,7 @@ class Leaf:
     ) -> None:
         self.initial_path: Path = initial_path
         self.latest_path: Path = initial_path
+        # TODO: maybe final_path should be read-only and to change it you have to make a new leaf?
         self.final_path: Path = initial_path
 
         self.pre_hooks: list[Stage] = []
