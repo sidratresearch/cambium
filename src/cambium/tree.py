@@ -55,6 +55,7 @@ class TreeSpan:
         ]
 
         self.leaves = deque(maxlen=self.config["max_leaves"])
+        self._add_leaves(self._make_leaves_from_directory(Path(".")))
         for directory in self.directories_in_build:
             directory_leaves = self._make_leaves_from_directory(directory)
             self._add_leaves(directory_leaves)
