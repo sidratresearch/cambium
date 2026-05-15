@@ -1,14 +1,8 @@
 from .tree import TreeSpan, Leaf
 
 
-# TODO: it's technically correct to have Stage inherit from ABC and decorate tree_hook
-# as @abstractmethod, but I'm not convinced it's worth it
-# MR: Yeah, these _are_ going to be Abstract methods, but in reality, we should decorate a lot less in general
 class Stage:
-    identifier: str = ""
 
-    # MR: Is there a reason we're making all of these static methods? In general, they should likely be just normal methods.
-    @staticmethod
     def tree_hook(tree: TreeSpan) -> None:
         """
         Function to run which can modify the tree structure, adding and removing
@@ -22,9 +16,7 @@ class Stage:
         the tree_hook method is required because it is the function that registers the Stage into the pre/transform/post hooks for a leaf, and therefore if the tree_hook is not run, nothing else will be either
         """
         raise NotImplementedError()
-        # MR: Base methods should probably not raise anything, so that we don't run into needing to capture exceptions
 
-    @staticmethod
     def pre_hook(leaf: Leaf) -> None:
         """
         Function run on a single leaf, prior to any major transformations
@@ -35,7 +27,6 @@ class Stage:
         """
         raise NotImplementedError()
 
-    @staticmethod
     def transform(leaf: Leaf, working_config) -> None:
         """
         Function run on a single leaf, applying a  major transformation (md -> html)
@@ -48,7 +39,6 @@ class Stage:
         """
         raise NotImplementedError()
 
-    @staticmethod
     def post_hook(leaf: Leaf) -> None:
         """
         Function run on a single leaf, after any major transformations
