@@ -60,7 +60,7 @@ class TreeSpan:
         # run all tree hooks, passing them the entire tree structure to modify
         # initial leaves have input file = output file
         for stage in self.config.stages:
-            working_config.stage_dict[stage].tree_hook(self)
+            self.config.stage_dict[stage].tree_hook(self)
             self._check_leaf_collisions()
 
         # between tree hooks and pre hooks we need to copy all files into a tempdir so that pre-hooks and transformers can all use latest_path as relative to temp dir
@@ -184,7 +184,8 @@ class TreeSpan:
         # maybe each leaf has a method called apply_transforms?
         for leaf_uuid in self.leaves["uuids"]:
             transforms = self.leaves["hooks"][leaf_uuid]["transforms"]
-            for transform_stage in transforms:
+            for stage_name in transforms:
+                transform_stage = self.config.stage_dict[stage_name]
                 transform_stage.transform(leaf_uuid, self)
 
         return

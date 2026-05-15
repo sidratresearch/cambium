@@ -27,7 +27,7 @@ class TransformMarkdown(Stage):
         tree.leaves["final_path"][leaf_uuid] = tree.leaves["latest_path"][
             leaf_uuid
         ].with_suffix(".html")
-        tree.leaves["hooks"][leaf_uuid]["transforms"].append(self)
+        tree.leaves["hooks"][leaf_uuid]["transforms"].append(TransformMarkdown.__name__)
 
     def transform(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """
