@@ -11,7 +11,21 @@ import os
 import shutil
 from collections import deque
 from pathlib import Path
-from typing import Callable
+from typing import Callable, TypedDict
+
+
+class LeafHooks(TypedDict):
+    pre_hooks: list[str]
+    transforms: list[str]
+    post_hooks: list[str]
+
+
+class Leaves(TypedDict):
+    uuids: deque[str]
+    initial_path: dict[str, Path]
+    latest_path: dict[str, Path]
+    final_path: dict[str, Path]
+    hooks: LeafHooks
 
 
 class TreeSpan:
@@ -38,19 +52,19 @@ class TreeSpan:
     directories_in_build: list[Path] = []
 
     def __init__(self, working_config: WorkingConfiguration) -> None:
-        self.config = working_config
+        self.config: WorkingConfiguration = working_config
 
         self.root_directory = self.config.root_dir
         self.build_directory = self.config.build_dir
 
-        self.leaves = {
+        self.leaves: Leaves = {
             # dictionary doesn't need to ever shrink, so long as existing entries are up-to-date
             "uuids": deque(maxlen=self.config.max_leaves),
             # never iterate over these
             "initial_path": {},
             "latest_path": {},
             "final_path": {},
-            "hooks": {},
+            "hooks": {"pre_hooks": [], "transforms": [], "post_hooks": []},
         }
         self._walk_directory_tree()
 

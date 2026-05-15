@@ -3,7 +3,7 @@ from .tree import TreeSpan
 
 class Stage:
 
-    def tree_hook(leaf_uuid: str, tree: TreeSpan) -> None:
+    def tree_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """
         Function to run which can modify the tree structure, adding and removing
         leaves and directories
@@ -17,7 +17,7 @@ class Stage:
         """
         raise NotImplementedError()
 
-    def pre_hook(leaf_uuid: str, tree: TreeSpan) -> None:
+    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """
         Function run on a single leaf, prior to any major transformations
 
@@ -27,7 +27,7 @@ class Stage:
         """
         raise NotImplementedError()
 
-    def transform(leaf_uuid: str, tree: TreeSpan) -> None:
+    def transform(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """
         Function run on a single leaf, applying a  major transformation (md -> html)
 
@@ -39,7 +39,7 @@ class Stage:
         """
         raise NotImplementedError()
 
-    def post_hook(leaf_uuid: str, tree: TreeSpan) -> None:
+    def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """
         Function run on a single leaf, after any major transformations
 
