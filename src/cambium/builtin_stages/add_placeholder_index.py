@@ -7,9 +7,7 @@ from ..tree import Leaf, TreeSpan
 # initial path is directory
 # initial path is file that lead to the cause of the output
 class AddPlaceholderIndex(Stage):
-    identifier = "AddPlaceholderIndex"
 
-    @staticmethod
     def tree_hook(tree: TreeSpan) -> None:
         leaves_by_final_directory = tree.leaves_by_final_directory
 
@@ -21,7 +19,6 @@ class AddPlaceholderIndex(Stage):
             if "index.html" not in leaf_filenames:
                 AddPlaceholderIndex._create_index_leaf(directory, tree)
 
-    @staticmethod
     def _create_index_leaf(directory: Path, tree: TreeSpan) -> None:
         # TODO: figure out what to do about this
         initial_path = Path(f".cambium/{AddPlaceholderIndex.identifier}/index.html")

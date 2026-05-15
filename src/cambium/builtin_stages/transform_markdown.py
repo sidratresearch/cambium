@@ -4,10 +4,7 @@ from ..tree import Leaf, TreeSpan
 
 
 class TransformMarkdown(Stage):
-    identifier: str = "TransformMarkdown"  # can we use __name__ or something?
 
-    # MR: If we're supporting Py3.11, we probably shouldn't use @override. Also, we should remove @staticmethod decorators
-    @staticmethod
     def tree_hook(tree: TreeSpan) -> None:
         """
         Update final path and list of transforms for markdown leaves.
@@ -18,7 +15,6 @@ class TransformMarkdown(Stage):
     # can make a mapping of original link href -> uuid of the files -> output file
     # then the marko extension could use that mapping
 
-    @staticmethod
     def _tree_hook_for_leaf(leaf: Leaf, _: TreeSpan) -> None:
         """
         Update final path and list of transforms for a single leaf, if applicable
@@ -31,7 +27,6 @@ class TransformMarkdown(Stage):
         leaf.final_path = leaf.latest_path.with_suffix(".html")
         leaf.transforms.append(TransformMarkdown)
 
-    @staticmethod
     def transform(leaf: Leaf, working_config) -> None:
         """
         Use Marko to write an HTML version of a markdown leaf.
