@@ -1,6 +1,10 @@
 from ..stage import Stage
 from ..tree import TreeSpan
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class TemplatingMarkdown(Stage):
 
