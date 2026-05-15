@@ -245,7 +245,7 @@ class TreeSpan:
         - collect errors across all leaves, and raise them collectively (maybe better
             for multithreading)
         """
-        raise NotImplementedError()
+        return
 
     def transform(self) -> None:
         """
@@ -263,7 +263,7 @@ class TreeSpan:
         """
         Iterate through each leaf and apply, in order, the post hooks that it calls for
         """
-        raise NotImplementedError()
+        return
 
     def finalize(self) -> None:
         """

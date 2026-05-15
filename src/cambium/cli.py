@@ -35,7 +35,9 @@ def main(
     logger.info("Logger is setup")
 
     treespan = TreeSpan(config.current_config)
+    treespan.apply_pre_hooks()
     treespan.transform()
+    treespan.apply_post_hooks()
     treespan.finalize()
 
 
