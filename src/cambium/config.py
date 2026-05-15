@@ -49,11 +49,18 @@ class CambiumConfiguration(BaseModel):
         Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
     ] = "INFO"
 
-    stages: Optional[list[str]] = ["TransformMarkdown", "AddPlaceholderIndex"]
+    stages: Optional[list[str]] = [
+        "TransformMarkdown",
+        "AddPlaceholderIndex",
+        "TemplateMarkdown",
+    ]
     "Ordered List of Stages to Use"
 
     max_leaves: Optional[int] = 10_000
     "Maximum Number of Leaves"
+
+    site_name: Optional[str] = "Cambium Site"
+    "The Name of the Cambium Site"
 
 
 default_config = CambiumConfiguration()
@@ -107,6 +114,7 @@ class WorkingConfiguration(object):
         # Exposing Simple Parameters (that require no additional processing)
         self.max_leaves = self.input_config.max_leaves
         self.logging_level = self.input_config.logging_level
+        self.site_name = self.input_config.site_name
 
     def __del__(self):
         """Clean up All Lingering Directories"""

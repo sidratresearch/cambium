@@ -9,9 +9,12 @@ if typing.TYPE_CHECKING:
 
 import os
 import shutil
+import logging
 from collections import deque
 from pathlib import Path
 from typing import Callable
+
+logger = logging.getLogger(__name__)
 
 
 class TreeSpan:
@@ -194,6 +197,13 @@ class TreeSpan:
         """
         Iterate through each leaf and apply, in order, the post hooks that it calls for
         """
+
+        for leaf_uuid in self.leaves["uuids"]:
+            post_hooks = self.leaves["hooks"][leaf_uuid]["post_hooks"]
+            for stage_name in post_hooks:
+                post_hook_stage = self.config.stage_dict[stage_name]
+                post_hook_stage.post_hook(leaf_uuid, self)
+
         return
 
     def finalize(self) -> None:
