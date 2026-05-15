@@ -51,7 +51,6 @@ class TreeSpan:
 
     # These work as class attributes so long as we never have multiple instances of TreeSpan
     root_directory: Path
-
     build_directory: Path
     directories_in_build: list[Path] = []
 
@@ -71,6 +70,7 @@ class TreeSpan:
             "hooks": {"pre_hooks": [], "transforms": [], "post_hooks": []},
         }
         self._walk_directory_tree()
+        logger.info(f"Collected {len(self.leaves['uuids'])} files")
 
         # TODO: error collection for leaf generation
         # if there are errors in initial leaf generation, raise them now
@@ -82,6 +82,9 @@ class TreeSpan:
             self._check_leaf_collisions()
 
         # between tree hooks and pre hooks we need to copy all files into a tempdir so that pre-hooks and transformers can all use latest_path as relative to temp dir
+        logger.info(
+            f"Copying {len(self.leaves['uuids'])} source files to temporary storage"
+        )
         for directory in self.directories_in_build:
             (self.config.tmp_dir / directory).mkdir()
         for leaf_uuid in self.leaves["uuids"]:
@@ -195,12 +198,14 @@ class TreeSpan:
         - collect errors across all leaves, and raise them collectively (maybe better
             for multithreading)
         """
+        logger.info("Running pre-transformation hooks")
         return
 
     def transform(self) -> None:
         """
         Iterate through each leaf, applying the Stage transforms it requests
         """
+        logger.info("Running transformations")
         # TODO: figure out how to work this in with apply_to_leaves
         # maybe each leaf has a method called apply_transforms?
         for leaf_uuid in self.leaves["uuids"]:
@@ -215,7 +220,7 @@ class TreeSpan:
         """
         Iterate through each leaf and apply, in order, the post hooks that it calls for
         """
-
+        logger.info("Running post-transformation hooks")
         for leaf_uuid in self.leaves["uuids"]:
             post_hooks = self.leaves["hooks"][leaf_uuid]["post_hooks"]
             for stage_name in post_hooks:
@@ -228,6 +233,7 @@ class TreeSpan:
         """
         Copy final leaf versions to build, and do any other cleanup
         """
+        logger.info("Finalizing output")
 
         if self.build_directory.exists():
             shutil.rmtree(self.build_directory)  # TODO: make this configurable?
