@@ -105,6 +105,9 @@ class TreeSpan:
             # directories: list of strings, not ending with /
             # files: list of strings
 
+            if (current_root == ".") and ("static" in directories):
+                directories.remove("static")
+
             # filter by absolute path
             for absolute_ignore in self.config.ignore_lists["paths"]:
                 matcher = f".{absolute_ignore}"  # add the leading dot
