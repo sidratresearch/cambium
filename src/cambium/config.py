@@ -102,7 +102,7 @@ class WorkingConfiguration(object):
 
         # Importing and Compiling Stages
         self.stages = self.input_config.stages
-        self.stage_dict = populating_stage_dict()
+        self.stage_dict = populating_stage_dict(self.stages)
 
         # Exposing Simple Parameters (that require no additional processing)
         self.max_leaves = self.input_config.max_leaves

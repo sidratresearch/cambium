@@ -61,7 +61,7 @@ class Stage:
         raise NotImplementedError()
 
 
-def populating_stage_dict() -> dict[str, Stage]:
+def populating_stage_dict(stage_list: list[str]) -> dict[str, Stage]:
     """Importing Built-in Stages and compiling all Stages available to Cambium"""
 
     from . import builtin_stages
@@ -71,7 +71,9 @@ def populating_stage_dict() -> dict[str, Stage]:
     # Getting all subclasses of Stages
     all_subclasses = Stage.__subclasses__()
 
+    # Adding stages to stage_dict if they're in the stage list:
     for tmp_stage in all_subclasses:
-        stage_dict[tmp_stage.__name__] = tmp_stage
+        if tmp_stage.__name__ in stage_list:
+            stage_dict[tmp_stage.__name__] = tmp_stage()
 
     return stage_dict
