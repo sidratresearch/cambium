@@ -4,6 +4,8 @@ from ..stage import Stage
 from ..tree import Leaf, TreeSpan
 
 
+# initial path is directory
+# initial path is file that lead to the cause of the output
 class AddPlaceholderIndex(Stage):
     identifier = "AddPlaceholderIndex"
 

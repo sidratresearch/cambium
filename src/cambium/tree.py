@@ -41,6 +41,14 @@ class TreeSpan:
         Leaf
     ]  # MR: So, I think this is going to be an issue -- now to do any lookups,
     # you need to essentially have the leaf in hand. Perhaps this is a deque of UUIDs and the leaves live in a dictionary
+    # dictionary doesn't need to ever shrink, so long as existing entries are up-to-date
+
+    # dict of uuid-> input path
+    # dict of uuid-> output path
+    # dicts of uuid -> hooks to run
+    # dict of uuid -> input file ext
+    # deque of uuids
+
     build_directory: Path
     directories_in_build: list[Path] = []
 
