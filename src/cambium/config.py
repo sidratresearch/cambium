@@ -251,4 +251,6 @@ def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
 def convert_glob_string_to_regex(glob_string: str) -> str:
     """Convert glob string to regex string, escaping appropriate characters"""
 
-    return "^" + re.escape(glob_string).replace("\*", ".*") + "$"
+    main_segment = re.escape(glob_string).replace("\*", ".*")
+
+    return "^" + main_segment + "$|\/" + main_segment + "$"
