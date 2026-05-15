@@ -3,7 +3,7 @@ from .tree import TreeSpan
 
 class Stage:
 
-    def tree_hook(tree: TreeSpan) -> None:
+    def tree_hook(self, tree: TreeSpan) -> None:
         """
         Function to run which can modify the tree structure, adding and removing
         leaves and directories

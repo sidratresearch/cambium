@@ -28,6 +28,7 @@ class TransformMarkdown(Stage):
         """
         tree.apply_to_leaves(self._tree_hook_for_leaf)
 
+    # TODO:
     # function that reads all files and finds all the links within them
     # can make a mapping of original link href -> uuid of the files -> output file
     # then the marko extension could use that mapping
