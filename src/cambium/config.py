@@ -2,15 +2,16 @@
 
 from __future__ import annotations
 
-from .stage import Stage, populating_stage_dict
-from typing import Optional, Literal
-from pathlib import Path
-import tempfile
 import logging
 import re
+import tempfile
+from pathlib import Path
+from typing import Literal, Optional
 
-from pydantic import BaseModel
 import yaml
+from pydantic import BaseModel
+
+from .stage import Stage, populating_stage_dict
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ builtin_paths_to_ignore: list[str] = [
     "__pycache__",
 ]
 """Built-in Cambium Directories to Ignore"""
+
 
 current_config: Optional[WorkingConfiguration] = None
 
@@ -115,6 +117,11 @@ class WorkingConfiguration(object):
         self.max_leaves = self.input_config.max_leaves
         self.logging_level = self.input_config.logging_level
         self.site_name = self.input_config.site_name
+
+        self.ordered_theme_directories = [
+            self.root_dir / ".cambium/theme",
+            Path(__file__).parent / "themes/default",
+        ]
 
     def __del__(self):
         """Clean up All Lingering Directories"""
