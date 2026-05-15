@@ -18,11 +18,21 @@ logger.addHandler(handler)
 app = typer.Typer()
 
 
+def version_callback(value: bool) -> None:
+    if value:
+        print(f"Cambium {cambium.__version__}")
+        raise typer.Exit
+
+
 @app.command()
 def main(
     config_path: Annotated[
         Path | None,
         typer.Option("--config", "-c", help="Location of Configuration File"),
+    ] = None,
+    version: Annotated[
+        bool | None,
+        typer.Option("--version", callback=version_callback, is_eager=True),
     ] = None,
 ):
 
