@@ -53,20 +53,14 @@ class TreeSpan:
     directories_in_build: list[Path] = []
 
     def __init__(self, working_config: WorkingConfiguration) -> None:
-        self.working_config = working_config
-        self.config = {
-            "ignore": {
-                "directories": ["_build/", "__pycache__"],
-            },
-            # "stages": [TransformMarkdown, AddPlaceholderIndex],  # list of Stage objects
-        }
+        self.config = working_config
 
-        self.root_directory = self.working_config.root_dir
-        self.build_directory = self.working_config.build_dir
+        self.root_directory = self.config.root_dir
+        self.build_directory = self.config.build_dir
 
         self._walk_directory_tree()
 
-        self.leaves = deque(maxlen=self.working_config.max_leaves)
+        self.leaves = deque(maxlen=self.config.max_leaves)
         self._add_leaves(self._make_leaves_from_directory(Path(".")))
         for directory in self.directories_in_build:
             directory_leaves = self._make_leaves_from_directory(directory)
@@ -78,19 +72,19 @@ class TreeSpan:
 
         # run all tree hooks, passing them the entire tree structure to modify
         # initial leaves have input file = output file
-        for stage in self.working_config.stages:
+        for stage in self.config.stages:
             working_config.stage_dict[stage].tree_hook(self)
             self._check_leaf_collisions()
 
         # between tree hooks and pre hooks we need to copy all files into a tempdir so that pre-hooks and transformers can all use latest_path as relative to temp dir
         for directory in self.directories_in_build:
-            (self.working_config.tmp_dir / directory).mkdir()
+            (self.config.tmp_dir / directory).mkdir()
         for leaf in self.leaves:
             if leaf.initial_path_mocked:
                 continue
             shutil.copy(
                 self.root_directory / leaf.initial_path,
-                self.working_config.tmp_dir / leaf.initial_path,
+                self.config.tmp_dir / leaf.initial_path,
             )
 
     # MR: I don't think this is supposed to be a property
@@ -107,22 +101,6 @@ class TreeSpan:
         """
         Walks the tree and populates the list of directories that are cared about, as well as saving initial copies of information regarding files we care about
         """
-        exts = ["py"]  # when matching, add the dot
-        regex = {
-            ".*": "^\\..*$",
-            "*/ignore.glob": "^.*/ignore\\.glob$",
-            "*/file-*-ignored-by-glob": "^.*/file-.*-ignored-by-glob$",
-        }
-        paths = [
-            "/_build",
-            "/.cambium",
-            "/not.ignored.directory/file-ignored-by-path",
-        ]  # must start with slashes, will not end with slash
-        names = [
-            "__pycache__",
-            "ignore-file-by-name",
-            "ignore-directory-by-name",
-        ]  # cannot include slashes
 
         for current_root, directories, files in os.walk(
             self.root_directory, topdown=True
@@ -132,7 +110,7 @@ class TreeSpan:
             # files: list of strings
 
             # filter by absolute path
-            for absolute_ignore in self.working_config.ignore_lists["paths"]:
+            for absolute_ignore in self.config.ignore_lists["paths"]:
                 matcher = f".{absolute_ignore}"  # add the leading dot
                 for d in directories:
                     if f"{current_root}/{d}" == matcher:
@@ -142,14 +120,14 @@ class TreeSpan:
                         files.remove(f)
 
             # filter by name
-            for name in self.working_config.ignore_lists["names"]:
+            for name in self.config.ignore_lists["names"]:
                 if name in directories:
                     directories.remove(name)
                 if name in files:
                     files.remove(name)
 
             # filter by glob
-            for pattern in regex.values():
+            for pattern in self.config.ignore_lists["globs"]:
                 for d in directories:
                     full_path = f"{current_root}/{d}".removeprefix("./")
                     if re.match(pattern, full_path) is not None:
@@ -160,7 +138,7 @@ class TreeSpan:
                         files.remove(f)
 
             # filter files by ext
-            for extension in exts:
+            for extension in self.config.ignore_lists["extensions"]:
                 for f in files:
                     if f.endswith(f".{extension}"):
                         files.remove(f)
@@ -170,9 +148,6 @@ class TreeSpan:
                 self.directories_in_build.append(
                     Path(f"{current_root}/{d}".removeprefix("./"))
                 )
-
-            # filter files by name
-            # filter files by glob
 
             # assign UUIDs to files
 
@@ -202,7 +177,7 @@ class TreeSpan:
         keep = []
         for file in non_hidden:
             # filter based on named files to ignore
-            ignore_patterns = self.working_config.ignore_lists["names"]
+            ignore_patterns = self.config.ignore_lists["names"]
             ignored_by_filename = any(
                 [file.match(pattern) for pattern in ignore_patterns]
             )
@@ -263,7 +238,7 @@ class TreeSpan:
         # maybe each leaf has a method called apply_transforms?
         for leaf in self.leaves:
             for transform_stage in leaf.transforms:
-                transform_stage.transform(leaf, self.working_config)
+                transform_stage.transform(leaf, self.config)
 
         return
 
@@ -287,7 +262,7 @@ class TreeSpan:
 
         for leaf in self.leaves:
             shutil.copy(
-                self.working_config.tmp_dir / leaf.latest_path,
+                self.config.tmp_dir / leaf.latest_path,
                 self.build_directory / leaf.final_path,
             )
 
