@@ -9,22 +9,25 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-PACKAGE_FOLDER = Path(__file__).parent / ".."
-
 
 class TemplateMarkdown(Stage):
 
-    jinja_template_paths = [
-        Path(PACKAGE_FOLDER) / "themes/default/templates",
-    ]
+    jinja_template_paths = []
+
+    # Primary Hook Functions
 
     def tree_hook(self, tree: TreeSpan) -> None:
 
         # Initialize Jinja Environment
-        self._initialize_jinja()
+        self._initialize_jinja(tree)
 
         # Apply to Leaves
         tree.apply_to_leaves(self._tree_hook_for_leaf)
+
+    def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
+        self._create_page(leaf_uuid, tree)
+
+    # Utility Functions
 
     def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """
@@ -37,10 +40,18 @@ class TemplateMarkdown(Stage):
 
         tree.leaves["hooks"][leaf_uuid]["post_hooks"].append(self.__class__.__name__)
 
-    def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        self._create_page(leaf_uuid, tree)
+    def _populate_jinja_template_paths(self, tree: TreeSpan) -> None:
 
-    def _initialize_jinja(self) -> None:
+        for tmp_theme_path in tree.config.ordered_theme_directories:
+            if (tmp_theme_path / "templates").exists():
+                self.jinja_template_paths.append(tmp_theme_path / "templates")
+
+        if len(self.jinja_template_paths) == 0:
+            raise RuntimeError("No theme template libraries were found.")
+
+    def _initialize_jinja(self, tree: TreeSpan) -> None:
+        """Initializing Jinja Templating Environment"""
+        self._populate_jinja_template_paths(tree)
         self.jinja_env = Environment(loader=FileSystemLoader(self.jinja_template_paths))
 
     def _create_sidebar(self) -> None:
