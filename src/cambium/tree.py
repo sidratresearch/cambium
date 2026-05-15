@@ -7,9 +7,9 @@ from uuid import uuid4
 if typing.TYPE_CHECKING:
     from .config import WorkingConfiguration
 
+import logging
 import os
 import shutil
-import logging
 from collections import deque
 from pathlib import Path
 from typing import Callable, TypedDict
@@ -27,6 +27,7 @@ class Leaves(TypedDict):
     latest_path: dict[str, Path]
     final_path: dict[str, Path]
     hooks: LeafHooks
+
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +104,9 @@ class TreeSpan:
             # current_root: string starting with ./ (except on first loop, where it's ".")
             # directories: list of strings, not ending with /
             # files: list of strings
+
+            if (current_root == ".") and ("static" in directories):
+                directories.remove("static")
 
             # filter by absolute path
             for absolute_ignore in self.config.ignore_lists["paths"]:
@@ -237,3 +241,27 @@ class TreeSpan:
                 self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid],
                 self.build_directory / self.leaves["final_path"][leaf_uuid],
             )
+
+        # TODO: remove root/static from leaves
+        self._copy_static_files_no_overwrite(self.root_directory / "static")
+        for directory in self.config.ordered_theme_directories:
+            self._copy_static_files_no_overwrite(directory / "static")
+
+    def _copy_static_files_no_overwrite(self, static_directory: Path) -> None:
+        if not static_directory.exists():
+            return
+        for current_root, _, files in os.walk(static_directory):
+            for file in files:
+                path_from_root = Path(current_root) / file
+                path_from_static = path_from_root.relative_to(static_directory)
+                final_path = self.build_directory / "static" / path_from_static
+
+                if final_path.exists():
+                    # TODO: change to info or debug
+                    logger.warning(
+                        f"Skipping {static_directory / path_from_root} because it exists"
+                    )
+                    continue
+
+                final_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(static_directory / path_from_static, final_path)
