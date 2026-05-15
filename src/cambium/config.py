@@ -7,7 +7,7 @@ from typing import Optional, Literal
 from pathlib import Path
 import tempfile
 import logging
-
+import re
 
 from pydantic import BaseModel
 import yaml
@@ -15,7 +15,12 @@ import yaml
 logger = logging.getLogger(__name__)
 
 
-builtin_paths_to_ignore: list[str] = [".cambium/", "_build/", ".*", "static/"]
+builtin_paths_to_ignore: list[str] = [
+    "/.cambium",
+    "/_build",
+    ".*",
+    "__pycache__",
+]
 """Built-in Cambium Directories to Ignore"""
 
 current_config: Optional[WorkingConfiguration] = None
@@ -66,7 +71,7 @@ class WorkingConfiguration(object):
         "extensions": [],
         "globs": [],
         "paths": [],
-        "files": [],
+        "names": [],
     }
 
     input_config: Optional[CambiumConfiguration] = None
@@ -126,19 +131,30 @@ class WorkingConfiguration(object):
         for ignore_entry in self.input_config.paths_to_ignore:
             tmp_ignore_set.add(ignore_entry)
 
-        # Sorting through ignorable entries:
+        # Sorting through ignorable entries and removing trailing slash (if exists):
         for ignore_entry in tmp_ignore_set:
+
+            if ignore_entry[-1] == "/":
+                ignore_entry = ignore_entry[:-1]
+
             if "*" in ignore_entry:
-                self.ignore_lists["globs"].append(ignore_entry)
-            elif ignore_entry[-1] == "/":
+                self.ignore_lists["globs"].append(
+                    convert_glob_string_to_regex(ignore_entry)
+                )
+            elif ignore_entry[0] == "/":
                 self.ignore_lists["paths"].append(ignore_entry)
             else:
-                self.ignore_lists["files"].append(ignore_entry)
+                self.ignore_lists["names"].append(ignore_entry)
 
         # Adding Extensions to ignore:
         self.ignore_lists["extensions"] = (
             self.ignore_lists["extensions"] + self.input_config.extensions_to_ignore
         )
+
+        # Removing periods if they exist on extensions
+        for i, ext_str in enumerate(self.ignore_lists["extensions"]):
+            if ext_str.startswith("."):
+                self.ignore_lists["extensions"][i] = ext_str[1:]
 
 
 def initialize_configuration(
@@ -222,3 +238,9 @@ def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
 
     # Creating the CambiumConfiguration object:
     return CambiumConfiguration(**input_dict)
+
+
+def convert_glob_string_to_regex(glob_string: str) -> str:
+    """Convert glob string to regex string, escaping appropriate characters"""
+
+    return "^" + re.escape(glob_string).replace("\*", ".*") + "$"
