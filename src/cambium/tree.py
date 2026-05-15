@@ -107,22 +107,6 @@ class TreeSpan:
         """
         Walks the tree and populates the list of directories that are cared about, as well as saving initial copies of information regarding files we care about
         """
-        exts = ["py"]  # when matching, add the dot
-        regex = {
-            ".*": "^\\..*$",
-            "*/ignore.glob": "^.*/ignore\\.glob$",
-            "*/file-*-ignored-by-glob": "^.*/file-.*-ignored-by-glob$",
-        }
-        paths = [
-            "/_build",
-            "/.cambium",
-            "/not.ignored.directory/file-ignored-by-path",
-        ]  # must start with slashes, will not end with slash
-        names = [
-            "__pycache__",
-            "ignore-file-by-name",
-            "ignore-directory-by-name",
-        ]  # cannot include slashes
 
         for current_root, directories, files in os.walk(
             self.root_directory, topdown=True
@@ -149,7 +133,7 @@ class TreeSpan:
                     files.remove(name)
 
             # filter by glob
-            for pattern in regex.values():
+            for pattern in self.working_config.ignore_lists["globs"]:
                 for d in directories:
                     full_path = f"{current_root}/{d}".removeprefix("./")
                     if re.match(pattern, full_path) is not None:
@@ -160,7 +144,7 @@ class TreeSpan:
                         files.remove(f)
 
             # filter files by ext
-            for extension in exts:
+            for extension in self.working_config.ignore_lists["extensions"]:
                 for f in files:
                     if f.endswith(f".{extension}"):
                         files.remove(f)
@@ -170,9 +154,6 @@ class TreeSpan:
                 self.directories_in_build.append(
                     Path(f"{current_root}/{d}".removeprefix("./"))
                 )
-
-            # filter files by name
-            # filter files by glob
 
             # assign UUIDs to files
 
