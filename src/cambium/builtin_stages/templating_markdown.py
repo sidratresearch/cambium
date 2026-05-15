@@ -59,12 +59,17 @@ class TemplateMarkdown(Stage):
 
         input_path: Path = tree.config.tmp_dir / tree.leaves["latest_path"][leaf_uuid]
         output_path: Path = tree.config.tmp_dir / tree.leaves["final_path"][leaf_uuid]
+        number_of_parents: int = len(
+            output_path.parent.relative_to(tree.config.tmp_dir.absolute()).parents
+        )
 
         main_template = self.jinja_env.get_template("base.html.jinja")
         main_content = input_path.read_text()
 
         output_html = main_template.render(
-            page_title=tree.config.site_name, main_content=main_content
+            page_title=tree.config.site_name,
+            main_content=main_content,
+            relative_path_modifier="../" * number_of_parents,
         )
 
         output_path.write_text(output_html)
