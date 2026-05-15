@@ -2,20 +2,16 @@ from __future__ import annotations
 
 import re
 import typing
+from uuid import uuid4
 
 if typing.TYPE_CHECKING:
     from .config import WorkingConfiguration
 
 import os
 import shutil
-import tempfile
-from collections import defaultdict, deque
+from collections import deque
 from pathlib import Path
 from typing import Callable
-
-from typing_extensions import override
-
-from cambium.md_transform import markdown_to_html
 
 
 class TreeSpan:
@@ -37,17 +33,6 @@ class TreeSpan:
 
     # These work as class attributes so long as we never have multiple instances of TreeSpan
     root_directory: Path
-    leaves: deque[
-        Leaf
-    ]  # MR: So, I think this is going to be an issue -- now to do any lookups,
-    # you need to essentially have the leaf in hand. Perhaps this is a deque of UUIDs and the leaves live in a dictionary
-    # dictionary doesn't need to ever shrink, so long as existing entries are up-to-date
-
-    # dict of uuid-> input path
-    # dict of uuid-> output path
-    # dicts of uuid -> hooks to run
-    # dict of uuid -> input file ext
-    # deque of uuids
 
     build_directory: Path
     directories_in_build: list[Path] = []
@@ -58,14 +43,16 @@ class TreeSpan:
         self.root_directory = self.config.root_dir
         self.build_directory = self.config.build_dir
 
+        self.leaves = {
+            # dictionary doesn't need to ever shrink, so long as existing entries are up-to-date
+            "uuids": deque(maxlen=self.config.max_leaves),
+            # never iterate over these
+            "initial_path": {},
+            "latest_path": {},
+            "final_path": {},
+            "hooks": {},
+        }
         self._walk_directory_tree()
-
-        self.leaves = deque(maxlen=self.config.max_leaves)
-        self._add_leaves(self._make_leaves_from_directory(Path(".")))
-        for directory in self.directories_in_build:
-            directory_leaves = self._make_leaves_from_directory(directory)
-            self._add_leaves(directory_leaves)
-        self._check_leaf_collisions()
 
         # TODO: error collection for leaf generation
         # if there are errors in initial leaf generation, raise them now
@@ -79,23 +66,14 @@ class TreeSpan:
         # between tree hooks and pre hooks we need to copy all files into a tempdir so that pre-hooks and transformers can all use latest_path as relative to temp dir
         for directory in self.directories_in_build:
             (self.config.tmp_dir / directory).mkdir()
-        for leaf in self.leaves:
-            if leaf.initial_path_mocked:
+        for leaf_uuid in self.leaves["uuids"]:
+            initial_path = self.leaves["initial_path"][leaf_uuid]
+            if not (self.root_directory / initial_path).is_file():
                 continue
             shutil.copy(
-                self.root_directory / leaf.initial_path,
-                self.config.tmp_dir / leaf.initial_path,
+                self.root_directory / initial_path,
+                self.config.tmp_dir / initial_path,
             )
-
-    # MR: I don't think this is supposed to be a property
-    @property
-    def leaves_by_final_directory(self) -> dict[Path, list[Leaf]]:
-        result = defaultdict(list)
-        for leaf in self.leaves:
-            # TODO: do we want to do this by UUID or something so we aren't storing a second copy of every leaf in memory?
-            result[leaf.final_directory].append(leaf)
-
-        return result
 
     def _walk_directory_tree(self) -> None:
         """
@@ -150,71 +128,39 @@ class TreeSpan:
                 )
 
             # assign UUIDs to files
+            for f in files:
+                path = Path(f"{current_root}/{f}".removeprefix("./"))
+                self.add_leaf(path)
 
     def _check_leaf_collisions(self) -> None:
-        final_paths = [leaf.final_path for leaf in self.leaves]
+        final_paths = [self.leaves["final_path"][uuid] for uuid in self.leaves["uuids"]]
         if len(final_paths) > len(set(final_paths)):
             raise ValueError("Collision in leaf output paths")
 
-    def add_leaf(self, leaf: Leaf) -> None:
-        self._add_leaves([leaf])
-        self._check_leaf_collisions()
-
-    def _add_leaves(self, new_leaves: list[Leaf]) -> None:
-        """Extend the `self.leaves` deque, with a guard on maxlen"""
-        if len(self.leaves) + len(new_leaves) > self.leaves.maxlen:
+    def add_leaf(self, initial_path: Path) -> str:
+        if len(self.leaves["uuids"]) == self.leaves["uuids"].maxlen:
             raise ValueError("self.leaves will drop items")
-        self.leaves.extend(new_leaves)  # appends each item
 
-    def _get_leaf_files(self, directory: Path) -> list[Path]:
-        """
-        Get a list of files that can be leaves
+        uuid = str(uuid4())
+        self.leaves["uuids"].append(uuid)
+        self.leaves["initial_path"][uuid] = initial_path
+        self.leaves["latest_path"][uuid] = initial_path
+        self.leaves["final_path"][uuid] = initial_path
+        self.leaves["hooks"][uuid] = {
+            "pre_hooks": [],
+            "transforms": [],
+            "post_hooks": [],
+        }
+        return uuid
 
-        Not sure if this should a TreeSpan method or a separate utility (or staticmethod) fn that gets passed config
-        """
-        non_hidden = [f for f in directory.glob("[!.]*") if not f.is_dir()]
-
-        keep = []
-        for file in non_hidden:
-            # filter based on named files to ignore
-            ignore_patterns = self.config.ignore_lists["names"]
-            ignored_by_filename = any(
-                [file.match(pattern) for pattern in ignore_patterns]
-            )
-
-            # TODO: add glob ignores or other patterns here
-
-            if not ignored_by_filename:
-                keep.append(file)
-
-        return keep
-
-    def _make_leaves_from_directory(self, directory: Path) -> list[Leaf]:
-        """
-        Given a directory, make a Leaf out of every file in that directory
-
-        Not sure if this should a TreeSpan method or a separate utility fn that gets passed config
-
-        This really doesn't need to be a dedicated function
-        """
-        leaves = []
-
-        # these are all relative to source directory
-        directory_files = self._get_leaf_files(directory)
-
-        for path in directory_files:
-            leaves.append(Leaf(initial_path=path))
-
-        return leaves
-
-    def apply_to_leaves(self, function: Callable[[Leaf, TreeSpan], None]) -> None:
+    def apply_to_leaves(self, function: Callable[[str, TreeSpan], None]) -> None:
         """
         Generic method to apply some function across all leaves.
         If we support multithreading for some operations, this is where it will happen
         Which means `function` should be thread-safe
         """
-        for leaf in self.leaves:
-            function(leaf, self)
+        for leaf_uuid in self.leaves["uuids"]:
+            function(leaf_uuid, self)
 
     def apply_pre_hooks(self) -> None:
         """
@@ -236,9 +182,10 @@ class TreeSpan:
         """
         # TODO: figure out how to work this in with apply_to_leaves
         # maybe each leaf has a method called apply_transforms?
-        for leaf in self.leaves:
-            for transform_stage in leaf.transforms:
-                transform_stage.transform(leaf, self.config)
+        for leaf_uuid in self.leaves["uuids"]:
+            transforms = self.leaves["hooks"][leaf_uuid]["transforms"]
+            for transform_stage in transforms:
+                transform_stage.transform(leaf_uuid, self)
 
         return
 
@@ -260,81 +207,8 @@ class TreeSpan:
         for directory in self.directories_in_build:
             (self.build_directory / directory).mkdir()
 
-        for leaf in self.leaves:
+        for leaf_uuid in self.leaves["uuids"]:
             shutil.copy(
-                self.config.tmp_dir / leaf.latest_path,
-                self.build_directory / leaf.final_path,
+                self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid],
+                self.build_directory / self.leaves["final_path"][leaf_uuid],
             )
-
-
-# MR: Truth be told, I'm starting to be unconvinced by leaf -- we should chat about it.
-class Leaf:
-    """
-
-    Parameters
-    ----------
-    initial_path : Path
-        Read-only attribute that stores the path to the original version of the file, relative to the root_directory
-    initial_path_mocked : bool
-        Flag indicating that there is no originating file (i.e., that root_directory / initial_path does not exist)
-        Don't like this very much, but the other option is to make initial_path optional and deal with that
-
-    Attributes
-    ----------
-    latest_path : Path
-        The path to the most up-to-date version of the file. When a markdown file
-        is converted to HTML, the path to a temporary .html file is put here
-        WARNING This is relative to the treewide tempdir - which means that all files need to be copied into that tempdir
-        Can be modified by hooks
-    final_path : Path
-        Stores the path to the final version of the file, relative to the build_directory
-        Should only be modified by Tree Hooks
-    final_directory : Path
-        Parent directory of final_path
-    pre_hooks : list[[typeStage]]
-        Ordered list of Stage.identifier that should be applied before running the
-        markdown transformation, populated by tree hooks
-        TODO: str vs Stage typing
-    transforms : list[[typeStage]]
-        Ordered list of major transformations
-    post_hooks : list[type[Stage]]
-        Ordered list of Stage.identifier that should be applied after running the
-        markdown transformation, populated by tree hooks
-    """
-
-    def __init__(
-        self,
-        initial_path: Path,  # relative to root
-        initial_path_mocked: bool = False,
-    ) -> None:
-        self._initial_path: Path = initial_path
-        self._initial_path_mocked: bool = initial_path_mocked
-
-        self.latest_path: Path = initial_path
-        # TODO: maybe final_path should be read-only and to change it you have to make a new leaf?
-        self.final_path: Path = initial_path
-
-        self.pre_hooks: list[type[Stage]] = []
-        self.transforms: list[type[Stage]] = []
-        self.post_hooks: list[type[Stage]] = []
-
-        # TODO: status attributes for pre_hook, transform, and post_hook "chapters"
-        # status can be incomplete, complete, skip, failed
-
-        return
-
-    # MR: No reason for these to be properties. If we don't intend to change the setters or getters, we shouldn't use property
-    @property
-    def initial_path(self) -> Path:
-        """Path of originating file, relative to TreeSpan.root_directory"""
-        return self._initial_path
-
-    @property
-    def initial_path_mocked(self) -> bool:
-        """Whether `Leaf.initial_path` has been "mocked" (doesn't exist)"""
-        return self._initial_path_mocked
-
-    @property
-    def final_directory(self) -> Path:
-        """Parent directory of `Leaf.final_path`"""
-        return self.final_path.parent
