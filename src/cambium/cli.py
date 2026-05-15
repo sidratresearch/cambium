@@ -1,10 +1,12 @@
-import typer
-from typing import Annotated
+import logging
 from pathlib import Path
+from typing import Annotated
+
+import typer
+
 import cambium
 from cambium import config
 from cambium.tree import TreeSpan
-import logging
 
 logger = logging.getLogger("CambiumLogger")
 handler = logging.StreamHandler()
@@ -40,18 +42,18 @@ def main(
 def make_ascii_art():
     ascii_art = f"""
 ^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^^v^v^v^v^v^v^v^v^v^
-    
-  ░██████                             ░██        ░██                           
- ░██   ░██                            ░██                                      
-░██         ░██████   ░█████████████  ░████████  ░██░██    ░██ ░█████████████  
-░██              ░██  ░██   ░██   ░██ ░██    ░██ ░██░██    ░██ ░██   ░██   ░██ 
-░██         ░███████  ░██   ░██   ░██ ░██    ░██ ░██░██    ░██ ░██   ░██   ░██ 
- ░██   ░██ ░██   ░██  ░██   ░██   ░██ ░███   ░██ ░██░██   ░███ ░██   ░██   ░██ 
-  ░██████   ░█████░██ ░██   ░██   ░██ ░██░█████  ░██ ░█████░██ ░██   ░██   ░██ 
+
+  ░██████                             ░██        ░██
+ ░██   ░██                            ░██
+░██         ░██████   ░█████████████  ░████████  ░██░██    ░██ ░█████████████
+░██              ░██  ░██   ░██   ░██ ░██    ░██ ░██░██    ░██ ░██   ░██   ░██
+░██         ░███████  ░██   ░██   ░██ ░██    ░██ ░██░██    ░██ ░██   ░██   ░██
+ ░██   ░██ ░██   ░██  ░██   ░██   ░██ ░███   ░██ ░██░██   ░███ ░██   ░██   ░██
+  ░██████   ░█████░██ ░██   ░██   ░██ ░██░█████  ░██ ░█████░██ ░██   ░██   ░██
 
 
             Version: {cambium.__version__}
-  
+
 ^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^^v^v^v^v^v^v^v^v^v^
     """
 

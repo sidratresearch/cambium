@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import typing
 
 if typing.TYPE_CHECKING:
@@ -10,6 +11,10 @@ import tempfile
 from collections import defaultdict, deque
 from pathlib import Path
 from typing import Callable
+
+from typing_extensions import override
+
+from cambium.md_transform import markdown_to_html
 
 
 class TreeSpan:
@@ -30,41 +35,32 @@ class TreeSpan:
     """
 
     # These work as class attributes so long as we never have multiple instances of TreeSpan
-    root_directory: Path  # MR: Lives in config now
+    root_directory: Path
     leaves: deque[
         Leaf
     ]  # MR: So, I think this is going to be an issue -- now to do any lookups,
     # you need to essentially have the leaf in hand. Perhaps this is a deque of UUIDs and the leaves live in a dictionary
-    build_directory: Path  # MR: Lives in config now
+    build_directory: Path
     directories_in_build: list[Path]
 
-    def __init__(self, working_config: "WorkingConfiguration") -> None:
-        # MR: I think we should just pass the working config at this point
-
+    def __init__(self, working_config: WorkingConfiguration) -> None:
+        self.working_config = working_config
         self.config = {
             "ignore": {
                 "directories": ["_build/", "__pycache__"],
-                "globs": [],
-                "filenames": [],
             },
-            "max_leaves": 10000,  # maximum length of leaf deque
-            "tempdir": tempfile.TemporaryDirectory(),  # would be nice to have a secondary config item so we don't need to call .name
-            "stages": [
-                "TransformMarkdown",
-                "AddPlaceholderIndex",
-            ],  # list of Stage objects
-            "root_directory": Path(os.getcwd()),  # absolute path to the input directory
+            "stages": [TransformMarkdown, AddPlaceholderIndex],  # list of Stage objects
         }
 
-        self.root_directory = self.config["root_directory"]  # for now, speedy access
-        self.build_directory = self.root_directory / "_build"
+        self.root_directory = self.working_config.root_dir
+        self.build_directory = self.working_config.build_dir
 
         self.directories_in_build = [
             p.relative_to(self.root_directory)
             for p in self._get_directories_in_build(self.root_directory)
         ]
 
-        self.leaves = deque(maxlen=self.config["max_leaves"])
+        self.leaves = deque(maxlen=self.working_config.max_leaves)
         self._add_leaves(self._make_leaves_from_directory(Path(".")))
         for directory in self.directories_in_build:
             directory_leaves = self._make_leaves_from_directory(directory)
@@ -82,13 +78,13 @@ class TreeSpan:
 
         # between tree hooks and pre hooks we need to copy all files into a tempdir so that pre-hooks and transformers can all use latest_path as relative to temp dir
         for directory in self.directories_in_build:
-            (self.config["tempdir"].name / directory).mkdir()
+            (self.working_config.tmp_dir / directory).mkdir()
         for leaf in self.leaves:
             if leaf.initial_path_mocked:
                 continue
             shutil.copy(
                 self.root_directory / leaf.initial_path,
-                self.config["tempdir"].name / leaf.initial_path,
+                self.working_config.tmp_dir / leaf.initial_path,
             )
 
     # MR: I don't think this is supposed to be a property
@@ -127,7 +123,7 @@ class TreeSpan:
         keep = []
         for file in non_hidden:
             # filter based on named files to ignore
-            ignore_patterns = self.config["ignore"]["filenames"]
+            ignore_patterns = self.working_config.ignore_lists["files"]
             ignored_by_filename = any(
                 [file.match(pattern) for pattern in ignore_patterns]
             )
@@ -221,7 +217,7 @@ class TreeSpan:
         # maybe each leaf has a method called apply_transforms?
         for leaf in self.leaves:
             for transform_stage in leaf.transforms:
-                transform_stage.transform(leaf, self.config)
+                transform_stage.transform(leaf, self.working_config)
 
         return
 
@@ -245,7 +241,7 @@ class TreeSpan:
 
         for leaf in self.leaves:
             shutil.copy(
-                self.config["tempdir"].name / leaf.latest_path,
+                self.working_config.tmp_dir / leaf.latest_path,
                 self.build_directory / leaf.final_path,
             )
 
