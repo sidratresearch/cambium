@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import typing
 
 if typing.TYPE_CHECKING:
@@ -41,7 +42,7 @@ class TreeSpan:
     ]  # MR: So, I think this is going to be an issue -- now to do any lookups,
     # you need to essentially have the leaf in hand. Perhaps this is a deque of UUIDs and the leaves live in a dictionary
     build_directory: Path
-    directories_in_build: list[Path]
+    directories_in_build: list[Path] = []
 
     def __init__(self, working_config: WorkingConfiguration) -> None:
         self.working_config = working_config
@@ -55,10 +56,7 @@ class TreeSpan:
         self.root_directory = self.working_config.root_dir
         self.build_directory = self.working_config.build_dir
 
-        self.directories_in_build = [
-            p.relative_to(self.root_directory)
-            for p in self._get_directories_in_build(self.root_directory)
-        ]
+        self._walk_directory_tree()
 
         self.leaves = deque(maxlen=self.working_config.max_leaves)
         self._add_leaves(self._make_leaves_from_directory(Path(".")))
@@ -97,6 +95,79 @@ class TreeSpan:
 
         return result
 
+    def _walk_directory_tree(self) -> None:
+        """
+        Walks the tree and populates the list of directories that are cared about, as well as saving initial copies of information regarding files we care about
+        """
+        exts = ["py"]  # when matching, add the dot
+        regex = {
+            ".*": "^\\..*$",
+            "*/ignore.glob": "^.*/ignore\\.glob$",
+            "*/file-*-ignored-by-glob": "^.*/file-.*-ignored-by-glob$",
+        }
+        paths = [
+            "/_build",
+            "/.cambium",
+            "/not.ignored.directory/file-ignored-by-path",
+        ]  # must start with slashes, will not end with slash
+        names = [
+            "__pycache__",
+            "ignore-file-by-name",
+            "ignore-directory-by-name",
+        ]  # cannot include slashes
+
+        for current_root, directories, files in os.walk(
+            self.root_directory, topdown=True
+        ):
+            # current_root: string starting with ./ (except on first loop, where it's ".")
+            # directories: list of strings, not ending with /
+            # files: list of strings
+
+            # filter by absolute path
+            for absolute_ignore in self.working_config.ignore_lists["paths"]:
+                matcher = f".{absolute_ignore}"  # add the leading dot
+                for d in directories:
+                    if f"{current_root}/{d}" == matcher:
+                        directories.remove(d)
+                for f in files:
+                    if f"{current_root}/{f}" == matcher:
+                        files.remove(f)
+
+            # filter by name
+            for name in self.working_config.ignore_lists["names"]:
+                if name in directories:
+                    directories.remove(name)
+                if name in files:
+                    files.remove(name)
+
+            # filter by glob
+            for pattern in regex.values():
+                for d in directories:
+                    full_path = f"{current_root}/{d}".removeprefix("./")
+                    if re.match(pattern, full_path) is not None:
+                        directories.remove(d)
+                for f in files:
+                    full_path = f"{current_root}/{f}".removeprefix("./")
+                    if re.match(pattern, full_path) is not None:
+                        files.remove(f)
+
+            # filter files by ext
+            for extension in exts:
+                for f in files:
+                    if f.endswith(f".{extension}"):
+                        files.remove(f)
+
+            # save dirs to list
+            for d in directories:
+                self.directories_in_build.append(
+                    Path(f"{current_root}/{d}".removeprefix("./"))
+                )
+
+            # filter files by name
+            # filter files by glob
+
+            # assign UUIDs to files
+
     def _check_leaf_collisions(self) -> None:
         final_paths = [leaf.final_path for leaf in self.leaves]
         if len(final_paths) > len(set(final_paths)):
@@ -123,7 +194,7 @@ class TreeSpan:
         keep = []
         for file in non_hidden:
             # filter based on named files to ignore
-            ignore_patterns = self.working_config.ignore_lists["files"]
+            ignore_patterns = self.working_config.ignore_lists["names"]
             ignored_by_filename = any(
                 [file.match(pattern) for pattern in ignore_patterns]
             )
@@ -152,39 +223,6 @@ class TreeSpan:
             leaves.append(Leaf(initial_path=path))
 
         return leaves
-
-    def _get_directories_in_build(self, parent_directory: Path) -> list[Path]:
-        """
-        Get a flat list of directories, which includes all (and only) what will be present in _build
-
-        Not sure if this should a TreeSpan method or a separate utility fn (or staticmethod) that gets passed config
-
-        Returns absolute paths (required as it's recursive)
-        """
-        # get all top level directories that aren't .hidden
-        non_hidden = list(parent_directory.glob("[!.]*/"))
-        # MR: Deal with this now in the config
-
-        # MR: This should just be a os.walk (to support 3.11)
-        without_ignores = []
-        for directory in non_hidden:
-
-            # filter based on named directories to ignore
-            ignore_patterns = self.config["ignore"]["directories"]
-            ignored_by_directory = any(
-                [directory.match(pattern) for pattern in ignore_patterns]
-            )
-
-            # TODO: add glob ignores or other patterns here
-
-            if not ignored_by_directory:
-                # save that directory, and any children
-                without_ignores.append(directory)
-                children = self._get_directories_in_build(directory)
-                for child in children:
-                    without_ignores.append(child)
-
-        return without_ignores
 
     def apply_to_leaves(self, function: Callable[[Leaf, TreeSpan], None]) -> None:
         """
