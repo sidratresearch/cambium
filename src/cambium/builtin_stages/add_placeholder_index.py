@@ -1,6 +1,7 @@
-from ..stage import Stage
-from ..tree import TreeSpan, Leaf
 from pathlib import Path
+
+from ..stage import Stage
+from ..tree import Leaf, TreeSpan
 
 
 class AddPlaceholderIndex(Stage):
@@ -22,7 +23,7 @@ class AddPlaceholderIndex(Stage):
     def _create_index_leaf(directory: Path, tree: TreeSpan) -> None:
         # TODO: figure out what to do about this
         initial_path = Path(f".cambium/{AddPlaceholderIndex.identifier}/index.html")
-        source_file = tree.config["tempdir"].name / initial_path
+        source_file = tree.working_config.tmp_dir / initial_path
         source_file.parent.mkdir(parents=True, exist_ok=True)
         source_file.write_text("")
 

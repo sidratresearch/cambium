@@ -1,6 +1,6 @@
-from ..stage import Stage
-from ..tree import TreeSpan, Leaf
 from ..md_transform import markdown_to_html
+from ..stage import Stage
+from ..tree import Leaf, TreeSpan
 
 
 class TransformMarkdown(Stage):
@@ -32,9 +32,9 @@ class TransformMarkdown(Stage):
         """
         Use Marko to write an HTML version of a markdown leaf.
         """
-        output_path = working_config["tempdir"].name / leaf.final_path
+        output_path = working_config.tmp_dir / leaf.final_path
 
-        markdown = (working_config["tempdir"].name / leaf.latest_path).read_text()
+        markdown = (working_config.tmp_dir / leaf.latest_path).read_text()
         html = markdown_to_html(markdown)
 
         output_path.write_text(html)

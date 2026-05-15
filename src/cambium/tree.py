@@ -49,7 +49,7 @@ class TreeSpan:
             "ignore": {
                 "directories": ["_build/", "__pycache__"],
             },
-            "stages": [TransformMarkdown, AddPlaceholderIndex],  # list of Stage objects
+            # "stages": [TransformMarkdown, AddPlaceholderIndex],  # list of Stage objects
         }
 
         self.root_directory = self.working_config.root_dir
@@ -72,7 +72,7 @@ class TreeSpan:
 
         # run all tree hooks, passing them the entire tree structure to modify
         # initial leaves have input file = output file
-        for stage in self.config["stages"]:
+        for stage in self.working_config.stages:
             working_config.stage_dict[stage].tree_hook(self)
             self._check_leaf_collisions()
 
