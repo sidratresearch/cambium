@@ -29,7 +29,7 @@ class TransformMarkdown(Stage):
         ].with_suffix(".html")
         tree.leaves["hooks"][leaf_uuid]["transforms"].append(self)
 
-    def transform(leaf_uuid: str, tree: TreeSpan) -> None:
+    def transform(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """
         Use Marko to write an HTML version of a markdown leaf.
         """
