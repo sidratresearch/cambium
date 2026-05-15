@@ -1,11 +1,11 @@
-from ..stage import Stage
-from ..tree import TreeSpan
-
 import importlib
-from jinja2 import Environment, FileSystemLoader
+import logging
 from pathlib import Path
 
-import logging
+from jinja2 import Environment, FileSystemLoader
+
+from ..stage import Stage
+from ..tree import TreeSpan
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +33,6 @@ class TemplateMarkdown(Stage):
         """
         Adds TemplatingMarkdown to markdown files not in static
         """
-        if tree.leaves["initial_path"][leaf_uuid].parts[0] == "static":
-            return
         if tree.leaves["latest_path"][leaf_uuid].suffix.lower() != ".md":
             return
 

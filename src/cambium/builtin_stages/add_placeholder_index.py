@@ -10,7 +10,8 @@ class AddPlaceholderIndex(Stage):
 
     def tree_hook(self, tree: TreeSpan) -> None:
         final_paths = [tree.leaves["final_path"][uuid] for uuid in tree.leaves["uuids"]]
-        for directory in tree.directories_in_build:
+
+        for directory in [Path("."), *tree.directories_in_build]:
             index_file = directory / "index.html"
             if index_file not in final_paths:
                 self._create_index_leaf(directory, tree)

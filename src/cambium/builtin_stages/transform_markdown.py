@@ -37,8 +37,6 @@ class TransformMarkdown(Stage):
         """
         Update final path and list of transforms for a single leaf, if applicable
         """
-        if tree.leaves["initial_path"][leaf_uuid].parts[0] == "static":
-            return
         if tree.leaves["latest_path"][leaf_uuid].suffix.lower() != ".md":
             return
 

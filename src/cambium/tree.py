@@ -150,6 +150,7 @@ class TreeSpan:
                 self.directories_in_build.append(
                     Path(f"{current_root}/{d}".removeprefix("./"))
                 )
+                
 
             # assign UUIDs to files
             for f in files:
