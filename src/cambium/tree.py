@@ -30,12 +30,16 @@ class TreeSpan:
     """
 
     # These work as class attributes so long as we never have multiple instances of TreeSpan
-    root_directory: Path
-    leaves: deque[Leaf]
-    build_directory: Path
+    root_directory: Path  # MR: Lives in config now
+    leaves: deque[
+        Leaf
+    ]  # MR: So, I think this is going to be an issue -- now to do any lookups,
+    # you need to essentially have the leaf in hand. Perhaps this is a deque of UUIDs and the leaves live in a dictionary
+    build_directory: Path  # MR: Lives in config now
     directories_in_build: list[Path]
 
     def __init__(self) -> None:
+        # MR: I think we should just pass the working config at this point
 
         self.config = {
             "ignore": {
@@ -65,7 +69,7 @@ class TreeSpan:
         self._check_leaf_collisions()
 
         # TODO: error collection for leaf generation
-        # if there are errors in inital leaf generation, raise them now
+        # if there are errors in initial leaf generation, raise them now
 
         # run all tree hooks, passing them the entire tree structure to modify
         # initial leaves have input file = output file
@@ -84,6 +88,7 @@ class TreeSpan:
                 self.config["tempdir"].name / leaf.initial_path,
             )
 
+    # MR: I don't think this is supposed to be a property
     @property
     def leaves_by_final_directory(self) -> dict[Path, list[Leaf]]:
         result = defaultdict(list)
@@ -159,7 +164,9 @@ class TreeSpan:
         """
         # get all top level directories that aren't .hidden
         non_hidden = list(parent_directory.glob("[!.]*/"))
+        # MR: Deal with this now in the config
 
+        # MR: This should just be a os.walk (to support 3.11)
         without_ignores = []
         for directory in non_hidden:
 
@@ -240,6 +247,7 @@ class TreeSpan:
             )
 
 
+# MR: Truth be told, I'm starting to be unconvinced by leaf -- we should chat about it.
 class Leaf:
     """
 
@@ -295,6 +303,7 @@ class Leaf:
 
         return
 
+    # MR: No reason for these to be properties. If we don't intend to change the setters or getters, we shouldn't use property
     @property
     def initial_path(self) -> Path:
         """Path of originating file, relative to TreeSpan.root_directory"""
@@ -313,9 +322,11 @@ class Leaf:
 
 # TODO: it's technically correct to have Stage inherit from ABC and decorate tree_hook
 # as @abstractmethod, but I'm not convinced it's worth it
+# MR: Yeah, these _are_ going to be Abstract methods, but in reality, we should decorate a lot less in general
 class Stage:
     identifier: str = ""
 
+    # MR: Is there a reason we're making all of these static methods? In general, they should likely be just normal methods.
     @staticmethod
     def tree_hook(tree: TreeSpan) -> None:
         """
@@ -330,6 +341,7 @@ class Stage:
         the tree_hook method is required because it is the function that registers the Stage into the pre/transform/post hooks for a leaf, and therefore if the tree_hook is not run, nothing else will be either
         """
         raise NotImplementedError()
+        # MR: Base methods should probably not raise anything, so that we don't run into needing to capture exceptions
 
     @staticmethod
     def pre_hook(leaf: Leaf) -> None:
@@ -371,6 +383,7 @@ class Stage:
 class TransformMarkdown(Stage):
     identifier: str = "TransformMarkdown"  # can we use __name__ or something?
 
+    # MR: If we're supporting Py3.11, we probably shouldn't use @override. Also, we should remove @staticmethod decorators
     @staticmethod
     @override
     def tree_hook(tree: TreeSpan) -> None:
@@ -408,7 +421,7 @@ class TransformMarkdown(Stage):
 
 
 class AddPlaceholderIndex(Stage):
-    indentifier = "AddPlaceholderIndex"
+    identifier = "AddPlaceholderIndex"
 
     @staticmethod
     def tree_hook(tree: TreeSpan) -> None:
