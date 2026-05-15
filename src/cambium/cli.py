@@ -32,7 +32,7 @@ def main(
     logger.setLevel(config.current_config.logging_level)
     logger.info("Logger is setup")
 
-    treespan = TreeSpan()
+    treespan = TreeSpan(config.current_config)
     treespan.transform()
     treespan.finalize()
 

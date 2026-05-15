@@ -1,4 +1,8 @@
 from __future__ import annotations
+import typing
+
+if typing.TYPE_CHECKING:
+    from .config import WorkingConfiguration
 
 import os
 import shutil
@@ -6,10 +10,6 @@ import tempfile
 from collections import defaultdict, deque
 from pathlib import Path
 from typing import Callable
-
-from typing_extensions import override
-
-from cambium.md_transform import markdown_to_html
 
 
 class TreeSpan:
@@ -38,7 +38,7 @@ class TreeSpan:
     build_directory: Path  # MR: Lives in config now
     directories_in_build: list[Path]
 
-    def __init__(self) -> None:
+    def __init__(self, working_config: "WorkingConfiguration") -> None:
         # MR: I think we should just pass the working config at this point
 
         self.config = {
@@ -49,7 +49,10 @@ class TreeSpan:
             },
             "max_leaves": 10000,  # maximum length of leaf deque
             "tempdir": tempfile.TemporaryDirectory(),  # would be nice to have a secondary config item so we don't need to call .name
-            "stages": [TransformMarkdown, AddPlaceholderIndex],  # list of Stage objects
+            "stages": [
+                "TransformMarkdown",
+                "AddPlaceholderIndex",
+            ],  # list of Stage objects
             "root_directory": Path(os.getcwd()),  # absolute path to the input directory
         }
 
@@ -74,7 +77,7 @@ class TreeSpan:
         # run all tree hooks, passing them the entire tree structure to modify
         # initial leaves have input file = output file
         for stage in self.config["stages"]:
-            stage.tree_hook(self)
+            working_config.stage_dict[stage].tree_hook(self)
             self._check_leaf_collisions()
 
         # between tree hooks and pre hooks we need to copy all files into a tempdir so that pre-hooks and transformers can all use latest_path as relative to temp dir
@@ -318,133 +321,3 @@ class Leaf:
     def final_directory(self) -> Path:
         """Parent directory of `Leaf.final_path`"""
         return self.final_path.parent
-
-
-# TODO: it's technically correct to have Stage inherit from ABC and decorate tree_hook
-# as @abstractmethod, but I'm not convinced it's worth it
-# MR: Yeah, these _are_ going to be Abstract methods, but in reality, we should decorate a lot less in general
-class Stage:
-    identifier: str = ""
-
-    # MR: Is there a reason we're making all of these static methods? In general, they should likely be just normal methods.
-    @staticmethod
-    def tree_hook(tree: TreeSpan) -> None:
-        """
-        Function to run which can modify the tree structure, adding and removing
-        leaves and directories
-
-        Function should also modify each leaf to add itself to the list of pre-hooks,
-        transforms, and post-hooks as necessary
-
-        Because tree hooks don't edit the contents of any file, they should not modify leaf.latest_path
-
-        the tree_hook method is required because it is the function that registers the Stage into the pre/transform/post hooks for a leaf, and therefore if the tree_hook is not run, nothing else will be either
-        """
-        raise NotImplementedError()
-        # MR: Base methods should probably not raise anything, so that we don't run into needing to capture exceptions
-
-    @staticmethod
-    def pre_hook(leaf: Leaf) -> None:
-        """
-        Function run on a single leaf, prior to any major transformations
-
-        This function can write to temporary directories
-        It can write updated versions of the leaf content (e.g., parse custom markdown
-        syntax), or other meta content (e.g., markdown headers)
-        """
-        raise NotImplementedError()
-
-    @staticmethod
-    def transform(leaf: Leaf, working_config) -> None:
-        """
-        Function run on a single leaf, applying a  major transformation (md -> html)
-
-        This function can write to temporary directories
-        It can write updated versions of the leaf content (like the new HTML),
-        or other meta content (e.g., markdown headers). It probably shouldn't be
-        writing other meta content, that should be a pre or post hook, but writing
-        guardrails for that seems overkill
-        """
-        raise NotImplementedError()
-
-    @staticmethod
-    def post_hook(leaf: Leaf) -> None:
-        """
-        Function run on a single leaf, after any major transformations
-
-        This function can write to and read from temporary directories
-        It can write updated versions of the leaf content (e.g., parse custom markdown
-        syntax), or other meta content (e.g., markdown headers). It may want to read
-        information that was written by this Stage's `pre_hook`
-        """
-        raise NotImplementedError()
-
-
-class TransformMarkdown(Stage):
-    identifier: str = "TransformMarkdown"  # can we use __name__ or something?
-
-    # MR: If we're supporting Py3.11, we probably shouldn't use @override. Also, we should remove @staticmethod decorators
-    @staticmethod
-    @override
-    def tree_hook(tree: TreeSpan) -> None:
-        """
-        Update final path and list of transforms for markdown leaves.
-        """
-        tree.apply_to_leaves(TransformMarkdown._tree_hook_for_leaf)
-
-    @staticmethod
-    def _tree_hook_for_leaf(leaf: Leaf, _: TreeSpan) -> None:
-        """
-        Update final path and list of transforms for a single leaf, if applicable
-        """
-        if leaf.latest_path.parts[0] == "static":
-            return
-        if leaf.latest_path.suffix.lower() != ".md":
-            return
-
-        leaf.final_path = leaf.latest_path.with_suffix(".html")
-        leaf.transforms.append(TransformMarkdown)
-
-    @staticmethod
-    @override
-    def transform(leaf: Leaf, working_config) -> None:
-        """
-        Use Marko to write an HTML version of a markdown leaf.
-        """
-        output_path = working_config["tempdir"].name / leaf.final_path
-
-        markdown = (working_config["tempdir"].name / leaf.latest_path).read_text()
-        html = markdown_to_html(markdown)
-
-        output_path.write_text(html)
-        leaf.latest_path = output_path
-
-
-class AddPlaceholderIndex(Stage):
-    identifier = "AddPlaceholderIndex"
-
-    @staticmethod
-    def tree_hook(tree: TreeSpan) -> None:
-        leaves_by_final_directory = tree.leaves_by_final_directory
-
-        for directory in [Path("."), *tree.directories_in_build]:
-            # get list of leaves that will output to that directory
-            leaves = leaves_by_final_directory[directory]
-            leaf_filenames = [leaf.final_path.name for leaf in leaves]
-
-            if "index.html" not in leaf_filenames:
-                AddPlaceholderIndex._create_index_leaf(directory, tree)
-
-    @staticmethod
-    def _create_index_leaf(directory: Path, tree: TreeSpan) -> None:
-        # TODO: figure out what to do about this
-        initial_path = Path(f".cambium/{AddPlaceholderIndex.identifier}/index.html")
-        source_file = tree.config["tempdir"].name / initial_path
-        source_file.parent.mkdir(parents=True, exist_ok=True)
-        source_file.write_text("")
-
-        index_leaf = Leaf(initial_path=initial_path, initial_path_mocked=True)
-        index_leaf.latest_path = source_file
-        index_leaf.final_path = directory / "index.html"
-
-        tree.add_leaf(index_leaf)

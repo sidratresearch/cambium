@@ -1,10 +1,13 @@
 """Cambium Configuration File Handling"""
 
 from __future__ import annotations
-from typing import Optional, Annotated, Literal
+
+from .stage import Stage, populating_stage_dict
+from typing import Optional, Literal
 from pathlib import Path
 import tempfile
 import logging
+
 
 from pydantic import BaseModel
 import yaml
@@ -41,7 +44,7 @@ class CambiumConfiguration(BaseModel):
         Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
     ] = "INFO"
 
-    stages: Optional[list[str]] = ["md_transform"]
+    stages: Optional[list[str]] = ["TransformMarkdown", "AddPlaceholderIndex"]
     "Ordered List of Stages to Use"
 
     max_leaves: Optional[int] = 10_000
@@ -92,8 +95,11 @@ class WorkingConfiguration(object):
         # Creating Path object for build directory
         self.build_dir = Path(self.input_config.build_directory)
 
-        # Exposing Simple Parameters (that require no additional processing)
+        # Importing and Compiling Stages
         self.stages = self.input_config.stages
+        self.stage_dict = populating_stage_dict()
+
+        # Exposing Simple Parameters (that require no additional processing)
         self.max_leaves = self.input_config.max_leaves
         self.logging_level = self.input_config.logging_level
 
