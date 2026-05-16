@@ -26,3 +26,27 @@ jobs:
             - run: |
                   poetry install
                   poetry build
+
+            - name: Store the distribution packages
+              uses: actions/upload-artifact@v5
+              with:
+                  name: python-package-distributions
+                  path: dist/
+
+
+    publish-to-pypi:
+        name: Publish Python Distribution to PyPi
+        if: startsWith(github.ref, 'refs/tags/') 
+        needs:
+        - build
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+        steps:
+          - name: Download all the dists
+            uses: actions/download-artifact@v6
+            with:
+                name: python-package-distributions
+                path: dist/
+          - name: Publish distribution PyPI
+            uses: pypa/gh-action-pypi-publish@release/v1
