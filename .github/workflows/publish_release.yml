@@ -1,0 +1,27 @@
+name: Publish Cambium package to PyPI
+
+on:
+    release:
+        types: [published]
+    workflow_dispatch:
+
+jobs:
+    build:
+        name: Build Distribution
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v6
+              with:
+                  persist-credentials: false
+            - name: Set up python
+              uses: actions/setup-python@v6
+              with:
+                  python-version: "3.11"
+            - name: Install Poetry
+              uses: snok/install-poetry@v1
+              with:
+                  plugins: poetry-dynamic-versioning
+            - run: |
+                  poetry install
+                  poetry build
