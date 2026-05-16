@@ -16,12 +16,16 @@ html {
   background-color: var(--default-bg-color);
   color: var(--default-font-color);
   font-size: var(--default-font-size);
+  height: 100%;
 }
 
 body {
-  padding: 1.5em 2em 1.5em;
   margin: 0;
+  padding: 0;
   line-height: 1.4;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
 }
 
 h1 {
@@ -100,8 +104,48 @@ img {
 
 div.container {
   max-width: 1200px !important;
+  padding: 1.5em 2em 1.5em;
   width: 100%;
   margin: auto;
+}
+
+div.main {
+  flex: 1;
+}
+
+/* Header and Footer */
+
+header {
+  background-color: #444444;
+  color: #f9f9f9;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+div.header-bar {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+div.header-bar a {
+  text-decoration: none;
+  color: #f9f9f9;
+}
+
+footer {
+  background-color: #eeeeee;
+  color: #222222;
+  border-top: #888888 solid 1px;
+}
+
+div.footer-bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 /* Table Styling */

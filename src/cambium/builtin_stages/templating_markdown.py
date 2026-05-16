@@ -79,6 +79,8 @@ class TemplateMarkdown(Stage):
             page_title=tree.config.site_name,
             main_content=main_content,
             relative_path_modifier="../" * number_of_parents,
+            footer_left=tree.config.site_name,
+            header_left=f"<a href='{'../'*number_of_parents}index.html' class='header-link'>{tree.config.site_name}</a>",
         )
 
         output_path.write_text(output_html)

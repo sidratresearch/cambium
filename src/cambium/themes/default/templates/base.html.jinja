@@ -10,11 +10,16 @@
 
 
 <body>
-  <div class="container">
+
+  {% include 'header.html.jinja' %}
+
+  <div class="container main">
 
     {{ main_content }}
 
   </div>
+
+  {% include 'footer.html.jinja' %}
 
 </body>
 
