@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .metadata import LeafMetadata
+
 import re
 import typing
 from uuid import uuid4
@@ -27,6 +29,7 @@ class Leaves(TypedDict):
     latest_path: dict[str, Path]
     final_path: dict[str, Path]
     hooks: LeafHooks
+    metadata: dict[str, LeafMetadata]
 
 
 logger = logging.getLogger(__name__)
@@ -67,6 +70,7 @@ class TreeSpan:
             "initial_path": {},
             "latest_path": {},
             "final_path": {},
+            "metadata": {},
             "hooks": {"pre_hooks": [], "transforms": [], "post_hooks": []},
         }
         self._walk_directory_tree()
@@ -150,7 +154,6 @@ class TreeSpan:
                 self.directories_in_build.append(
                     Path(f"{current_root}/{d}".removeprefix("./"))
                 )
-                
 
             # assign UUIDs to files
             for f in files:
@@ -176,6 +179,7 @@ class TreeSpan:
             "transforms": [],
             "post_hooks": [],
         }
+        self.leaves["metadata"][uuid] = LeafMetadata()
         return uuid
 
     def apply_to_leaves(self, function: Callable[[str, TreeSpan], None]) -> None:
@@ -200,6 +204,12 @@ class TreeSpan:
             for multithreading)
         """
         logger.info("Running pre-transformation hooks")
+
+        for leaf_uuid in self.leaves["uuids"]:
+            pre_hooks = self.leaves["hooks"][leaf_uuid]["pre_hooks"]
+            for stage_name in pre_hooks:
+                pre_hook_stage = self.config.stage_dict[stage_name]
+                pre_hook_stage.pre_hook(leaf_uuid, self)
         return
 
     def transform(self) -> None:

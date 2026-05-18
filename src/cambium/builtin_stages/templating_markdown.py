@@ -76,7 +76,7 @@ class TemplateMarkdown(Stage):
         main_content = input_path.read_text()
 
         output_html = main_template.render(
-            page_title=tree.config.site_name,
+            page_title=f"{tree.leaves['metadata'][leaf_uuid].title} - {tree.config.site_name}",
             main_content=main_content,
             relative_path_modifier="../" * number_of_parents,
             footer_left=tree.config.site_name,

@@ -52,6 +52,7 @@ class CambiumConfiguration(BaseModel):
     ] = "INFO"
 
     stages: Optional[list[str]] = [
+        "IdentifyMetadata",
         "TransformMarkdown",
         "AddPlaceholderIndex",
         "TemplateMarkdown",
