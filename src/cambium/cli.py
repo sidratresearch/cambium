@@ -4,16 +4,16 @@ from typing import Annotated
 
 import typer
 
-import cambium
-from cambium import config
-from cambium.tree import TreeSpan
+import cambium  # for version
+
+from . import config
+from .tree import TreeSpan
 
 logger = logging.getLogger("CambiumLogger")
 handler = logging.StreamHandler()
 formatter = logging.Formatter("%(levelname)s: %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-
 
 app = typer.Typer()
 
@@ -30,7 +30,7 @@ def main(
         Path | None,
         typer.Option("--config", "-c", help="Location of Configuration File"),
     ] = None,
-    version: Annotated[
+    _: Annotated[
         bool | None,
         typer.Option("--version", callback=version_callback, is_eager=True),
     ] = None,

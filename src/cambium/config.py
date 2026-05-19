@@ -11,7 +11,7 @@ from typing import Any, Literal, Optional
 import yaml
 from pydantic import BaseModel
 
-from .stage import Stage, populating_stage_dict
+from .stage import populating_stage_dict
 
 logger = logging.getLogger(__name__)
 

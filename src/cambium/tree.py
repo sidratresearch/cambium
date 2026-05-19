@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from .metadata import LeafMetadata
-
 import re
 import typing
 from uuid import uuid4
@@ -15,6 +13,8 @@ import shutil
 from collections import deque
 from pathlib import Path
 from typing import Callable, TypedDict
+
+from .metadata import LeafMetadata
 
 
 class LeafHooks(TypedDict):
