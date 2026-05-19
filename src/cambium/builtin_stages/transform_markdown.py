@@ -17,7 +17,11 @@ class CambiumHTMLRenderer(HTMLRenderer):
 
 def markdown_to_html(markdown: str) -> str:
     # WARNING: The Markdown class is not thread-safe. Create a new instance for each thread.
-    return Markdown(extensions=["gfm"], renderer=CambiumHTMLRenderer).convert(markdown)
+    marko_object = Markdown(extensions=["gfm", "toc"], renderer=CambiumHTMLRenderer)
+    # Including "toc" here gives IDs to the headings, but doesn't actually inject a <ul> anywhere
+    # To generate the list of links, need to call `marko_object.renderer.render_toc()`
+    # Which returns a string
+    return marko_object.convert(markdown)
 
 
 class TransformMarkdown(Stage):
