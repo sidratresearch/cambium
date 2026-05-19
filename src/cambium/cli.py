@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 from typing import Annotated
 
@@ -7,14 +6,10 @@ import typer
 import cambium  # for version
 
 from . import config
+from .log import init_logging
 from .tree import TreeSpan
 
-logger = logging.getLogger("CambiumLogger")
-handler = logging.StreamHandler()
-formatter = logging.Formatter("%(levelname)s: %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
+logger = init_logging()
 app = typer.Typer()
 
 

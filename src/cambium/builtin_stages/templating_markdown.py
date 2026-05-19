@@ -1,12 +1,12 @@
-import logging
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+from ..log import get_logger
 from ..stage import Stage
 from ..tree import TreeSpan
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class TemplateMarkdown(Stage):

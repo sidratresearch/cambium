@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 import re
 import tempfile
 from pathlib import Path
@@ -11,9 +10,12 @@ from typing import Any, Literal, Optional
 import yaml
 from pydantic import BaseModel
 
+from .log import get_logger
 from .stage import populating_stage_dict
 
-logger = logging.getLogger(__name__)
+# At runtime of this file the log level has not been set
+# So by default, only warnings and errors are shown
+logger = get_logger(__name__)
 
 
 builtin_paths_to_ignore: list[str] = [
@@ -245,6 +247,7 @@ def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
     """
 
     # Opening and reading yaml config
+    logger.debug(f"Reading configuration file {config_path}")
     with open(config_path, "r") as file:
         config_yaml = yaml.safe_load(file)
 

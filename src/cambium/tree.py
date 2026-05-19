@@ -7,13 +7,13 @@ from uuid import uuid4
 if typing.TYPE_CHECKING:
     from .config import WorkingConfiguration
 
-import logging
 import os
 import shutil
 from collections import deque
 from pathlib import Path
 from typing import Callable, TypedDict
 
+from .log import get_logger
 from .metadata import LeafMetadata
 
 
@@ -32,7 +32,7 @@ class Leaves(TypedDict):
     metadata: dict[str, LeafMetadata]
 
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class TreeSpan:
@@ -82,6 +82,7 @@ class TreeSpan:
         # run all tree hooks, passing them the entire tree structure to modify
         # initial leaves have input file = output file
         for stage in self.config.stages:
+            logger.debug(f"Running tree_hook for stage {stage}")
             self.config.stage_dict[stage].tree_hook(self)
             self._check_leaf_collisions()
 
