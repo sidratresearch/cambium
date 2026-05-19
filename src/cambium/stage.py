@@ -1,3 +1,5 @@
+from typing import Any
+
 from .tree import TreeSpan
 
 
@@ -51,7 +53,9 @@ class Stage:
         raise NotImplementedError()
 
 
-def populating_stage_dict(stage_list: list[str]) -> dict[str, Stage]:
+def populating_stage_dict(
+    stage_list: list[str], stage_config: dict[str, dict[str, Any]]
+) -> dict[str, Stage]:
     """Importing Built-in Stages and compiling all Stages available to Cambium"""
 
     from . import builtin_stages
@@ -64,6 +68,12 @@ def populating_stage_dict(stage_list: list[str]) -> dict[str, Stage]:
     # Adding stages to stage_dict if they're in the stage list:
     for tmp_stage in all_subclasses:
         if tmp_stage.__name__ in stage_list:
+
+            # TODO: validate stage-specific configuration
+            # all stages need to define some configuration object (which may be empty)
+            # in the input config, not all stages will have defined configuration
+            # and there may be configuration define for stages which are not installed
+            # pass the validated config to the constructor
             stage_dict[tmp_stage.__name__] = tmp_stage()
 
     return stage_dict

@@ -6,7 +6,7 @@ import logging
 import re
 import tempfile
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 
 import yaml
 from pydantic import BaseModel
@@ -58,6 +58,9 @@ class CambiumConfiguration(BaseModel):
         "TemplateMarkdown",
     ]
     "Ordered List of Stages to Use"
+
+    stage_config: Optional[dict[str, dict[str, Any]]] = {}
+    "Configuration for specific stages, passed to the Stage constructor"
 
     max_leaves: Optional[int] = 10_000
     "Maximum Number of Leaves"
@@ -112,7 +115,9 @@ class WorkingConfiguration(object):
 
         # Importing and Compiling Stages
         self.stages = self.input_config.stages
-        self.stage_dict = populating_stage_dict(self.stages)
+        self.stage_dict = populating_stage_dict(
+            self.stages, self.input_config.stage_config
+        )
 
         # Exposing Simple Parameters (that require no additional processing)
         self.max_leaves = self.input_config.max_leaves
