@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Optional
 
 from pydantic import BaseModel
 
-from .log import get_logger
-
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class LeafMetadata(BaseModel):

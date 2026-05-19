@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 import typing
 from uuid import uuid4
@@ -13,7 +14,6 @@ from collections import deque
 from pathlib import Path
 from typing import Callable, TypedDict
 
-from .log import get_logger
 from .metadata import LeafMetadata
 
 
@@ -32,7 +32,7 @@ class Leaves(TypedDict):
     metadata: dict[str, LeafMetadata]
 
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class TreeSpan:

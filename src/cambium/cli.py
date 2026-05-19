@@ -45,6 +45,8 @@ def main(
     treespan.apply_post_hooks()
     treespan.finalize()
 
+    logger.info("Cambium complete!")
+
 
 def make_ascii_art():
     ascii_art = f"""
