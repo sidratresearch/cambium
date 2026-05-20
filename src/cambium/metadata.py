@@ -19,3 +19,12 @@ class LeafMetadata(BaseModel):
 
     title: Optional[str] = None
     """Page Title"""
+
+    # add: filesize, original filename, modification time, etc.
+
+    # in addition to the "loose" default metadata items we provide, include a "stage"
+    # or "extra" attribute here that maps stage name to a dict of that stage's custom
+    # metadata items
+    # that dict should be a defaultdict(lambda: None)
+    # if a stage wants to rewrite one of the default items, it should instead create
+    # its own copy within it's dictionary
