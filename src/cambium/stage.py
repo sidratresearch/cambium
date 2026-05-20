@@ -144,4 +144,9 @@ def populating_stage_dict(
 
             stage_dict[tmp_stage.__name__] = initialized_stage
 
+    # error on any requsted stages that aren't present
+    for requested in stage_list:
+        if requested not in stage_dict:
+            raise ValueError(f"Requested stage `{requested}` was not found.")
+
     return stage_dict
