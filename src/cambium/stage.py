@@ -1,6 +1,7 @@
+import logging
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from .tree import TreeSpan
 
@@ -108,7 +109,9 @@ class Stage:
 
 
 def populating_stage_dict(
-    stage_list: list[str], stage_config: dict[str, dict[str, Any]]
+    stage_list: list[str],
+    stage_config: dict[str, dict[str, Any]],
+    logger: logging.Logger,
 ) -> dict[str, Stage]:
     """Importing Built-in Stages and compiling all Stages available to Cambium"""
 
@@ -128,10 +131,16 @@ def populating_stage_dict(
             # in the input config, not all stages will have defined configuration
             # and there may be configuration define for stages which are not installed
             # pass the validated config to the constructor
-            if tmp_stage.__name__ in stage_config:
-                initialized_stage = tmp_stage(stage_config[tmp_stage.__name__])
-            else:
-                initialized_stage = tmp_stage({})
+            try:
+                if tmp_stage.__name__ in stage_config:
+                    initialized_stage = tmp_stage(stage_config[tmp_stage.__name__])
+                else:
+                    initialized_stage = tmp_stage({})
+            except ValidationError as e:
+                logger.error(
+                    f"Error validating configuration for stage `{tmp_stage.__name__}`"
+                )
+                raise e
 
             stage_dict[tmp_stage.__name__] = initialized_stage
 

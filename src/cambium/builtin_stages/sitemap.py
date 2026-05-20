@@ -2,6 +2,8 @@ import textwrap
 from pathlib import Path
 from typing import Any
 
+from pydantic import AnyUrl
+
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
 
@@ -11,7 +13,7 @@ This stage is NOT default because it requires a URL
 
 
 class AddSitemapConfig(StageConfig):
-    url: str
+    url: AnyUrl
 
 
 class AddSitemap(Stage):

@@ -117,7 +117,7 @@ class WorkingConfiguration:
         # Importing and Compiling Stages
         self.stages = self.input_config.stages
         self.stage_dict = populating_stage_dict(
-            self.stages, self.input_config.stage_config
+            self.stages, self.input_config.stage_config, logger
         )
 
         # Exposing Simple Parameters (that require no additional processing)
