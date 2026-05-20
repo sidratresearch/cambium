@@ -44,4 +44,4 @@ To run Cambium, in a folder containing Markdown documents, run:
 cambium
 ```
 
-This will create a `_build` directory, containing the output HTML. The contents of this folder can be uploaded to any web server or displayed locally. 
+This will create a `_build` directory, containing the output HTML. The contents of this folder can be uploaded to any web server or displayed locally.

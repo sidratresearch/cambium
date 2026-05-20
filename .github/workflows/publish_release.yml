@@ -36,7 +36,7 @@ jobs:
 
     publish-to-pypi:
         name: Publish Python Distribution to PyPi
-        if: startsWith(github.ref, 'refs/tags/') 
+        if: startsWith(github.ref, 'refs/tags/')
         needs:
         - build
         runs-on: ubuntu-latest

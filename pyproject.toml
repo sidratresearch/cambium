@@ -1,65 +1,60 @@
+[build-system]
+build-backend = "poetry_dynamic_versioning.backend"
+requires = [ "poetry-core>=1", "poetry-dynamic-versioning>=1,<2" ]
+
 [project]
 name = "cambium"
 description = "A light touch markdown static site generator"
-authors = [
-    { name = "Sidrat Research", email = "info@sidratresearch.com" },
-    { name = "Mubdi Rahman", email = "mubdi@sidratresearch.com" },
-    { name = "Tai Withers", email = "tai@sidratresearch.com" },
-    { name = "Hansen Jiang", email = "hansen@sidratresearch.com" },
-    { name = "Jennifer Scora", email = "jscora@sidratresearch.com" },
-]
-license = "MIT"
-license-files = ["LICEN[CS]E*"]
 readme = "README.md"
-classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
-    "License :: OSI Approved :: MIT License",
-    "Topic :: Internet :: WWW/HTTP :: Site Management",
-    "Topic :: Text Processing :: Markup :: Markdown",
-    "Topic :: Text Processing :: Markup :: HTML",
-    "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Content Management System",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
+license = "MIT"
+license-files = [ "LICEN[CS]E*" ]
+authors = [
+  { name = "Sidrat Research", email = "info@sidratresearch.com" },
+  { name = "Mubdi Rahman", email = "mubdi@sidratresearch.com" },
+  { name = "Tai Withers", email = "tai@sidratresearch.com" },
+  { name = "Hansen Jiang", email = "hansen@sidratresearch.com" },
+  { name = "Jennifer Scora", email = "jscora@sidratresearch.com" },
 ]
 requires-python = ">=3.11"
-dependencies = [
-    "marko[toc] (>=2.2.2,<3.0.0)",
-    "pyyaml (>=6.0.3,<7.0.0)",
-    "typer (>=0.25.1,<0.26.0)",
-    "pydantic (>=2.13.4,<3.0.0)",
-    "jinja2 (>=3.1.6,<4.0.0)",
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Content Management System",
+  "Topic :: Internet :: WWW/HTTP :: Site Management",
+  "Topic :: Text Processing :: Markup :: HTML",
+  "Topic :: Text Processing :: Markup :: Markdown",
 ]
-dynamic = ["version"]
-
-[project.urls]
-Homepage = "https://github.com/sidratresearch/cambium"
-Issues = "https://github.com/sidratresearch/cambium/issues"
-
-[project.scripts]
-cambium = "cambium.cli:app"
+dynamic = [ "version" ]
+dependencies = [
+  "jinja2>=3.1.6,<4",
+  "marko[toc]>=2.2.2,<3",
+  "pydantic>=2.13.4,<3",
+  "pyyaml>=6.0.3,<7",
+  "typer>=0.25.1,<0.26",
+]
+urls.Homepage = "https://github.com/sidratresearch/cambium"
+urls.Issues = "https://github.com/sidratresearch/cambium/issues"
+scripts.cambium = "cambium.cli:app"
 
 [dependency-groups]
 dev = [
-    "black (>=26.3.1,<27.0.0)",
-    "pytest (>=9.0.3,<10.0.0)",
-    "tox (>=4.53.1,<5.0.0)",
-    "isort (>=8.0.1,<9.0.0)",
-    "pre-commit (>=4.6.0,<5.0.0)",
-    "ipykernel (>=7.2.0,<8.0.0)",
+  "black>=26.3.1,<27",
+  "ipykernel>=7.2,<8",
+  "isort>=8.0.1,<9",
+  "pre-commit>=4.6,<5",
+  "pytest>=9.0.3,<10",
+  "tox>=4.53.1,<5",
 ]
 
 [tool.poetry]
 version = "0.0.0"
-
-[tool.poetry.requires-plugins]
-poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
-
+requires-plugins.poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [ "plugin" ] }
 
 [tool.poetry-dynamic-versioning]
 enable = true
-[build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
-build-backend = "poetry_dynamic_versioning.backend"

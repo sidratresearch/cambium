@@ -23,3 +23,9 @@ repos:
     hooks:
       - id: isort
         args: ["--profile", "black"]
+
+  # format pyproject
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: "v2.21.2"
+    hooks:
+      - id: pyproject-fmt
