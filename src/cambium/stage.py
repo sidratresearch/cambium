@@ -5,6 +5,45 @@ from .tree import TreeSpan
 
 class Stage:
 
+    # Private Utility Functions
+
+    def _set_leaf_metadata(
+        self, metadata_name: str, metadata_value: Any, leaf_uuid: str, tree: TreeSpan
+    ) -> None:
+        """Helper function to set stage-specific metadata"""
+        tree.leaves["metadata"][leaf_uuid].stage_metadata[self.__class__.__name__][
+            metadata_name
+        ] = metadata_value
+
+    def _get_leaf_metadata(
+        self,
+        metadata_name: str,
+        leaf_uuid: str,
+        tree: TreeSpan,
+        metadata_provider: str | None = None,
+    ) -> Any:
+        """Helper function to fetch metadata for a leaf.
+
+        By default this function searches the metadata associated with this stage,
+        passing `metadata_provider = "cambium"` accesses Cambium-provided metadata
+
+        `metadata_provider` can also be passed the (string) class name of another
+        stage, to access metadata set by another stage
+        """
+        leaf_metadata = tree.leaves["metadata"][leaf_uuid]
+
+        if metadata_provider == "cambium":
+            # accessing default metadata
+            return getattr(leaf_metadata, metadata_name)
+
+        if metadata_provider is None:
+            # accessing own metadata
+            metadata_provider = self.__class__.__name__
+
+        return leaf_metadata.stage_metadata[metadata_provider][metadata_name]
+
+    # Functions called by TreeSpan
+
     def tree_hook(self, tree: TreeSpan) -> None:
         """
         Function to run which can modify the tree structure, adding and removing

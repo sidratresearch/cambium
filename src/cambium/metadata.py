@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from collections import defaultdict
+from typing import Any, Optional
 
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
+
+StageMetadata = defaultdict(lambda: None)
 
 
 class LeafMetadata(BaseModel):
@@ -28,3 +31,5 @@ class LeafMetadata(BaseModel):
     # that dict should be a defaultdict(lambda: None)
     # if a stage wants to rewrite one of the default items, it should instead create
     # its own copy within it's dictionary
+
+    stage_metadata: dict[str, dict[str, Any]] = defaultdict(lambda: StageMetadata)
