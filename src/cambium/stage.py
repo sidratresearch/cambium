@@ -117,7 +117,7 @@ def populating_stage_dict(
 
     from . import builtin_stages
 
-    stage_dict = {}
+    stage_dict: dict[str, Stage] = {}
 
     # Getting all subclasses of Stages
     all_subclasses = Stage.__subclasses__()

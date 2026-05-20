@@ -1,3 +1,4 @@
+import logging
 import textwrap
 from pathlib import Path
 from typing import Any
@@ -10,6 +11,8 @@ from ..tree import TreeSpan
 """
 This stage is NOT default because it requires a URL
 """
+
+logger = logging.getLogger(__name__)
 
 
 class AddSitemapConfig(StageConfig):
@@ -34,6 +37,7 @@ class AddSitemap(Stage):
             )
 
     def _add_sitemap_leaf(self, tree: TreeSpan) -> None:
+        logger.debug("Adding new leaf for sitemap.xml")
         uuid = tree.add_leaf(Path())
 
         # unclear what restrictions exist on the filename

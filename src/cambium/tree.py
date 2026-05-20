@@ -64,6 +64,7 @@ class TreeSpan:
         self.build_directory = self.config.build_dir
 
         # TODO: there's not currently anything stopping a stage from setting a leaf path to something that isn't a Path, then when another stage tries to acces .suffix, it breaks
+        # maybe using a pydantic model would help?
         self.leaves: Leaves = {
             "uuids": deque(maxlen=self.config.max_leaves),
             # non-uuid dicts don't need to shrink, so long as uuids are up-to-date
@@ -225,7 +226,17 @@ class TreeSpan:
             pre_hooks = self.leaves["hooks"][leaf_uuid]["pre_hooks"]
             for stage_name in pre_hooks:
                 pre_hook_stage = self.config.stage_dict[stage_name]
-                pre_hook_stage.pre_hook(leaf_uuid, self)
+                try:
+                    pre_hook_stage.pre_hook(leaf_uuid, self)
+                except Exception as e:
+                    initial_path = self.leaves["initial_path"][leaf_uuid]
+                    final_path = self.leaves["final_path"][leaf_uuid]
+                    latest_path = self.leaves["latest_path"][leaf_uuid]
+
+                    logger.error(
+                        f"Error while running pre-hook for stage {stage_name} on file {initial_path} ({latest_path}, {final_path})"
+                    )
+                    raise e
 
     def transform(self) -> None:
         """
@@ -265,10 +276,10 @@ class TreeSpan:
             (self.build_directory / directory).mkdir()
 
         for leaf_uuid in self.leaves["uuids"]:
-            shutil.copy(
-                self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid],
-                self.build_directory / self.leaves["final_path"][leaf_uuid],
-            )
+            from_path = self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid]
+            to_path = self.build_directory / self.leaves["final_path"][leaf_uuid]
+            logger.debug(f"Finalize: Copying {from_path}->{to_path}")
+            shutil.copy(from_path, to_path)
 
         # TODO: remove root/static from leaves
         self._copy_static_files_no_overwrite(self.root_directory / "static")
