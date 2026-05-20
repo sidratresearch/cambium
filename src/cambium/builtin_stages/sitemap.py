@@ -32,9 +32,6 @@ class AddSitemap(Stage):
         # we'll know all final paths
         for leaf_uuid in tree.leaves["uuids"]:
             tree.leaves["hooks"][leaf_uuid]["pre_hooks"].append(self.__class__.__name__)
-            tree.leaves["hooks"][leaf_uuid]["transforms"].append(
-                self.__class__.__name__
-            )
 
     def _add_sitemap_leaf(self, tree: TreeSpan) -> None:
         logger.debug("Adding new leaf for sitemap.xml")
@@ -51,6 +48,7 @@ class AddSitemap(Stage):
         source_file.write_text("")
 
         tree.leaves["latest_path"][uuid] = source_path
+        tree.leaves["hooks"][uuid]["transforms"].append(self.__class__.__name__)
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         final_path = tree.leaves["final_path"][leaf_uuid]
@@ -78,4 +76,6 @@ class AddSitemap(Stage):
 
         sitemap_contents = sitemap_template.format(entries="\n\t  ".join(xml_entries))
 
-        tree.leaves["latest_path"][leaf_uuid].write_text(sitemap_contents)
+        (tree.config.tmp_dir / tree.leaves["latest_path"][leaf_uuid]).write_text(
+            sitemap_contents
+        )
