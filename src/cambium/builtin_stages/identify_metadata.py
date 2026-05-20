@@ -1,3 +1,4 @@
+import datetime
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -9,20 +10,20 @@ from ..tree import TreeSpan
 
 # HTML Parser
 class TitleParser(HTMLParser):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.in_title = False
         self.title = None
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag: str, attrs) -> None:
         if tag.lower() == "title":
             self.in_title = True
 
-    def handle_endtag(self, tag):
+    def handle_endtag(self, tag: str) -> None:
         if tag.lower() == "title":
             self.in_title = False
 
-    def handle_data(self, data):
+    def handle_data(self, data: str) -> None:
         if self.in_title:
             self.title = data.strip()
 
@@ -50,6 +51,16 @@ class IdentifyMetadata(Stage):
         tree.leaves["hooks"][leaf_uuid]["pre_hooks"].append(self.__class__.__name__)
 
     def _extract_metadata(self, leaf_uuid: str, tree: TreeSpan) -> None:
+        # set basic metadata items from `stat`
+        stat_data = (
+            tree.root_directory / tree.leaves["initial_path"][leaf_uuid]
+        ).stat()
+        tree.leaves["metadata"][leaf_uuid].initial_filesize = stat_data.st_size
+        tree.leaves["metadata"][leaf_uuid].modification_time = (
+            datetime.datetime.fromtimestamp(
+                stat_data.st_mtime, tz=datetime.UTC
+            ).isoformat()
+        )
 
         input_path: Path = tree.config.tmp_dir / tree.leaves["latest_path"][leaf_uuid]
         input_extension: str = input_path.suffix

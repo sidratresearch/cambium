@@ -23,7 +23,11 @@ class LeafMetadata(BaseModel):
     title: Optional[str] = None
     """Page Title"""
 
-    # add: filesize, original filename, modification time, etc.
+    initial_filesize: Optional[int] = None
+    """Size of the original file in bytes"""
+
+    modification_time: Optional[str] = None
+    """Modification time of original file, as UTC ISO string"""
 
     # in addition to the "loose" default metadata items we provide, include a "stage"
     # or "extra" attribute here that maps stage name to a dict of that stage's custom
