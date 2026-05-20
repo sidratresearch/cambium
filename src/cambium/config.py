@@ -274,4 +274,4 @@ def convert_glob_string_to_regex(glob_string: str) -> str:
 def dump_default_config() -> None:
     """Print the default configuration in YAML format"""
     # TODO: how are we going to communicate the builtin_paths_to_ignore to the user?
-    print(yaml.safe_dump(default_config.__dict__))
+    print(yaml.safe_dump(default_config.model_dump()))
