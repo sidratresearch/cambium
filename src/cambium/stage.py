@@ -1,5 +1,7 @@
 from typing import Any
 
+from pydantic import BaseModel
+
 from .tree import TreeSpan
 
 """
@@ -7,7 +9,13 @@ When adding a new built-in stage, add it to builtin_stages/__init__.py
 """
 
 
+class StageConfig(BaseModel, extra="forbid"): ...
+
+
 class Stage:
+
+    def __init__(self, config_dict: dict[str, Any]) -> None:
+        self.config = StageConfig.model_validate(config_dict)
 
     # Private Utility Functions
 
@@ -120,6 +128,11 @@ def populating_stage_dict(
             # in the input config, not all stages will have defined configuration
             # and there may be configuration define for stages which are not installed
             # pass the validated config to the constructor
-            stage_dict[tmp_stage.__name__] = tmp_stage()
+            if tmp_stage.__name__ in stage_config:
+                initialized_stage = tmp_stage(stage_config[tmp_stage.__name__])
+            else:
+                initialized_stage = tmp_stage({})
+
+            stage_dict[tmp_stage.__name__] = initialized_stage
 
     return stage_dict
