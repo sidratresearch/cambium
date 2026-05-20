@@ -13,9 +13,12 @@ class Stage:
         Function should also modify each leaf to add itself to the list of pre-hooks,
         transforms, and post-hooks as necessary
 
-        Because tree hooks don't edit the contents of any file, they should not modify leaf.latest_path
+        Because tree hooks don't edit the contents of any file, they should not
+        modify leaf.latest_path
 
-        the tree_hook method is required because it is the function that registers the Stage into the pre/transform/post hooks for a leaf, and therefore if the tree_hook is not run, nothing else will be either
+        the tree_hook method is required because it is the function that registers
+        the Stage into the pre/transform/post hooks for a leaf, and therefore if
+        the tree_hook is not run, nothing else will be either
         """
         raise NotImplementedError()
 

@@ -34,12 +34,12 @@ class IdentifyMetadata(Stage):
         # Get all pages that should have metadata extracted
         tree.apply_to_leaves(self._tree_hook_for_leaf)
 
-    def pre_hook(self, leaf_uuid, tree):
+    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         self._extract_metadata(leaf_uuid=leaf_uuid, tree=tree)
 
     # Utility Functions
 
-    def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan):
+    def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
         if tree.leaves["latest_path"][leaf_uuid].suffix.lower() not in (
             ".md",
             ".html",
@@ -49,7 +49,7 @@ class IdentifyMetadata(Stage):
 
         tree.leaves["hooks"][leaf_uuid]["pre_hooks"].append(self.__class__.__name__)
 
-    def _extract_metadata(self, leaf_uuid: str, tree: TreeSpan):
+    def _extract_metadata(self, leaf_uuid: str, tree: TreeSpan) -> None:
 
         input_path: Path = tree.config.tmp_dir / tree.leaves["latest_path"][leaf_uuid]
         input_extension: str = input_path.suffix
@@ -59,7 +59,9 @@ class IdentifyMetadata(Stage):
         elif input_extension in (".html", ".htm"):
             self._get_metadata_from_html(input_path, leaf_uuid, tree)
 
-    def _get_metadata_from_html(self, input_path: Path, leaf_uuid: str, tree: TreeSpan):
+    def _get_metadata_from_html(
+        self, input_path: Path, leaf_uuid: str, tree: TreeSpan
+    ) -> None:
         raw_data = input_path.read_text()
 
         html_parser = TitleParser()
@@ -68,7 +70,9 @@ class IdentifyMetadata(Stage):
         if html_parser.title is not None:
             tree.leaves["metadata"][leaf_uuid].title = html_parser.title
 
-    def _get_metadata_from_md(self, input_path: Path, leaf_uuid: str, tree: TreeSpan):
+    def _get_metadata_from_md(
+        self, input_path: Path, leaf_uuid: str, tree: TreeSpan
+    ) -> None:
 
         raw_data = input_path.read_text()
         md = Markdown()
