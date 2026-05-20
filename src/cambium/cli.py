@@ -19,6 +19,12 @@ def version_callback(value: bool) -> None:
         raise typer.Exit
 
 
+def dump_config_callback(value: bool) -> None:
+    if value:
+        config.dump_default_config()
+        raise typer.Exit
+
+
 @app.command()
 def main(
     config_path: Annotated[
@@ -29,7 +35,16 @@ def main(
         bool | None,
         typer.Option("--version", callback=version_callback, is_eager=True),
     ] = None,
-):
+    __: Annotated[
+        bool | None,
+        typer.Option(
+            "--dump-default-config",
+            help="Dump default configuration info to stdout",
+            callback=dump_config_callback,
+            is_eager=True,
+        ),
+    ] = None,
+) -> None:
 
     make_ascii_art()
 
