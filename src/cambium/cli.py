@@ -33,7 +33,12 @@ def main(
     ] = None,
     _: Annotated[
         bool | None,
-        typer.Option("--version", callback=version_callback, is_eager=True),
+        typer.Option(
+            "--version",
+            help="Print version info",
+            callback=version_callback,
+            is_eager=True,
+        ),
     ] = None,
     __: Annotated[
         bool | None,
@@ -63,7 +68,7 @@ def main(
     logger.info("Cambium complete!")
 
 
-def make_ascii_art():
+def make_ascii_art() -> None:
     ascii_art = f"""
 ^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^^v^v^v^v^v^v^v^v^v^
 

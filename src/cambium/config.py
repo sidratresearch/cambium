@@ -74,12 +74,11 @@ class CambiumConfiguration(BaseModel):
 default_config = CambiumConfiguration()
 
 
-class WorkingConfiguration(object):
+class WorkingConfiguration:
     """The Internal Working Cambium Configuration Object
 
-    Contains all working configurations parameters, resolved to their appropriate location for
-    a Cambium Run
-
+    Contains all working configurations parameters, resolved to their appropriate
+    location for a Cambium Run
     """
 
     ignore_lists: dict[str, list[str]] = {
@@ -91,7 +90,7 @@ class WorkingConfiguration(object):
 
     input_config: Optional[CambiumConfiguration] = None
 
-    def __init__(self, input_config: Optional[CambiumConfiguration] = None):
+    def __init__(self, input_config: Optional[CambiumConfiguration] = None) -> None:
 
         # Setting Temporary Directory
         self.tmp_dir_obj = tempfile.TemporaryDirectory(prefix="cambium_")
@@ -131,16 +130,16 @@ class WorkingConfiguration(object):
             Path(__file__).parent / "themes/default",
         ]
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up All Lingering Directories"""
 
         # Cleaning up temporary directory
         self.tmp_dir_obj.cleanup()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"""Cambium Working Configuration:\nTemporary Directory Path: {self.tmp_dir}"""
 
-    def populate_ignore_lists(self):
+    def populate_ignore_lists(self) -> None:
         """Combining ignore lists and putting in appropriate dictionary"""
 
         # Combining Defaults and Input Configuration
@@ -182,7 +181,7 @@ class WorkingConfiguration(object):
 
 def initialize_configuration(
     input_configuration: Optional[CambiumConfiguration] = None,
-):
+) -> None:
     """Initialize the current configuration for a Cambium run
 
     Parameters
@@ -248,7 +247,7 @@ def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
 
     # Opening and reading yaml config
     logger.debug(f"Reading configuration file {config_path}")
-    with open(config_path, "r") as file:
+    with config_path.open() as file:
         config_yaml = yaml.safe_load(file)
 
     # Extracting required dictionary parameters from the YAML
@@ -267,9 +266,9 @@ def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
 def convert_glob_string_to_regex(glob_string: str) -> str:
     """Convert glob string to regex string, escaping appropriate characters"""
 
-    main_segment = re.escape(glob_string).replace("\*", ".*")
+    main_segment = re.escape(glob_string).replace("\\*", ".*")
 
-    return "^" + main_segment + "$|\/" + main_segment + "$"
+    return "^" + main_segment + "$|\\/" + main_segment + "$"
 
 
 def dump_default_config() -> None:

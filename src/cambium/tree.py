@@ -11,8 +11,9 @@ if typing.TYPE_CHECKING:
 import os
 import shutil
 from collections import deque
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, TypedDict
+from typing import TypedDict
 
 from .metadata import LeafMetadata
 
@@ -42,17 +43,16 @@ class TreeSpan:
     Not care about files/directories that are ignored by builtin or config
 
     Hold information on what actions need to be taken (on treewide and/or leaf-wide scales)
-        Determines these also (transformations, parsing/collecting information, copy static files, templating, etc)
+    Determines these also (transformations, parsing/collecting information, copy static files, templating, etc)
     Populates "ghost" files in output directory for files that we want to exist, even if they aren't in input (index.html)
     Identify what file should be end up at "index.html" in a directory (if no index, turn README into index)
 
     Have information showing the final output directory structure (iterable)
     Have lookup tables to correlate [input file]->[output file] and vice versa, and [input file]->[output directory]
     Iterators to operate on every leaf (file/directory)
-
     """
 
-    # These work as class attributes so long as we never have multiple instances of TreeSpan
+    # These work as class attr so long as we never have multiple instances of TreeSpan
     root_directory: Path
     build_directory: Path
     directories_in_build: list[Path] = []
@@ -64,9 +64,9 @@ class TreeSpan:
         self.build_directory = self.config.build_dir
 
         self.leaves: Leaves = {
-            # dictionary doesn't need to ever shrink, so long as existing entries are up-to-date
             "uuids": deque(maxlen=self.config.max_leaves),
-            # never iterate over these
+            # non-uuid dicts don't need to shrink, so long as uuids are up-to-date
+            # therefore: never iterate over these
             "initial_path": {},
             "latest_path": {},
             "final_path": {},
@@ -86,7 +86,8 @@ class TreeSpan:
             self.config.stage_dict[stage].tree_hook(self)
             self._check_leaf_collisions()
 
-        # between tree hooks and pre hooks we need to copy all files into a tempdir so that pre-hooks and transformers can all use latest_path as relative to temp dir
+        # between tree hooks and pre hooks we need to copy all files into a tempdir so
+        # that pre-hooks and transformers can use latest_path as relative to temp dir
         logger.info(
             f"Copying {len(self.leaves['uuids'])} source files to temporary storage"
         )
@@ -103,13 +104,14 @@ class TreeSpan:
 
     def _walk_directory_tree(self) -> None:
         """
-        Walks the tree and populates the list of directories that are cared about, as well as saving initial copies of information regarding files we care about
+        Walks the tree and populates the list of directories that are cared about,
+        as well as saving initial copies of information regarding files we care about
         """
 
         for current_root, directories, files in os.walk(
             self.root_directory, topdown=True
         ):
-            # current_root: string starting with ./ (except on first loop, where it's ".")
+            # current_root: string starting w ./ (except on first loop, where it's ".")
             # directories: list of strings, not ending with /
             # files: list of strings
 
@@ -122,16 +124,20 @@ class TreeSpan:
                 for d in directories:
                     if f"{current_root}/{d}" == matcher:
                         directories.remove(d)
+                        logger.debug(f"Ignoring directory '{d}', removed by path")
                 for f in files:
                     if f"{current_root}/{f}" == matcher:
                         files.remove(f)
+                        logger.debug(f"Ignoring file '{f}', removed by path")
 
             # filter by name
             for name in self.config.ignore_lists["names"]:
                 if name in directories:
                     directories.remove(name)
+                    logger.debug(f"Ignoring directory '{d}', removed by name")
                 if name in files:
                     files.remove(name)
+                    logger.debug(f"Ignoring file '{f}', removed by name")
 
             # filter by glob
             for pattern in self.config.ignore_lists["globs"]:
@@ -139,16 +145,19 @@ class TreeSpan:
                     full_path = f"{current_root}/{d}".removeprefix("./")
                     if re.match(pattern, full_path) is not None:
                         directories.remove(d)
+                        logger.debug(f"Ignoring directory '{d}', removed by glob")
                 for f in files:
                     full_path = f"{current_root}/{f}".removeprefix("./")
                     if re.match(pattern, full_path) is not None:
                         files.remove(f)
+                        logger.debug(f"Ignoring file '{f}', removed by glob")
 
             # filter files by ext
             for extension in self.config.ignore_lists["extensions"]:
                 for f in files:
                     if f.endswith(f".{extension}"):
                         files.remove(f)
+                        logger.debug(f"Ignoring file '{f}', removed by extension")
 
             # save dirs to list
             for d in directories:
@@ -211,7 +220,6 @@ class TreeSpan:
             for stage_name in pre_hooks:
                 pre_hook_stage = self.config.stage_dict[stage_name]
                 pre_hook_stage.pre_hook(leaf_uuid, self)
-        return
 
     def transform(self) -> None:
         """
@@ -226,8 +234,6 @@ class TreeSpan:
                 transform_stage = self.config.stage_dict[stage_name]
                 transform_stage.transform(leaf_uuid, self)
 
-        return
-
     def apply_post_hooks(self) -> None:
         """
         Iterate through each leaf and apply, in order, the post hooks that it calls for
@@ -238,8 +244,6 @@ class TreeSpan:
             for stage_name in post_hooks:
                 post_hook_stage = self.config.stage_dict[stage_name]
                 post_hook_stage.post_hook(leaf_uuid, self)
-
-        return
 
     def finalize(self) -> None:
         """
@@ -275,9 +279,8 @@ class TreeSpan:
                 final_path = self.build_directory / "static" / path_from_static
 
                 if final_path.exists():
-                    # TODO: change to info or debug
-                    logger.warning(
-                        f"Skipping {static_directory / path_from_root} because it exists"
+                    logger.info(
+                        f"Skipping {static_directory/path_from_root} because it exists"
                     )
                     continue
 

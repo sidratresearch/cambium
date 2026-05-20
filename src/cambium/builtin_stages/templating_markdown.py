@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class TemplateMarkdown(Stage):
 
-    jinja_template_paths = []
+    jinja_template_paths: list[Path] = []
 
     # Primary Hook Functions
 
