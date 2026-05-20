@@ -50,7 +50,7 @@ class AddSitemap(Stage):
         source_file.parent.mkdir(parents=True, exist_ok=True)
         source_file.write_text("")
 
-        tree.leaves["latest_path"][uuid] = source_file
+        tree.leaves["latest_path"][uuid] = source_path
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         final_path = tree.leaves["final_path"][leaf_uuid]

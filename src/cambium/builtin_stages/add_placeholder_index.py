@@ -25,4 +25,4 @@ class AddPlaceholderIndex(Stage):
 
         uuid = tree.add_leaf(directory)
         tree.leaves["final_path"][uuid] = directory / "index.html"
-        tree.leaves["latest_path"][uuid] = source_file
+        tree.leaves["latest_path"][uuid] = source_path
