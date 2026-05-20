@@ -74,6 +74,8 @@ class TemplateMarkdown(Stage):
         main_template = self.jinja_env.get_template("base.html.jinja")
         main_content = input_path.read_text()
 
+        # Jinja does not complain in a variable is missing from the environment
+        # Something to think about wrt potential stage-added items and custom themes
         output_html = main_template.render(
             page_title=f"{tree.leaves['metadata'][leaf_uuid].title} - {tree.config.site_name}",
             main_content=main_content,

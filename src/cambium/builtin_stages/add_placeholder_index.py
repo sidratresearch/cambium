@@ -18,8 +18,8 @@ class AddPlaceholderIndex(Stage):
 
     def _create_index_leaf(self, directory: Path, tree: TreeSpan) -> None:
         # TODO: figure out what to do about this
-        initial_path = Path(".cambium/AddPlaceholderIndex/index.html")
-        source_file = tree.config.tmp_dir / initial_path
+        source_path = Path(".cambium/AddPlaceholderIndex/index.html")
+        source_file = tree.config.tmp_dir / source_path
         source_file.parent.mkdir(parents=True, exist_ok=True)
         source_file.write_text("")
 

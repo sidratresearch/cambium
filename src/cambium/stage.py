@@ -2,6 +2,10 @@ from typing import Any
 
 from .tree import TreeSpan
 
+"""
+When adding a new built-in stage, add it to builtin_stages/__init__.py
+"""
+
 
 class Stage:
 

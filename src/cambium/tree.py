@@ -63,6 +63,7 @@ class TreeSpan:
         self.root_directory = self.config.root_dir
         self.build_directory = self.config.build_dir
 
+        # TODO: there's not currently anything stopping a stage from setting a leaf path to something that isn't a Path, then when another stage tries to acces .suffix, it breaks
         self.leaves: Leaves = {
             "uuids": deque(maxlen=self.config.max_leaves),
             # non-uuid dicts don't need to shrink, so long as uuids are up-to-date
@@ -84,6 +85,7 @@ class TreeSpan:
         for stage in self.config.stages:
             logger.debug(f"Running tree_hook for stage {stage}")
             self.config.stage_dict[stage].tree_hook(self)
+            # this failure is really ugly, maybe catch and throw something nicer?
             self._check_leaf_collisions()
 
         # between tree hooks and pre hooks we need to copy all files into a tempdir so
@@ -171,7 +173,11 @@ class TreeSpan:
                 self.add_leaf(path)
 
     def _check_leaf_collisions(self) -> None:
-        final_paths = [self.leaves["final_path"][uuid] for uuid in self.leaves["uuids"]]
+        # cast to string because it's possible to assign to the dict as a string
+        # instead of a path, and Path("blah") != "blah"
+        final_paths = [
+            str(self.leaves["final_path"][uuid]) for uuid in self.leaves["uuids"]
+        ]
         if len(final_paths) > len(set(final_paths)):
             raise ValueError("Collision in leaf output paths")
 
