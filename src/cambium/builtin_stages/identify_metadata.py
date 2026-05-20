@@ -1,9 +1,10 @@
+from html.parser import HTMLParser
+from pathlib import Path
+
+from marko import Markdown
+
 from ..stage import Stage
 from ..tree import TreeSpan
-
-from pathlib import Path
-from marko import Markdown
-from html.parser import HTMLParser
 
 
 # HTML Parser
