@@ -3,6 +3,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from marko import Markdown
+from marko.block import Heading
 
 from ..stage import Stage
 from ..tree import TreeSpan
@@ -91,5 +92,5 @@ class IdentifyMetadata(Stage):
 
         # Getting first element, and testing if it's a heading
         heading = doc.children[0]
-        if heading.level == 1:
+        if isinstance(heading, Heading) and (heading.level == 1):
             tree.leaves["metadata"][leaf_uuid].title = heading.children[0].children
