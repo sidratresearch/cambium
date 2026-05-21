@@ -82,6 +82,7 @@ class TemplateMarkdown(Stage):
             relative_path_modifier="../" * number_of_parents,
             footer_left=tree.config.site_name,
             header_left=f"<a href='{'../'*number_of_parents}index.html' class='header-link'>{tree.config.site_name}</a>",
+            table_of_contents=tree.leaves["metadata"][leaf_uuid].table_of_contents,
         )
 
         output_path.write_text(output_html)
