@@ -1,7 +1,11 @@
+from collections import Counter
+
 from marko import Markdown
-from marko.block import Heading
+from marko.block import Document, Heading
+from marko.element import Element
 from marko.html_renderer import HTMLRenderer
 from marko.inline import Link
+from slugify import slugify
 
 
 class CambiumHTMLRenderer(HTMLRenderer):
@@ -19,6 +23,44 @@ class CambiumHTMLRenderer(HTMLRenderer):
         return heading_template.format(
             level=element.level, id=element.id, children=self.render_children(element)
         )
+
+
+def get_raw_content(element: Element) -> str:
+    """Get the pure text content of an element"""
+    content = ""
+    for child in element.children:
+        if isinstance(child, str):
+            content += child
+        else:
+            content += get_raw_content(child)
+    return content
+
+
+def add_heading_anchors(document: Document) -> Document:
+    """Add GitHub-style slugs as `id` attributes on `Heading` elements
+
+    While Marko has a toc extension, it doesn't handle recurring heading anchors,
+    or give much flexibility in what the rendered HTML looks like
+    """
+
+    anchor_counter = Counter()
+    for child in document.children:
+        if not isinstance(child, Heading):
+            continue
+
+        content = get_raw_content(child)
+        default_anchor = slugify(content)
+
+        if anchor_counter[default_anchor] > 0:
+            anchor = default_anchor + f"-{anchor_counter[default_anchor]}"
+        else:
+            anchor = default_anchor
+        anchor_counter[default_anchor] += 1
+
+        # prepend the id to reduce chance of collisions
+        child.id = "cambium-header-anchor-" + anchor
+
+    return document
 
 
 def markdown_to_html(markdown: str) -> str:

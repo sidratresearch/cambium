@@ -29,6 +29,9 @@ class LeafMetadata(BaseModel):
     modification_time: Optional[str] = None
     """Modification time of original file, as UTC ISO string"""
 
+    table_of_contents: Optional[str] = None
+    """HTML string with headings, only defined for markdown files"""
+
     # in addition to the "loose" default metadata items we provide, include a "stage"
     # or "extra" attribute here that maps stage name to a dict of that stage's custom
     # metadata items

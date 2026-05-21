@@ -7,6 +7,10 @@ from marko.block import Heading
 
 from ..stage import Stage
 from ..tree import TreeSpan
+from .utils import (
+    add_heading_anchors,
+    get_raw_content,
+)
 
 
 # HTML Parser
@@ -87,9 +91,66 @@ class IdentifyMetadata(Stage):
 
         raw_data = input_path.read_text()
         md = Markdown()
-        doc = md.parse(raw_data)
+        doc = add_heading_anchors(md.parse(raw_data))
 
+        # extract title
         # Getting first element, and testing if it's a heading
         heading = doc.children[0]
         if isinstance(heading, Heading) and (heading.level == 1):
             tree.leaves["metadata"][leaf_uuid].title = heading.children[0].children
+
+        # extract TOC
+        flat_toc = [
+            {"id": child.id, "text": get_raw_content(child), "level": child.level}
+            for child in doc.children
+            if isinstance(child, Heading)
+        ]
+        tree.leaves["metadata"][leaf_uuid].table_of_contents = render_toc(
+            flat_toc, mindepth=2
+        )
+
+
+def render_toc(
+    headings: list[dict[str, str | int]], mindepth: int = 1, maxdepth: int | None = None
+) -> str:
+    """Render a set of dictionaries as a nested <ul>
+
+    Modification of marko's TocRenderMixin.render_toc
+    """
+    first_level = None
+    last_level = None
+    rv = []
+
+    opening, closing = '<ul class="toc-level-{level}">\n', "</ul>\n"
+    item_format = '<li><a href="#{slug}">{text}</a></li>'
+
+    for heading in headings:
+        level, slug, text = heading["level"], heading["id"], heading["text"]
+
+        if level < mindepth or (maxdepth is not None and level > maxdepth):
+            continue
+
+        # initialize
+        if first_level is None:
+            first_level = mindepth
+            last_level = level
+            rv.append(opening.format(level=level))
+
+        # step in
+        if last_level == level - 1:
+            rv.append("\t" * last_level + opening.format(level=level))
+            last_level = level
+
+        # step out
+        while last_level > level:
+            rv.append("\t" * level + closing)
+            last_level -= 1
+        rv.append("\t" * level + item_format.format(slug=slug, text=text) + "\n")
+
+    if first_level is None or last_level is None:
+        return ""
+
+    for _ in range(first_level, last_level + 1):
+        rv.append(closing)
+
+    return "".join(rv).strip()
