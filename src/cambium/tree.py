@@ -13,7 +13,7 @@ import shutil
 from collections import deque
 from collections.abc import Callable
 from pathlib import Path
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 from .metadata import LeafMetadata
 
@@ -208,59 +208,47 @@ class TreeSpan:
         for leaf_uuid in self.leaves["uuids"]:
             function(leaf_uuid, self)
 
-    def apply_pre_hooks(self) -> None:
+    def _apply_hook(
+        self,
+        hook_type: Literal["pre_hooks"] | Literal["transforms"] | Literal["post_hooks"],
+    ) -> None:
         """
-        Iterate through each leaf and apply, in order, the pre hooks that it calls for
+        Iterate through each leaf and apply, in order, the `hook_type` hooks it wants
 
-        If a pre-hook fails, the remaining pre-hooks for that Leaf should not be run,
-        and the status indicators for transform and post-hooks should be set to skip
+        If a hook function fails, the remaining hook functions for that Leaf should not
+        be run, and the status indicators for future hook types should be set to skip
 
-        If a pre-hook errors, we either
+        If a hook function errors, we either
         - raise that error for that leaf immediately, OR
         - collect errors across all leaves, and raise them collectively (maybe better
             for multithreading)
         """
-        logger.info("Running pre-transformation hooks")
+        logger.info(f"Running {hook_type}")
 
-        for leaf_uuid in self.leaves["uuids"]:
-            pre_hooks = self.leaves["hooks"][leaf_uuid]["pre_hooks"]
-            for stage_name in pre_hooks:
-                pre_hook_stage = self.config.stage_dict[stage_name]
-                try:
-                    pre_hook_stage.pre_hook(leaf_uuid, self)
-                except Exception as e:
-                    initial_path = self.leaves["initial_path"][leaf_uuid]
-                    final_path = self.leaves["final_path"][leaf_uuid]
-                    latest_path = self.leaves["latest_path"][leaf_uuid]
-
-                    logger.error(
-                        f"Error while running pre-hook for stage {stage_name} on file {initial_path} ({latest_path}, {final_path})"
-                    )
-                    raise e
-
-    def transform(self) -> None:
-        """
-        Iterate through each leaf, applying the Stage transforms it requests
-        """
-        logger.info("Running transformations")
         # TODO: figure out how to work this in with apply_to_leaves
         # maybe each leaf has a method called apply_transforms?
         for leaf_uuid in self.leaves["uuids"]:
-            transforms = self.leaves["hooks"][leaf_uuid]["transforms"]
-            for stage_name in transforms:
-                transform_stage = self.config.stage_dict[stage_name]
-                transform_stage.transform(leaf_uuid, self)
+            stage_names = self.leaves["hooks"][leaf_uuid][hook_type]
+            for stage_name in stage_names:
+                stage_instance = self.config.stage_dict[stage_name]
+                try:
+                    hook_function_name = hook_type[:-1]
+                    hook_function = getattr(stage_instance, hook_function_name)
+                    hook_function(leaf_uuid, self)
+                except Exception as e:
+                    initial_path = self.leaves["initial_path"][leaf_uuid]
+                    errormsg = f"Error running {hook_type} for stage {stage_name} on file {initial_path}"
+                    logger.error(errormsg)
+                    raise e
+
+    def apply_pre_hooks(self) -> None:
+        self._apply_hook("pre_hooks")
+
+    def transform(self) -> None:
+        self._apply_hook("transforms")
 
     def apply_post_hooks(self) -> None:
-        """
-        Iterate through each leaf and apply, in order, the post hooks that it calls for
-        """
-        logger.info("Running post-transformation hooks")
-        for leaf_uuid in self.leaves["uuids"]:
-            post_hooks = self.leaves["hooks"][leaf_uuid]["post_hooks"]
-            for stage_name in post_hooks:
-                post_hook_stage = self.config.stage_dict[stage_name]
-                post_hook_stage.post_hook(leaf_uuid, self)
+        self._apply_hook("post_hooks")
 
     def finalize(self) -> None:
         """
