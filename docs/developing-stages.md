@@ -1,0 +1,36 @@
+# Notes on Developing Stages
+
+- `initial_path` should be treated as read-only
+- `final_path` should only be changed be tree hooks
+
+## The 'Jobs' of Stage Hooks
+
+- Tree hooks
+    - Identify and mark leaves that need future work (e.g., markdown files to transform, directories missing index.html)
+    - Create and remove leaves as necessary
+    - Update `final_path`
+- Pre-hooks
+    - Collect information (e.g., metadata), where possible at the pre-hook stage
+    - Modify the contents (without major transformation), writing back to `latest_path`
+- Transforms
+    - Perform major modifications to the file (md->html, jpg->webp)
+- Post-hooks
+    - Collect any information only available after transformation
+    - Perform additional modifications only available after transformation (e.g., Jinja templating)
+
+## Other Stage Responsibilities
+
+### Managing Paths
+
+If stage edits the path of a leaf, it likely needs to do that twice: once in the `tree_hook` to set `final_path`, and once in another hook when the action is being taken, and data is written to an updated `latest_path`.
+While a stage can safely assume that the absolute path provided by `TreeSpan.abs_write_path(leaf_uuid)` always contains the most recent copy of the data, assumptions _cannot_ safely be made regarding the actual path returned because other stages may have modified `latest_path`.
+
+So, when setting `latest_path` in a pre/post/transform hook, a stage needs to apply the change to the current `latest_path`, _not_ to `initial_path` since other changes may have happened causing `latest_path` to not look like `initial_path`.
+
+For example:
+
+1. The tree hook for `URLEncodePaths` sees a file named `cats or dogs.md`, and sets `final_path` to `cats-or-dogs.md`
+2. The tree hook for `TransformMarkdown` sees final path `cats-or-dogs.md` and wants to change the extension to `.html`. In order to not revert the changes made by `URLEncodePaths`, the new `final_path` needs to be `final_path.with_suffix(".html")` _not_ `initial_path.with_suffix(".html")`
+3. `TreeSpan` copies all initial paths (currently equivalent to latest paths) into the temporary directory
+4. The pre-hook for `URLEncodePaths` moves the file from `latest_path="cats or dogs.md"` (accessing the temporary directory copy with `TreeSpan.abs_write_path(leaf_uuid)`) to `cats-or-dogs.md`, and updates `latest_path`.
+5. The transform hook for `TransformMarkdown` reads the contents of `latest_path` (`/tmp_dir/cats-or-dogs.md`), updates `latest_path` to have the correct extension, and writes to the new latest path
