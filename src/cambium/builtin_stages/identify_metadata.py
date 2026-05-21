@@ -95,6 +95,9 @@ class IdentifyMetadata(Stage):
         md = Markdown()
         doc = add_heading_anchors(md.parse(raw_data))
 
+        if len(doc.children) == 0:
+            return
+
         # extract title
         # Getting first element, and testing if it's a heading
         heading = doc.children[0]
