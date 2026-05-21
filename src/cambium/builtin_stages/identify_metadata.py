@@ -30,7 +30,6 @@ class TitleParser(HTMLParser):
 
 
 class IdentifyMetadata(Stage):
-
     def tree_hook(self, tree: TreeSpan) -> None:
 
         # Get all pages that should have metadata extracted

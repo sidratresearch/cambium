@@ -23,6 +23,7 @@ class AddSitemap(Stage):
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.config = AddSitemapConfig.model_validate(config_dict)
+        self.requires = []
         self.entries = []
 
     def tree_hook(self, tree: TreeSpan) -> None:

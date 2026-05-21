@@ -7,16 +7,30 @@ from .tree import TreeSpan
 
 """
 When adding a new built-in stage, add it to builtin_stages/__init__.py
+
+In general if you're adding a new stage
+- overwrite __init__ if you:
+    - have a stage config (also write a model class),
+    - need to set required stages, or
+    - need to store data in instance variables
+- overwrite tree_hook()
+- overwrite any of pre_hook(), transform(), post_hook()
 """
 
 
-class StageConfig(BaseModel, extra="forbid"): ...
+class StageConfig(BaseModel, extra="forbid"):
+    """The default stage config is empty, and it is an error to provide entries"""
+
+    ...
 
 
 class Stage:
-
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.config = StageConfig.model_validate(config_dict)
+        """Validated configuration"""
+
+        self.requires: list[str] = []
+        """Other stages that must also be present, unordered"""
 
     # Private Utility Functions
 
@@ -139,9 +153,17 @@ def populating_stage_dict(
 
             stage_dict[tmp_stage.__name__] = initialized_stage
 
-    # error on any requsted stages that aren't present
+    # error if any stages requested in the config are missing
     for requested in stage_list:
         if requested not in stage_dict:
             raise ValueError(f"Requested stage `{requested}` was not found.")
+
+    # ensure that any stages with dependencies are satisfied
+    for i, (name, instance) in enumerate(stage_dict.items()):
+        for required_stage in instance.requires:
+            if required_stage not in stage_dict:
+                raise ValueError(
+                    f"Stage `{name}` requires stage `{required_stage}` which is not requested in config"
+                )
 
     return stage_dict
