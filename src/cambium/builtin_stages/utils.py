@@ -1,4 +1,5 @@
 from collections import Counter
+from pathlib import Path
 
 from marko import Markdown
 from marko.block import Document, Heading
@@ -11,18 +12,37 @@ from slugify import slugify
 class CambiumHTMLRenderer(HTMLRenderer):
     """Custom renderer class to support Cambium-specific features"""
 
-    def render_link(self, element: Link) -> str:
-        """Rewrites `.md` links to `.HTML`"""
-        if element.dest.endswith(".md"):
-            element.dest = element.dest[: element.dest.rindex(".md")] + ".html"
-        return super().render_link(element)
-
     def render_heading(self, element: Heading) -> str:
         """Adds anchor links from an `id` attribute"""
         heading_template = '<h{level} id="{id}">{children}</h{level}>\n'
         return heading_template.format(
             level=element.level, id=element.id, children=self.render_children(element)
         )
+
+
+def is_external_link(dest: str) -> bool:
+    return any(dest.startswith(prefix) for prefix in ["http:", "https:", "www."])
+
+
+def rewrite_md_links(
+    element: Element, parent_directory: Path, links_to_update: list[Path]
+) -> Element:
+    """Change links to markdown files point to their transformed HTML versions"""
+    if isinstance(element, str):
+        return element
+
+    if isinstance(element, Link):
+        if is_external_link(element.dest):
+            return Element
+
+        if (parent_directory / element.dest) in links_to_update:
+            # TODO: handle .MD etc
+            element.dest = element.dest.removesuffix(".md") + ".html"
+        return element
+
+    for child in element.children:
+        child = rewrite_md_links(child, parent_directory, links_to_update)
+    return element
 
 
 def get_raw_content(element: Element) -> str:
