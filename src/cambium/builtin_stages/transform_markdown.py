@@ -1,28 +1,6 @@
-from marko import Markdown
-from marko.html_renderer import HTMLRenderer
-from marko.inline import Link
-from typing_extensions import override
-
 from ..stage import Stage
 from ..tree import TreeSpan
-
-
-class CambiumHTMLRenderer(HTMLRenderer):
-    @override
-    def render_link(self, element: Link) -> str:
-        if element.dest.endswith(".md"):
-            element.dest = element.dest[: element.dest.rindex(".md")] + ".html"
-        return super().render_link(element)
-
-
-def markdown_to_html(markdown: str) -> str:
-    # WARNING: The Markdown class is not thread-safe.
-    # Create a new instance for each thread.
-    marko_object = Markdown(extensions=["gfm", "toc"], renderer=CambiumHTMLRenderer)
-    # Including "toc" here gives IDs to the headings, but doesn't inject a <ul> anywhere
-    # To generate the list of links, need to call `marko_object.renderer.render_toc()`
-    # Which returns a string
-    return marko_object.convert(markdown)
+from .utils import markdown_to_html
 
 
 class TransformMarkdown(Stage):
