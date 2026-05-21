@@ -32,7 +32,7 @@ class TemplateMarkdown(Stage):
         """
         Adds TemplatingMarkdown to markdown files not in static
         """
-        if tree.leaves["latest_path"][leaf_uuid].suffix.lower() != ".md":
+        if tree.leaves["initial_path"][leaf_uuid].suffix.lower() != ".md":
             return
 
         tree.leaves["hooks"][leaf_uuid]["post_hooks"].append(self.__class__.__name__)
@@ -65,10 +65,10 @@ class TemplateMarkdown(Stage):
 
     def _create_page(self, leaf_uuid: str, tree: TreeSpan) -> None:
 
-        input_path: Path = tree.config.tmp_dir / tree.leaves["latest_path"][leaf_uuid]
-        output_path: Path = tree.config.tmp_dir / tree.leaves["final_path"][leaf_uuid]
+        input_path = tree.abs_write_path(leaf_uuid)
+
         number_of_parents: int = len(
-            output_path.parent.relative_to(tree.config.tmp_dir.absolute()).parents
+            input_path.parent.relative_to(tree.config.tmp_dir.absolute()).parents
         )
 
         main_template = self.jinja_env.get_template("base.html.jinja")
@@ -85,5 +85,4 @@ class TemplateMarkdown(Stage):
             table_of_contents=tree.leaves["metadata"][leaf_uuid].table_of_contents,
         )
 
-        output_path.write_text(output_html)
-        tree.leaves["latest_path"][leaf_uuid] = output_path
+        input_path.write_text(output_html)

@@ -45,7 +45,9 @@ class IdentifyMetadata(Stage):
     # Utility Functions
 
     def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        if tree.leaves["latest_path"][leaf_uuid].suffix.lower() not in (
+        # this tree hook operates on initial paths
+        # because those are the files that are read for the actual scraping
+        if tree.leaves["initial_path"][leaf_uuid].suffix.lower() not in (
             ".md",
             ".html",
             ".htm",
@@ -66,7 +68,7 @@ class IdentifyMetadata(Stage):
             ).isoformat()
         )
 
-        input_path: Path = tree.config.tmp_dir / tree.leaves["latest_path"][leaf_uuid]
+        input_path: Path = tree.abs_write_path(leaf_uuid)
         input_extension: str = input_path.suffix
 
         if input_extension in (".md"):

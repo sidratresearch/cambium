@@ -4,8 +4,6 @@ from ..stage import Stage
 from ..tree import TreeSpan
 
 
-# initial path is directory
-# initial path is file that lead to the cause of the output
 class AddPlaceholderIndex(Stage):
 
     def tree_hook(self, tree: TreeSpan) -> None:
@@ -19,10 +17,10 @@ class AddPlaceholderIndex(Stage):
     def _create_index_leaf(self, directory: Path, tree: TreeSpan) -> None:
         # TODO: figure out what to do about this
         source_path = Path(".cambium/AddPlaceholderIndex/index.html")
-        source_file = tree.config.tmp_dir / source_path
-        source_file.parent.mkdir(parents=True, exist_ok=True)
-        source_file.write_text("")
 
         uuid = tree.add_leaf(directory)
+        # not using tree.update_leaf_path because it doesn't make sense here
         tree.leaves["final_path"][uuid] = directory / "index.html"
         tree.leaves["latest_path"][uuid] = source_path
+
+        tree.abs_write_path(uuid).write_text("")

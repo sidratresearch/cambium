@@ -208,6 +208,30 @@ class TreeSpan:
         for leaf_uuid in self.leaves["uuids"]:
             function(leaf_uuid, self)
 
+    def update_leaf_path(
+        self,
+        leaf_uuid: str,
+        path_type: Literal["latest"] | Literal["final"],
+        updater: Callable[[Path], Path],
+    ) -> None:
+        """Update the latest or final path of a leaf in a functional manner"""
+        self.leaves[f"{path_type}_path"][leaf_uuid] = updater(
+            self.leaves[f"{path_type}_path"][leaf_uuid]
+        )
+        if path_type == "final":
+            self._check_leaf_collisions()
+
+    def abs_write_path(self, leaf_uuid: str) -> Path:
+        """Get the absolute path to a safe writeable location for a leaf
+
+        Ensures that the directory exists to be written to, which is mostly required
+        for "ghost" leaves (e.g., generated index.html files) where the relevant folder
+        in the temporary directory may not have been created on tree initialization
+        """
+        path = self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return path
+
     def _apply_hook(
         self,
         hook_type: Literal["pre_hooks"] | Literal["transforms"] | Literal["post_hooks"],

@@ -27,6 +27,8 @@ class AddSitemap(Stage):
         self.entries = []
 
     def tree_hook(self, tree: TreeSpan) -> None:
+        # always attempt to add a sitemap
+        # if you want to disable it because you've got your own, edit config
         self._add_sitemap_leaf(tree)
 
         # register a prehook to run after the tree structure is finalized, when
@@ -44,12 +46,11 @@ class AddSitemap(Stage):
         # need to create a latest_path so that it can get copied into the tempdir
         # This slightly weird hack is also used by AddPlaceholderIndex
         source_path = Path(f".cambium/{self.__class__.__name__}/sitemap.xml")
-        source_file = tree.config.tmp_dir / source_path
-        source_file.parent.mkdir(parents=True, exist_ok=True)
-        source_file.write_text("")
 
+        # not using tree.update_leaf_path because it doesn't make sense here
         tree.leaves["latest_path"][uuid] = source_path
         tree.leaves["hooks"][uuid]["transforms"].append(self.__class__.__name__)
+        tree.abs_write_path(uuid).write_text("")
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         final_path = tree.leaves["final_path"][leaf_uuid]
@@ -76,7 +77,4 @@ class AddSitemap(Stage):
         xml_entries.sort()
 
         sitemap_contents = sitemap_template.format(entries="\n\t  ".join(xml_entries))
-
-        (tree.config.tmp_dir / tree.leaves["latest_path"][leaf_uuid]).write_text(
-            sitemap_contents
-        )
+        tree.abs_write_path(leaf_uuid).write_text(sitemap_contents)

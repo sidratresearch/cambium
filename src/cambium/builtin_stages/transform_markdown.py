@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from marko import Markdown
 from marko.md_renderer import MarkdownRenderer
 
@@ -15,23 +17,25 @@ class TransformMarkdown(Stage):
         """
         tree.apply_to_leaves(self._tree_hook_for_leaf)
 
+    def _update_path(self, path: Path) -> Path:
+        """Function-ize the path change"""
+        return path.with_suffix(".html")
+
     def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """
         Update final path and list of transforms for a single leaf, if applicable
         """
-        if tree.leaves["latest_path"][leaf_uuid].suffix.lower() != ".md":
+        if tree.leaves["initial_path"][leaf_uuid].suffix.lower() != ".md":
             return
 
-        tree.leaves["final_path"][leaf_uuid] = tree.leaves["latest_path"][
-            leaf_uuid
-        ].with_suffix(".html")
+        tree.update_leaf_path(leaf_uuid, "final", self._update_path)
         tree.leaves["hooks"][leaf_uuid]["pre_hooks"].append(TransformMarkdown.__name__)
         tree.leaves["hooks"][leaf_uuid]["transforms"].append(TransformMarkdown.__name__)
         self.changed_links.append(tree.leaves["initial_path"][leaf_uuid])
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """Rewrite links to markdown files that will get transformed"""
-        latest_path = tree.config.tmp_dir / tree.leaves["latest_path"][leaf_uuid]
+        latest_path = tree.abs_write_path(leaf_uuid)
         marko_object = Markdown(renderer=MarkdownRenderer)
         document = marko_object.parse(latest_path.read_text())
 
@@ -44,13 +48,9 @@ class TransformMarkdown(Stage):
         """
         Use Marko to write an HTML version of a markdown leaf.
         """
-        output_path = tree.config.tmp_dir / tree.leaves["final_path"][leaf_uuid]
+        markdown_path = tree.abs_write_path(leaf_uuid)
+        html_path = self._update_path(markdown_path)
 
-        markdown = (
-            tree.config.tmp_dir / tree.leaves["latest_path"][leaf_uuid]
-        ).read_text()
-
+        markdown = (markdown_path).read_text()
         html = markdown_to_html(markdown)
-
-        output_path.write_text(html)
-        tree.leaves["latest_path"][leaf_uuid] = output_path
+        html_path.write_text(html)
