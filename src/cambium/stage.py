@@ -126,11 +126,6 @@ def populating_stage_dict(
     for tmp_stage in all_subclasses:
         if tmp_stage.__name__ in stage_list:
 
-            # TODO: validate stage-specific configuration
-            # all stages need to define some configuration object (which may be empty)
-            # in the input config, not all stages will have defined configuration
-            # and there may be configuration define for stages which are not installed
-            # pass the validated config to the constructor
             try:
                 if tmp_stage.__name__ in stage_config:
                     initialized_stage = tmp_stage(stage_config[tmp_stage.__name__])
