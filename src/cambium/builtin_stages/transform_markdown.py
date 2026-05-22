@@ -49,7 +49,8 @@ class TransformMarkdown(Stage):
         Use Marko to write an HTML version of a markdown leaf.
         """
         markdown_path = tree.abs_write_path(leaf_uuid)
-        html_path = self._update_path(markdown_path)
+        tree.update_leaf_path(leaf_uuid, "latest", self._update_path)
+        html_path = tree.abs_write_path(leaf_uuid)
 
         markdown = (markdown_path).read_text()
         html = markdown_to_html(markdown)
