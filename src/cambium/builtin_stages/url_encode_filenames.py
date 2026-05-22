@@ -36,10 +36,10 @@ class URLEncodeFilenames(Stage):
         for leaf_uuid in tree.leaves["uuids"]:
             prev = tree.leaves["final_path"][leaf_uuid]
             tree.update_leaf_path(leaf_uuid, "final", self._url_encode_path)
-            next = tree.leaves["final_path"][leaf_uuid]
+            post = tree.leaves["final_path"][leaf_uuid]
 
-            if prev != next:
-                self.changes[prev] = next
+            if prev != post:
+                self.changes[prev] = post
 
             if tree.leaves["initial_path"][leaf_uuid].suffix not in (".md", ".html"):
                 continue

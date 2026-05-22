@@ -46,6 +46,8 @@ class TemplateMarkdown(Stage):
         if len(self.jinja_template_paths) == 0:
             raise RuntimeError("No theme template libraries were found.")
 
+        logger.debug(f"Found Jinja templates {self.jinja_template_paths}")
+
     def _initialize_jinja(self, tree: TreeSpan) -> None:
         """Initializing Jinja Templating Environment"""
         self._populate_jinja_template_paths(tree)
@@ -71,7 +73,12 @@ class TemplateMarkdown(Stage):
             input_path.parent.relative_to(tree.config.tmp_dir.absolute()).parents
         )
 
-        main_template = self.jinja_env.get_template("base.html.jinja")
+        template_name = "base.html.jinja"
+        logger.debug(
+            f"Applying Jinja template {template_name} to {tree.leaves['latest_path'][leaf_uuid]}"
+        )
+
+        main_template = self.jinja_env.get_template(template_name)
         main_content = input_path.read_text()
 
         # Jinja does not complain in a variable is missing from the environment

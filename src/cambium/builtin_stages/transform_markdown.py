@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from marko import Markdown
@@ -6,6 +7,8 @@ from marko.md_renderer import MarkdownRenderer
 from ..stage import Stage
 from ..tree import TreeSpan
 from .utils import markdown_to_html, rewrite_md_links
+
+logger = logging.getLogger(__name__)
 
 
 class TransformMarkdown(Stage):

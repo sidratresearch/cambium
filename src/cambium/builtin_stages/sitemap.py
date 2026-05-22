@@ -52,6 +52,8 @@ class AddSitemap(Stage):
         tree.leaves["hooks"][uuid]["transforms"].append(self.__class__.__name__)
         tree.abs_write_path(uuid).write_text("")
 
+        logger.debug("Added sitemap file")
+
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         final_path = tree.leaves["final_path"][leaf_uuid]
         if final_path.suffix in (".html", ".htm"):

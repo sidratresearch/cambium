@@ -1,7 +1,10 @@
+import logging
 from pathlib import Path
 
 from ..stage import Stage
 from ..tree import TreeSpan
+
+logger = logging.getLogger(__name__)
 
 
 class AddPlaceholderIndex(Stage):
@@ -13,6 +16,7 @@ class AddPlaceholderIndex(Stage):
             index_file = directory / "index.html"
             if index_file not in final_paths:
                 self._create_index_leaf(directory, tree)
+                logger.debug(f"Added index file for directory {directory}")
 
     def _create_index_leaf(self, directory: Path, tree: TreeSpan) -> None:
         # TODO: figure out what to do about this

@@ -111,6 +111,7 @@ class TreeSpan:
         as well as saving initial copies of information regarding files we care about
         """
 
+        logger.debug("Discovering files to process")
         for current_root, directories, files in os.walk(
             self.root_directory, topdown=True
         ):
@@ -119,6 +120,7 @@ class TreeSpan:
             # files: list of strings
 
             if (current_root == ".") and ("static" in directories):
+                logger.debug("Ignoring top level directory `static`")
                 directories.remove("static")
 
             # filter by absolute path
@@ -214,7 +216,12 @@ class TreeSpan:
         path_type: Literal["latest"] | Literal["final"],
         updater: Callable[[Path], Path],
     ) -> None:
-        """Update the latest or final path of a leaf in a functional manner"""
+        """Update the latest or final path of a leaf in a functional manner
+
+        In some cases it would be useful to return the path, but then it's unclear
+        whether we're returning an absolute writable path or something else. So if
+        you need to update latest path and then write to it, make two function calls.
+        """
         self.leaves[f"{path_type}_path"][leaf_uuid] = updater(
             self.leaves[f"{path_type}_path"][leaf_uuid]
         )
@@ -293,7 +300,6 @@ class TreeSpan:
             logger.debug(f"Finalize: Copying {from_path}->{to_path}")
             shutil.copy(from_path, to_path)
 
-        # TODO: remove root/static from leaves
         self._copy_static_files_no_overwrite(self.root_directory / "static")
         for directory in self.config.ordered_theme_directories:
             self._copy_static_files_no_overwrite(directory / "static")
@@ -301,6 +307,10 @@ class TreeSpan:
     def _copy_static_files_no_overwrite(self, static_directory: Path) -> None:
         if not static_directory.exists():
             return
+        logger.debug(
+            f"Copying files from static directory {static_directory} to output. "
+            "Existing files in output will not be overwritten."
+        )
         for current_root, _, files in os.walk(static_directory):
             for file in files:
                 path_from_root = Path(current_root) / file
@@ -308,10 +318,12 @@ class TreeSpan:
                 final_path = self.build_directory / "static" / path_from_static
 
                 if final_path.exists():
-                    logger.info(
+                    logger.debug(
                         f"Skipping {static_directory/path_from_root} because it exists"
                     )
                     continue
 
+                initial_path = static_directory / path_from_static
                 final_path.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy(static_directory / path_from_static, final_path)
+                logger.debug(f"Copying static file {initial_path} to {final_path}")
+                shutil.copy(initial_path, final_path)
