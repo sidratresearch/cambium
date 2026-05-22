@@ -33,8 +33,9 @@ classifiers = [
 dynamic = [ "version" ]
 dependencies = [
   "jinja2>=3.1.6,<4",
-  "marko[toc]>=2.2.2,<3",
+  "marko>=2.2.2,<3",
   "pydantic>=2.13.4,<3",
+  "python-slugify>=8.0.4,<9",
   "pyyaml>=6.0.3,<7",
   "typer>=0.25.1,<0.26",
 ]
@@ -53,8 +54,8 @@ dev = [
 ]
 
 [tool.poetry]
-version = "0.0.0"
 requires-plugins.poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [ "plugin" ] }
+version = "0.0.0"
 
 [tool.poetry-dynamic-versioning]
 enable = true
