@@ -6,6 +6,7 @@ from . import (
     sitemap,
     templating_markdown,
     transform_markdown,
+    url_encode_filenames,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "sitemap",
     "templating_markdown",
     "transform_markdown",
+    "url_encode_filenames",
 ]

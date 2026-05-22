@@ -58,6 +58,7 @@ class CambiumConfiguration(BaseModel):
         "TransformMarkdown",
         "AddPlaceholderIndex",
         "TemplateMarkdown",
+        "URLEncodeFilenames",
     ]
     "Ordered List of Stages to Use"
 
