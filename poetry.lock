@@ -602,6 +602,9 @@ files = [
     {file = "marko-2.2.2.tar.gz", hash = "sha256:6940308e655f63733ca518c47a68ec9510279dbb916c83616e4c4b5829f052e8"},
 ]
 
+[package.dependencies]
+pygments = {version = "*", optional = true, markers = "extra == \"codehilite\""}
+
 [package.extras]
 codehilite = ["pygments"]
 repr = ["objprint"]
@@ -1708,4 +1711,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "10c6102182b92014890fcfdd1e7953be54495a8f78dfb681b5d410b4457c0d5a"
+content-hash = "2095bf5bd3dcc226a5a5530d812d543305afce94fdd5780ac23bd6be5939f676"

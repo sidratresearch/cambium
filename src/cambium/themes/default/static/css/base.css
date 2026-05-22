@@ -1,6 +1,7 @@
 /* Default Styles for Cambium */
 
 @import url(../fonts/source-sans-3VF.css);
+@import url(./codehighlight-default.css);
 
 :root {
   --default-font: "Source Sans 3 VF", sans-serif;

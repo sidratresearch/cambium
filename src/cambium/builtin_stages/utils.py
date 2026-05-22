@@ -5,8 +5,10 @@ from pathlib import Path
 from marko import Markdown
 from marko.block import Document, Heading
 from marko.element import Element
+from marko.ext.codehilite import make_extension as codehilite
 from marko.html_renderer import HTMLRenderer
 from marko.inline import Image, Link
+from pygments.formatters import HtmlFormatter
 from slugify import slugify
 
 
@@ -119,11 +121,33 @@ def add_heading_anchors(document: Document) -> Document:
     return document
 
 
+codehilite_options = {
+    "classprefix": "pygments-",  # avoid clashing with custom css
+    "cssclass": "pygments-code-block",  # default class for outer div is "highlight"
+    "wrapcode": True,  # match HTML 5 spec
+    # other interesting options: https://pygments.org/docs/formatters/#HtmlFormatter
+    # filename, hl_lines (scrape from md)
+    # linenos="table", # default is False, "inline" breaks copying
+}
+
+
+def dump_codeblock_css() -> None:
+    """Dump the default CSS for code highlighting
+
+    Not currently referenced, but could be added to CLI command
+    """
+    htmlformatter = HtmlFormatter(**codehilite_options)
+    print(htmlformatter.get_style_defs())
+
+
 def markdown_to_html(markdown: str) -> str:
     """Main function of the TransformMarkdown stage"""
     # WARNING: The Markdown class is not thread-safe.
     # Create a new instance for each thread.
-    marko_object = Markdown(extensions=["gfm"], renderer=CambiumHTMLRenderer)
+    marko_object = Markdown(
+        extensions=["gfm", codehilite(**codehilite_options)],
+        renderer=CambiumHTMLRenderer,
+    )
 
     document = marko_object.parse(markdown)
     document = add_heading_anchors(document)
