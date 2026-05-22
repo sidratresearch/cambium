@@ -102,7 +102,7 @@ class IdentifyMetadata(Stage):
         # Getting first element, and testing if it's a heading
         heading = doc.children[0]
         if isinstance(heading, Heading) and (heading.level == 1):
-            tree.leaves["metadata"][leaf_uuid].title = heading.children[0].children
+            tree.leaves["metadata"][leaf_uuid].title = get_raw_content(heading)
 
         # extract TOC
         flat_toc = [
