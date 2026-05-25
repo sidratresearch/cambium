@@ -83,6 +83,8 @@ class TreeSpan:
         # TODO: error collection for leaf generation
         # if there are errors in initial leaf generation, raise them now
 
+        self._check_disk_space()
+
         # run all tree hooks, passing them the entire tree structure to modify
         # initial leaves have input file = output file
         for stage in self.config.stages:
@@ -105,6 +107,40 @@ class TreeSpan:
             shutil.copy(
                 self.root_directory / initial_path,
                 self.config.tmp_dir / initial_path,
+            )
+
+    def _check_disk_space(self) -> None:
+        logger.debug("Checking disk space")
+        build_device = (self.build_directory).stat().st_dev
+        tmp_device = self.config.tmp_dir.stat().st_dev
+
+        leaf_bytes, static_bytes = 0, 0
+        for uuid in self.leaves["uuids"]:
+            leaf_bytes += self.leaves["initial_path"][uuid].stat().st_size
+        for static_directory in [
+            self.root_directory / "static",
+            *self.config.ordered_theme_directories,
+        ]:
+            for static_file in static_directory.glob("**/*"):
+                static_bytes += static_file.stat().st_size
+
+        safety_factor = 1.5  # require this much extra space for theme, md->HTML, etc.
+
+        if build_device == tmp_device:
+            required_bytes = 2 * safety_factor * (leaf_bytes + static_bytes)
+            free_bytes = shutil.disk_usage(self.build_directory).free
+            logger.debug(f"Requiring {required_bytes/1000} kb of free space")
+            if free_bytes < required_bytes:
+                logger.error(
+                    f"Not enough free space on disk. {required_bytes/1000} kb needed."
+                )
+                raise RuntimeError
+        else:
+            # TODO: handle checks for tmp being on a different drive
+            # tmp should have safety*leaf bytes
+            # build should have safety * (leaf_bytes + static_bytes)
+            logger.warning(
+                "Temporary storage is located on a different drive from build directory"
             )
 
     def _walk_directory_tree(self) -> None:
