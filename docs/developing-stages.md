@@ -20,6 +20,8 @@
 
 ## Other Stage Responsibilities
 
+_Tree hooks should be as lightweight as possible_. Tree hooks may rely on eachother, and so cannot be parallelized stage-wise; but may also add or remove leaves, and so cannot be parallelized leaf-wise either.
+
 ### Managing Paths
 
 If stage edits the path of a leaf, it likely needs to do that twice: once in the `tree_hook` to set `final_path`, and once in another hook when the action is being taken, and data is written to an updated `latest_path`.
@@ -33,4 +35,4 @@ For example:
 2. The tree hook for `TransformMarkdown` sees final path `cats-or-dogs.md` and wants to change the extension to `.html`. In order to not revert the changes made by `URLEncodePaths`, the new `final_path` needs to be `final_path.with_suffix(".html")` _not_ `initial_path.with_suffix(".html")`
 3. `TreeSpan` copies all initial paths (currently equivalent to latest paths) into the temporary directory
 4. The pre-hook for `URLEncodePaths` moves the file from `latest_path="cats or dogs.md"` (accessing the temporary directory copy with `TreeSpan.abs_write_path(leaf_uuid)`) to `cats-or-dogs.md`, and updates `latest_path`.
-5. The transform hook for `TransformMarkdown` reads the contents of `latest_path` (`/tmp_dir/cats-or-dogs.md`), updates `latest_path` to have the correct extension, and writes to the new latest path
+5. The transform hook for `TransformMarkdown` reads the contents of `latest_path` (`/tmp_dir/cats-or-dogs.md`), updates `latest_path` to have the correct extension, and writes to the new latest path.
