@@ -299,6 +299,7 @@ class TreeSpan:
         for leaf_uuid in self.leaves["uuids"]:
             stage_names = self.leaves["hooks"][leaf_uuid][hook_type]
             for stage_name in stage_names:
+                initial_path = self.leaves["initial_path"][leaf_uuid]
                 if self.leaves["failed"][leaf_uuid]:
                     logger.warning(
                         f"Skipping stage {stage_name} for file {initial_path} due to previous failure"
@@ -310,7 +311,6 @@ class TreeSpan:
                     hook_function = getattr(stage_instance, hook_function_name)
                     hook_function(leaf_uuid, self)
                 except Exception:
-                    initial_path = self.leaves["initial_path"][leaf_uuid]
                     errormsg = f"Error running {hook_type} for stage {stage_name} on file {initial_path}"
                     logger.error(errormsg)
                     self.leaves["failed"][leaf_uuid] = True
