@@ -9,7 +9,9 @@ from pathlib import Path
 from typing import Any, Literal, Optional
 
 import yaml
-from pydantic import BaseModel
+from pydantic import BaseModel, config
+
+import cambium  # for version
 
 from .stage import populating_stage_dict
 
@@ -275,4 +277,13 @@ def convert_glob_string_to_regex(glob_string: str) -> str:
 def dump_default_config() -> None:
     """Print the default configuration in YAML format"""
     # TODO: how are we going to communicate the builtin_paths_to_ignore to the user?
-    print(yaml.safe_dump(default_config.model_dump()))
+
+    config_yaml = yaml.safe_dump(default_config.model_dump())
+    header = "\n".join(
+        [
+            f"# Cambium {cambium.__version__} default configuration",
+            "# Created with `cambium --dump-default-config`",
+        ]
+    )
+
+    print(header + "\n\n" + config_yaml)
