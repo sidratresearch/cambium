@@ -1,4 +1,4 @@
-"""Cambium Page Metadata Structure and Handlers"""
+"""Cambium Page Metadata Structure and Handlers."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ StageMetadata = defaultdict(lambda: None)
 
 
 class LeafMetadata(BaseModel):
-    """Leaf Metadata Object
+    """Leaf Metadata Object.
 
     Contains all Page Metadata for each Leaf
 

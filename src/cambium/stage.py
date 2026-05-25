@@ -19,12 +19,20 @@ In general if you're adding a new stage
 
 
 class StageConfig(BaseModel, extra="forbid"):
-    """The default stage config is empty, and it is an error to provide entries"""
+    """The default stage config is empty, and it is an error to provide entries."""
 
     ...
 
 
 class Stage:
+    """Base class for Cambium stages.
+
+    A `Stage` is a set of functions that do the heavy lifting of Cambium. Stages are
+    requested in the configuration, and run by the `TreeSpan` object. See developer
+    documentation for additional information on how stages should be structured
+    and used.
+    """
+
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.config = StageConfig.model_validate(config_dict)
         """Validated configuration"""
@@ -37,7 +45,7 @@ class Stage:
     def _set_leaf_metadata(
         self, metadata_name: str, metadata_value: Any, leaf_uuid: str, tree: TreeSpan
     ) -> None:
-        """Helper function to set stage-specific metadata"""
+        """Helper function to set stage-specific metadata."""
         tree.leaves["metadata"][leaf_uuid].stage_metadata[self.__class__.__name__][
             metadata_name
         ] = metadata_value
@@ -72,7 +80,8 @@ class Stage:
     # Functions called by TreeSpan
 
     def tree_hook(self, tree: TreeSpan) -> None:
-        """
+        """Required "setup" function for a Stage.
+
         Function to run which can modify the tree structure, adding and removing
         leaves and directories
 
@@ -89,8 +98,7 @@ class Stage:
         raise NotImplementedError()
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        """
-        Function run on a single leaf, prior to any major transformations
+        """Function run on a single leaf, prior to any major transformations.
 
         This function can write to temporary directories
         It can write updated versions of the leaf content (e.g., parse custom markdown
@@ -99,8 +107,7 @@ class Stage:
         raise NotImplementedError()
 
     def transform(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        """
-        Function run on a single leaf, applying a  major transformation (md -> html)
+        """Function run on a single leaf, applying a major transformation (md -> html).
 
         This function can write to temporary directories
         It can write updated versions of the leaf content (like the new HTML),
@@ -111,8 +118,7 @@ class Stage:
         raise NotImplementedError()
 
     def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        """
-        Function run on a single leaf, after any major transformations
+        """Function run on a single leaf, after any major transformations.
 
         This function can write to and read from temporary directories
         It can write updated versions of the leaf content (e.g., parse custom markdown
@@ -127,9 +133,8 @@ def populating_stage_dict(
     stage_config: dict[str, dict[str, Any]],
     logger: logging.Logger,
 ) -> dict[str, Stage]:
-    """Importing Built-in Stages and compiling all Stages available to Cambium"""
-
-    from . import builtin_stages
+    """Importing Built-in Stages and compiling all Stages available to Cambium."""
+    from . import builtin_stages  # noqa: F401
 
     stage_dict: dict[str, Stage] = {}
 

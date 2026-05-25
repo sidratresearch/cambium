@@ -1,3 +1,5 @@
+"""Cambium stage to store metadata of leaves."""
+
 import datetime
 from html.parser import HTMLParser
 from pathlib import Path
@@ -118,7 +120,7 @@ class IdentifyMetadata(Stage):
 def render_toc(
     headings: list[dict[str, str | int]], mindepth: int = 1, maxdepth: int | None = None
 ) -> str:
-    """Render a set of dictionaries as a nested <ul>
+    """Render a set of dictionaries as a nested <ul>.
 
     Modification of marko's TocRenderMixin.render_toc
     """

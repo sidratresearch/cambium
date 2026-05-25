@@ -1,3 +1,5 @@
+"""Cambium stage to create a `sitemap.xml`."""
+
 import logging
 import textwrap
 from pathlib import Path

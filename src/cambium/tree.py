@@ -1,3 +1,5 @@
+"""Cambium structure for tracking and acting on files."""
+
 from __future__ import annotations
 
 import logging
@@ -144,11 +146,7 @@ class TreeSpan:
             )
 
     def _walk_directory_tree(self) -> None:
-        """
-        Walks the tree and populates the list of directories that are cared about,
-        as well as saving initial copies of information regarding files we care about
-        """
-
+        """Find all files/directories in the root that Cambium cares about."""
         logger.debug("Discovering files to process")
         for current_root, directories, files in os.walk(
             self.root_directory, topdown=True
@@ -223,6 +221,7 @@ class TreeSpan:
             raise ValueError("Collision in leaf output paths")
 
     def add_leaf(self, initial_path: Path) -> str:
+        """Add a new leaf to the tree."""
         if len(self.leaves["uuids"]) == self.leaves["uuids"].maxlen:
             raise ValueError("self.leaves will drop items")
 
@@ -240,8 +239,8 @@ class TreeSpan:
         return uuid
 
     def apply_to_leaves(self, function: Callable[[str, TreeSpan], None]) -> None:
-        """
-        Generic method to apply some function across all leaves.
+        """Generic method to apply some function across all leaves.
+
         If we support multithreading for some operations, this is where it will happen
         Which means `function` should be thread-safe
         """
@@ -254,7 +253,7 @@ class TreeSpan:
         path_type: Literal["latest"] | Literal["final"],
         updater: Callable[[Path], Path],
     ) -> None:
-        """Update the latest or final path of a leaf in a functional manner
+        """Update the latest or final path of a leaf in a functional manner.
 
         In some cases it would be useful to return the path, but then it's unclear
         whether we're returning an absolute writable path or something else. So if
@@ -267,7 +266,7 @@ class TreeSpan:
             self._check_leaf_collisions()
 
     def abs_write_path(self, leaf_uuid: str) -> Path:
-        """Get the absolute path to a safe writeable location for a leaf
+        """Get the absolute path to a safe writeable location for a leaf.
 
         Ensures that the directory exists to be written to, which is mostly required
         for "ghost" leaves (e.g., generated index.html files) where the relevant folder
@@ -281,8 +280,7 @@ class TreeSpan:
         self,
         hook_type: Literal["pre_hooks"] | Literal["transforms"] | Literal["post_hooks"],
     ) -> None:
-        """
-        Iterate through each leaf and apply, in order, the `hook_type` hooks it wants
+        """Apply `hook_type` hooks for all leaves.
 
         If a hook function fails, the remaining hook functions for that Leaf should not
         be run, and the status indicators for future hook types should be set to skip
@@ -319,21 +317,22 @@ class TreeSpan:
             raise Exception
 
     def apply_pre_hooks(self) -> None:
+        """Run pre-hooks for all leaves."""
         self.leaves["failed"] = dict.fromkeys(self.leaves["uuids"], False)
         self._apply_hook("pre_hooks")
 
     def transform(self) -> None:
+        """Run transform hooks for all leaves."""
         self.leaves["failed"] = dict.fromkeys(self.leaves["uuids"], False)
         self._apply_hook("transforms")
 
     def apply_post_hooks(self) -> None:
+        """Run post-hooks for all leaves."""
         self.leaves["failed"] = dict.fromkeys(self.leaves["uuids"], False)
         self._apply_hook("post_hooks")
 
     def finalize(self) -> None:
-        """
-        Copy final leaf versions to build, and do any other cleanup
-        """
+        """Copy final leaf versions to build, and do any other cleanup."""
         logger.info("Finalizing output")
 
         if self.build_directory.exists():

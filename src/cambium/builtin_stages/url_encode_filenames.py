@@ -1,3 +1,5 @@
+"""Cambium stage to ensure filenames are URL safe."""
+
 import logging
 from pathlib import Path
 
@@ -27,7 +29,7 @@ If there is a file called "ruddy duck.jpg", to properly solve this we would need
 
 
 class URLEncodeFilenames(Stage):
-    """Use `slugify` to generate filenames that are both url and filesystem safe"""
+    """Use `slugify` to generate filenames that are both url and filesystem safe."""
 
     changes = {}
 

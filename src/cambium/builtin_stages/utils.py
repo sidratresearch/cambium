@@ -1,3 +1,5 @@
+"""Utility functions for builtin stages."""
+
 import urllib
 from collections import Counter
 from pathlib import Path
@@ -11,10 +13,10 @@ from slugify import slugify
 
 
 class CambiumHTMLRenderer(HTMLRenderer):
-    """Custom renderer class to support Cambium-specific features"""
+    """Custom renderer class to support Cambium-specific features."""
 
     def render_heading(self, element: Heading) -> str:
-        """Adds anchor links from an `id` attribute"""
+        """Adds anchor links from an `id` attribute."""
         heading_template = '<h{level} id="{id}">{children}</h{level}>\n'
         return heading_template.format(
             level=element.level, id=element.id, children=self.render_children(element)
@@ -22,6 +24,7 @@ class CambiumHTMLRenderer(HTMLRenderer):
 
 
 def is_external_link(dest: str) -> bool:
+    """Check if a link points to an external URL."""
     return any(dest.startswith(prefix) for prefix in ["http:", "https:", "www."])
 
 
@@ -29,7 +32,7 @@ def rewrite_urlsafe_links(
     element: Element, parent_directory: Path, links_to_update: dict[Path, Path]
 ) -> Element:
     """Replace image and link destinations in a markdown element with versions that are
-    url and filesystem safe
+    both url and filesystem safe.
     """
     if isinstance(element, str):
         return element
@@ -61,7 +64,7 @@ def rewrite_urlsafe_links(
 def rewrite_md_links(
     element: Element, parent_directory: Path, links_to_update: list[Path]
 ) -> Element:
-    """Change links to markdown files point to their transformed HTML versions"""
+    """Change links to markdown files point to their transformed HTML versions."""
     if isinstance(element, str):
         return element
 
@@ -82,7 +85,7 @@ def rewrite_md_links(
 
 
 def get_raw_content(element: Element) -> str:
-    """Get the pure text content of an element"""
+    """Get the pure text content of an element."""
     content = ""
     for child in element.children:
         if isinstance(child, str):
@@ -93,12 +96,11 @@ def get_raw_content(element: Element) -> str:
 
 
 def add_heading_anchors(document: Document) -> Document:
-    """Add GitHub-style slugs as `id` attributes on `Heading` elements
+    """Add GitHub-style slugs as `id` attributes on `Heading` elements.
 
     While Marko has a toc extension, it doesn't handle recurring heading anchors,
     or give much flexibility in what the rendered HTML looks like
     """
-
     anchor_counter = Counter()
     for child in document.children:
         if not isinstance(child, Heading):
@@ -120,7 +122,7 @@ def add_heading_anchors(document: Document) -> Document:
 
 
 def markdown_to_html(markdown: str) -> str:
-    """Main function of the TransformMarkdown stage"""
+    """Main function of the TransformMarkdown stage."""
     # WARNING: The Markdown class is not thread-safe.
     # Create a new instance for each thread.
     marko_object = Markdown(extensions=["gfm"], renderer=CambiumHTMLRenderer)

@@ -1,3 +1,5 @@
+"""Cambium stage to apply Jinja templates to transformed markdown files."""
+
 import logging
 from pathlib import Path
 
@@ -29,9 +31,7 @@ class TemplateMarkdown(Stage):
     # Utility Functions
 
     def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        """
-        Adds TemplatingMarkdown to markdown files not in static
-        """
+        """Adds TemplatingMarkdown to markdown files not in static."""
         if tree.leaves["initial_path"][leaf_uuid].suffix.lower() != ".md":
             return
 
@@ -49,7 +49,7 @@ class TemplateMarkdown(Stage):
         logger.debug(f"Found Jinja templates {self.jinja_template_paths}")
 
     def _initialize_jinja(self, tree: TreeSpan) -> None:
-        """Initializing Jinja Templating Environment"""
+        """Initializing Jinja Templating Environment."""
         self._populate_jinja_template_paths(tree)
         self.jinja_env = Environment(loader=FileSystemLoader(self.jinja_template_paths))
 

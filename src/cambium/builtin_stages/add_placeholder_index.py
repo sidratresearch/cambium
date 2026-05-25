@@ -1,3 +1,5 @@
+"""Cambium stage to ensure all directories contain index.html files."""
+
 import logging
 from pathlib import Path
 

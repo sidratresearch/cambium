@@ -1,4 +1,4 @@
-"""Cambium Configuration File Handling"""
+"""Cambium Configuration File Handling."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Literal, Optional
 
 import yaml
-from pydantic import BaseModel, config
+from pydantic import BaseModel
 
 import cambium  # for version
 
@@ -33,7 +33,7 @@ current_config: Optional[WorkingConfiguration] = None
 
 
 class CambiumConfiguration(BaseModel):
-    """Cambium Configuration Object
+    """Cambium Configuration Object.
 
     Contains all input cambium configuration parameters
 
@@ -78,7 +78,7 @@ default_config = CambiumConfiguration()
 
 
 class WorkingConfiguration:
-    """The Internal Working Cambium Configuration Object
+    """The Internal Working Cambium Configuration Object.
 
     Contains all working configurations parameters, resolved to their appropriate
     location for a Cambium Run
@@ -134,8 +134,7 @@ class WorkingConfiguration:
         ]
 
     def __del__(self) -> None:
-        """Clean up All Lingering Directories"""
-
+        """Clean up All Lingering Directories."""
         # Cleaning up temporary directory
         self.tmp_dir_obj.cleanup()
 
@@ -143,8 +142,7 @@ class WorkingConfiguration:
         return f"""Cambium Working Configuration:\nTemporary Directory Path: {self.tmp_dir}"""
 
     def populate_ignore_lists(self) -> None:
-        """Combining ignore lists and putting in appropriate dictionary"""
-
+        """Combining ignore lists and putting in appropriate dictionary."""
         # Combining Defaults and Input Configuration
         tmp_ignore_set: set[str] = set()
 
@@ -185,14 +183,13 @@ class WorkingConfiguration:
 def initialize_configuration(
     input_configuration: Optional[CambiumConfiguration] = None,
 ) -> None:
-    """Initialize the current configuration for a Cambium run
+    """Initialize the current configuration for a Cambium run.
 
     Parameters
     ----------
     input_configuration : Optional[CambiumConfiguration], optional
         The input cambium configuration, by default None
     """
-
     global current_config
     current_config = WorkingConfiguration(input_configuration)
 
@@ -200,8 +197,7 @@ def initialize_configuration(
 def read_input_configuration(
     cli_path_loc: Optional[str | Path] = None,
 ) -> Optional[CambiumConfiguration]:
-    """Attempt to read input configuration from either command line argument or
-    expected default location, and return to
+    """Read input configuration from a file, if one exists.
 
     Parameters
     ----------
@@ -213,7 +209,6 @@ def read_input_configuration(
     Optional[CambiumConfiguration]
         If a config file was found, return a CambiumConfiguration object
     """
-
     config_default_path = Path(".cambium/config.yaml")
 
     # Attempting to read CLI provided config
@@ -234,8 +229,7 @@ def read_input_configuration(
 
 
 def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
-    """Reads a YAML Configuration and Populates a CambiumConfiguration with
-    the appropriate parameters
+    """Read a YAML config file and return a CambiumConfiguration object.
 
     Parameters
     ----------
@@ -247,7 +241,6 @@ def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
     CambiumConfiguration
         The interpreted Cambium configuration object
     """
-
     # Opening and reading yaml config
     logger.debug(f"Reading configuration file {config_path}")
     with config_path.open() as file:
@@ -267,15 +260,14 @@ def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
 
 
 def convert_glob_string_to_regex(glob_string: str) -> str:
-    """Convert glob string to regex string, escaping appropriate characters"""
-
+    """Convert glob string to regex string, escaping appropriate characters."""
     main_segment = re.escape(glob_string).replace("\\*", ".*")
 
     return "^" + main_segment + "$|\\/" + main_segment + "$"
 
 
 def dump_default_config() -> None:
-    """Print the default configuration in YAML format"""
+    """Print the default configuration in YAML format."""
     # TODO: how are we going to communicate the builtin_paths_to_ignore to the user?
 
     config_yaml = yaml.safe_dump(default_config.model_dump())
