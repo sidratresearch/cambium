@@ -31,6 +31,7 @@ class Leaves(TypedDict):
     final_path: dict[str, Path]
     hooks: LeafHooks
     metadata: dict[str, LeafMetadata]
+    failed: dict[str, bool]
 
 
 logger = logging.getLogger(__name__)
@@ -74,6 +75,7 @@ class TreeSpan:
             "final_path": {},
             "metadata": {},
             "hooks": {"pre_hooks": [], "transforms": [], "post_hooks": []},
+            "failed": {},
         }
         self._walk_directory_tree()
         logger.info(f"Collected {len(self.leaves['uuids'])} files")
@@ -261,24 +263,35 @@ class TreeSpan:
         for leaf_uuid in self.leaves["uuids"]:
             stage_names = self.leaves["hooks"][leaf_uuid][hook_type]
             for stage_name in stage_names:
+                if self.leaves["failed"][leaf_uuid]:
+                    logger.warning(
+                        f"Skipping stage {stage_name} for file {initial_path} due to previous failure"
+                    )
+                    continue
                 stage_instance = self.config.stage_dict[stage_name]
                 try:
                     hook_function_name = hook_type[:-1]
                     hook_function = getattr(stage_instance, hook_function_name)
                     hook_function(leaf_uuid, self)
-                except Exception as e:
+                except Exception:
                     initial_path = self.leaves["initial_path"][leaf_uuid]
                     errormsg = f"Error running {hook_type} for stage {stage_name} on file {initial_path}"
                     logger.error(errormsg)
-                    raise e
+                    self.leaves["failed"][leaf_uuid] = True
+
+        if any(self.leaves["failed"].values()):
+            raise Exception
 
     def apply_pre_hooks(self) -> None:
+        self.leaves["failed"] = dict.fromkeys(self.leaves["uuids"], False)
         self._apply_hook("pre_hooks")
 
     def transform(self) -> None:
+        self.leaves["failed"] = dict.fromkeys(self.leaves["uuids"], False)
         self._apply_hook("transforms")
 
     def apply_post_hooks(self) -> None:
+        self.leaves["failed"] = dict.fromkeys(self.leaves["uuids"], False)
         self._apply_hook("post_hooks")
 
     def finalize(self) -> None:
