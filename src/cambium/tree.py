@@ -308,9 +308,9 @@ class TreeSpan:
                     hook_function_name = hook_type[:-1]
                     hook_function = getattr(stage_instance, hook_function_name)
                     hook_function(leaf_uuid, self)
-                except Exception:
-                    errormsg = f"Error running {hook_type} for stage {stage_name} on file {initial_path}"
-                    logger.error(errormsg)
+                except Exception as e:
+                    errormsg = f"Error running {hook_type} for stage {stage_name} on file {initial_path}. "
+                    logger.error(errormsg + f"Error message: {e}")
                     self.leaves["failed"][leaf_uuid] = True
 
         if any(self.leaves["failed"].values()):
