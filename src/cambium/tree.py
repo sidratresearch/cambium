@@ -41,18 +41,10 @@ logger = logging.getLogger(__name__)
 
 class TreeSpan:
     """
-    Create a tree structure
-    Be aware of *all* of the files that cambium will touch
-    Not care about files/directories that are ignored by builtin or config
+    Primary tracking and controlling class for Cambium.
 
-    Hold information on what actions need to be taken (on treewide and/or leaf-wide scales)
-    Determines these also (transformations, parsing/collecting information, copy static files, templating, etc)
-    Populates "ghost" files in output directory for files that we want to exist, even if they aren't in input (index.html)
-    Identify what file should be end up at "index.html" in a directory (if no index, turn README into index)
-
-    Have information showing the final output directory structure (iterable)
-    Have lookup tables to correlate [input file]->[output file] and vice versa, and [input file]->[output directory]
-    Iterators to operate on every leaf (file/directory)
+    `TreeSpan` holds the directory tree and the actions that need to be perfomed,
+    and provides the functions to apply those actions.
     """
 
     # These work as class attr so long as we never have multiple instances of TreeSpan
