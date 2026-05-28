@@ -72,6 +72,9 @@ class CambiumConfiguration(BaseModel):
     site_name: Optional[str] = "Cambium Site"
     "The Name of the Cambium Site"
 
+    theme: Optional[str] = "default"
+    """Builtin Theme to Use"""
+
 
 default_config = CambiumConfiguration()
 
@@ -129,7 +132,7 @@ class WorkingConfiguration:
 
         self.ordered_theme_directories = [
             self.root_dir / ".cambium/theme",
-            Path(__file__).parent / "themes/default",
+            Path(__file__).parent / f"themes/{self.input_config.theme}",
         ]
 
     def __del__(self) -> None:
