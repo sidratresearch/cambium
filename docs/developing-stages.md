@@ -36,3 +36,10 @@ For example:
 3. `TreeSpan` copies all initial paths (currently equivalent to latest paths) into the temporary directory
 4. The pre-hook for `URLEncodePaths` moves the file from `latest_path="cats or dogs.md"` (accessing the temporary directory copy with `TreeSpan.abs_write_path(leaf_uuid)`) to `cats-or-dogs.md`, and updates `latest_path`.
 5. The transform hook for `TransformMarkdown` reads the contents of `latest_path` (`/tmp_dir/cats-or-dogs.md`), updates `latest_path` to have the correct extension, and writes to the new latest path.
+
+To make path management slightly easier, we have the following `TreeSpan` functions:
+
+- `TreeSpan.add_leaf()`: create a new leaf, requires the initial path, but can optionally accept the latest and final paths as keyword arguments if they are different from the initial. This function will validate the paths.
+    - Note that this function does _not_ instantiate the file at latest path. That must be done by the stage.
+- `TreeSpan.abs_write_path()`: returns an absolute path to the latest path of a leaf. If a stage is writing files, it should do so to the path provided by this function.
+- `TreeSpan.update_path()`: allows updating the latest or final path of a leaf, and validates the new path.
