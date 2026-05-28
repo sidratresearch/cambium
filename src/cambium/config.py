@@ -245,6 +245,16 @@ def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
     with config_path.open() as file:
         config_yaml = yaml.safe_load(file)
 
+    # Empty config file
+    if config_yaml is None:
+        logger.warning(f"Configuration file {config_path} is empty.")
+        config_yaml = {}
+
+    if not isinstance(config_yaml, dict):
+        errormsg = f"Error parsing configuration file {config_path}. Expected a dictionary/mapping, got '{config_yaml}'."
+        logger.error(errormsg)
+        raise ValueError(errormsg)
+
     # Extracting required dictionary parameters from the YAML
     configuration_parameters = CambiumConfiguration.model_fields.keys()
 
@@ -253,6 +263,12 @@ def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
     for key in configuration_parameters:
         if key in config_yaml:
             input_dict[key] = config_yaml[key]
+            del config_yaml[key]
+
+    # Extra configuration keys
+    if len(config_yaml) > 0:
+        keys = ", ".join(config_yaml.keys())
+        logger.warning(f"Unused configuration entries in {config_path}: {keys}")
 
     # Creating the CambiumConfiguration object:
     return CambiumConfiguration(**input_dict)
