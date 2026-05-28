@@ -224,6 +224,9 @@ class TreeSpan:
         if len(self.leaves["uuids"]) == self.leaves["uuids"].maxlen:
             raise ValueError("self.leaves will drop items")
 
+        if not isinstance(initial_path, Path):
+            raise ValueError("Create new leaves with a path")
+
         uuid = str(uuid4())
         self.leaves["uuids"].append(uuid)
         self.leaves["initial_path"][uuid] = initial_path
@@ -258,9 +261,10 @@ class TreeSpan:
         whether we're returning an absolute writable path or something else. So if
         you need to update latest path and then write to it, make two function calls.
         """
-        self.leaves[f"{path_type}_path"][leaf_uuid] = updater(
-            self.leaves[f"{path_type}_path"][leaf_uuid]
-        )
+        updated = updater(self.leaves[f"{path_type}_path"][leaf_uuid])
+        if not isinstance(updated, Path):
+            raise ValueError("Function to update leaf path should return a Path")
+        self.leaves[f"{path_type}_path"][leaf_uuid] = updated
         if path_type == "final":
             self._check_leaf_collisions()
 
@@ -294,6 +298,7 @@ class TreeSpan:
             for multithreading)
         """
         logger.info(f"Running {hook_type}")
+        self.leaves["failed"] = dict.fromkeys(self.leaves["uuids"], False)
 
         # TODO: figure out how to work this in with apply_to_leaves
         # maybe each leaf has a method called apply_transforms?
@@ -321,17 +326,14 @@ class TreeSpan:
 
     def apply_pre_hooks(self) -> None:
         """Run pre-hooks for all leaves."""
-        self.leaves["failed"] = dict.fromkeys(self.leaves["uuids"], False)
         self._apply_hook("pre_hooks")
 
     def transform(self) -> None:
         """Run transform hooks for all leaves."""
-        self.leaves["failed"] = dict.fromkeys(self.leaves["uuids"], False)
         self._apply_hook("transforms")
 
     def apply_post_hooks(self) -> None:
         """Run post-hooks for all leaves."""
-        self.leaves["failed"] = dict.fromkeys(self.leaves["uuids"], False)
         self._apply_hook("post_hooks")
 
     def finalize(self) -> None:
