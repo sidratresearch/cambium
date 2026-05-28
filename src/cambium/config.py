@@ -85,7 +85,7 @@ class WorkingConfiguration:
 
     ignore_lists: dict[str, list[str]] = {
         "extensions": [],
-        "globs": [],
+        "globs": [],  # Change this to original: python-ified for better logging?
         "paths": [],
         "names": [],
     }

@@ -72,7 +72,10 @@ class TreeSpan:
             "failed": {},
         }
         self._walk_directory_tree()
-        logger.info(f"Collected {len(self.leaves['uuids'])} files")
+        if len(self.leaves["uuids"]) == 0:
+            logger.warning("Collected 0 files.")
+        else:
+            logger.info(f"Collected {len(self.leaves['uuids'])} files.")
 
         # TODO: error collection for leaf generation
         # if there are errors in initial leaf generation, raise them now
@@ -102,14 +105,16 @@ class TreeSpan:
             # filter by absolute path
             for absolute_ignore in self.config.ignore_lists["paths"]:
                 matcher = f".{absolute_ignore}"  # add the leading dot
-                for d in directories:
-                    if f"{current_root}/{d}" == matcher:
-                        directories.remove(d)
-                        logger.debug(f"Ignoring directory '{d}', removed by path")
-                for f in files:
-                    if f"{current_root}/{f}" == matcher:
-                        files.remove(f)
-                        logger.debug(f"Ignoring file '{f}', removed by path")
+                remove_directories = [
+                    d for d in directories if f"{current_root}/{d}" == matcher
+                ]
+                remove_files = [f for f in files if f"{current_root}/{f}" == matcher]
+                for d in remove_directories:
+                    directories.remove(d)
+                    logger.debug(f"Ignoring directory '{d}', removed by path")
+                for f in remove_files:
+                    files.remove(f)
+                    logger.debug(f"Ignoring file '{f}', removed by path")
 
             # filter by name
             for name in self.config.ignore_lists["names"]:
@@ -122,23 +127,30 @@ class TreeSpan:
 
             # filter by glob
             for pattern in self.config.ignore_lists["globs"]:
-                for d in directories:
-                    full_path = f"{current_root}/{d}".removeprefix("./")
-                    if re.match(pattern, full_path) is not None:
-                        directories.remove(d)
-                        logger.debug(f"Ignoring directory '{d}', removed by glob")
-                for f in files:
-                    full_path = f"{current_root}/{f}".removeprefix("./")
-                    if re.match(pattern, full_path) is not None:
-                        files.remove(f)
-                        logger.debug(f"Ignoring file '{f}', removed by glob")
+                remove_directories = [
+                    d
+                    for d in directories
+                    if re.match(pattern, f"{current_root}/{d}".removeprefix("./"))
+                ]
+                remove_files = [
+                    f
+                    for f in files
+                    if re.match(pattern, f"{current_root}/{f}".removeprefix("./"))
+                ]
+                for d in remove_directories:
+                    directories.remove(d)
+                    logger.debug(f"Ignoring directory '{d}', removed by glob")
+
+                for f in remove_files:
+                    files.remove(f)
+                    logger.debug(f"Ignoring file '{f}', removed by glob")
 
             # filter files by ext
             for extension in self.config.ignore_lists["extensions"]:
-                for f in files:
-                    if f.endswith(f".{extension}"):
-                        files.remove(f)
-                        logger.debug(f"Ignoring file '{f}', removed by extension")
+                remove_files = [f for f in files if f.endswith(f".{extension}")]
+                for f in remove_files:
+                    files.remove(f)
+                    logger.debug(f"Ignoring file '{f}', removed by extension")
 
             # save dirs to list
             for d in directories:
