@@ -78,64 +78,12 @@ class TreeSpan:
         # if there are errors in initial leaf generation, raise them now
 
         self._check_disk_space()
+        self._apply_tree_hooks()
+        self._init_tmp_files()
 
-        # run all tree hooks, passing them the entire tree structure to modify
-        # initial leaves have input file = output file
-        for stage in self.config.stages:
-            logger.debug(f"Running tree_hook for stage {stage}")
-            self.config.stage_dict[stage].tree_hook(self)
-            # this failure is really ugly, maybe catch and throw something nicer?
-            self._check_leaf_collisions()
-
-        # between tree hooks and pre hooks we need to copy all files into a tempdir so
-        # that pre-hooks and transformers can use latest_path as relative to temp dir
-        logger.info(
-            f"Copying {len(self.leaves['uuids'])} source files to temporary storage"
-        )
-        for directory in self.directories_in_build:
-            (self.config.tmp_dir / directory).mkdir()
-        for leaf_uuid in self.leaves["uuids"]:
-            initial_path = self.leaves["initial_path"][leaf_uuid]
-            if not (self.root_directory / initial_path).is_file():
-                continue
-            shutil.copy(
-                self.root_directory / initial_path,
-                self.config.tmp_dir / initial_path,
-            )
-
-    def _check_disk_space(self) -> None:
-        logger.debug("Checking disk space")
-        build_device = (self.build_directory).stat().st_dev
-        tmp_device = self.config.tmp_dir.stat().st_dev
-
-        leaf_bytes, static_bytes = 0, 0
-        for uuid in self.leaves["uuids"]:
-            leaf_bytes += self.leaves["initial_path"][uuid].stat().st_size
-        for static_directory in [
-            self.root_directory / "static",
-            *self.config.ordered_theme_directories,
-        ]:
-            for static_file in static_directory.glob("**/*"):
-                static_bytes += static_file.stat().st_size
-
-        safety_factor = 1.5  # require this much extra space for theme, md->HTML, etc.
-
-        if build_device == tmp_device:
-            required_bytes = 2 * safety_factor * (leaf_bytes + static_bytes)
-            free_bytes = shutil.disk_usage(self.build_directory).free
-            logger.debug(f"Requiring {required_bytes/1000} kb of free space")
-            if free_bytes < required_bytes:
-                logger.error(
-                    f"Not enough free space on disk. {required_bytes/1000} kb needed."
-                )
-                raise RuntimeError
-        else:
-            # TODO: handle checks for tmp being on a different drive
-            # tmp should have safety*leaf bytes
-            # build should have safety * (leaf_bytes + static_bytes)
-            logger.warning(
-                "Temporary storage is located on a different drive from build directory"
-            )
+    # ----------------------------------------------------------------#
+    #                    __init__ helper functions                    #
+    # ----------------------------------------------------------------#
 
     def _walk_directory_tree(self) -> None:
         """Find all files/directories in the root that Cambium cares about."""
@@ -203,14 +151,73 @@ class TreeSpan:
                 path = Path(f"{current_root}/{f}".removeprefix("./"))
                 self.add_leaf(path)
 
-    def _check_leaf_collisions(self) -> None:
-        # cast to string because it's possible to assign to the dict as a string
-        # instead of a path, and Path("blah") != "blah"
-        final_paths = [
-            str(self.leaves["final_path"][uuid]) for uuid in self.leaves["uuids"]
-        ]
-        if len(final_paths) > len(set(final_paths)):
-            raise ValueError("Collision in leaf output paths")
+    def _check_disk_space(self) -> None:
+        """Check that there is enough free space for both the temp and build dirs."""
+        logger.debug("Checking disk space")
+        build_device = (self.build_directory).stat().st_dev
+        tmp_device = self.config.tmp_dir.stat().st_dev
+
+        leaf_bytes, static_bytes = 0, 0
+        for uuid in self.leaves["uuids"]:
+            leaf_bytes += self.leaves["initial_path"][uuid].stat().st_size
+        for static_directory in [
+            self.root_directory / "static",
+            *self.config.ordered_theme_directories,
+        ]:
+            for static_file in static_directory.glob("**/*"):
+                static_bytes += static_file.stat().st_size
+
+        safety_factor = 1.5  # require this much extra space for theme, md->HTML, etc.
+
+        if build_device == tmp_device:
+            required_bytes = 2 * safety_factor * (leaf_bytes + static_bytes)
+            free_bytes = shutil.disk_usage(self.build_directory).free
+            logger.debug(f"Requiring {required_bytes/1000} kb of free space")
+            if free_bytes < required_bytes:
+                logger.error(
+                    f"Not enough free space on disk. {required_bytes/1000} kb needed."
+                )
+                raise RuntimeError
+        else:
+            # TODO: handle checks for tmp being on a different drive
+            # tmp should have safety*leaf bytes
+            # build should have safety * (leaf_bytes + static_bytes)
+            logger.warning(
+                "Temporary storage is located on a different drive from build directory"
+            )
+
+    def _apply_tree_hooks(self) -> None:
+        """Run all tree hooks, passing them the entire tree structure to modify."""
+        # initial leaves have input file = output file
+        for stage in self.config.stages:
+            logger.debug(f"Running tree_hook for stage {stage}")
+            self.config.stage_dict[stage].tree_hook(self)
+            # this failure is really ugly, maybe catch and throw something nicer?
+            self._check_leaf_collisions()
+
+    def _init_tmp_files(self) -> None:
+        """Copy all leaves into temporary storage at their initial paths.
+
+        Between tree hooks and pre hooks we need to copy all files into a tempdir
+        so that pre-hooks and transformers can use latest_path as relative to temp dir.
+        """
+        logger.info(
+            f"Copying {len(self.leaves['uuids'])} source files to temporary storage"
+        )
+        for directory in self.directories_in_build:
+            (self.config.tmp_dir / directory).mkdir()
+        for leaf_uuid in self.leaves["uuids"]:
+            initial_path = self.leaves["initial_path"][leaf_uuid]
+            if not (self.root_directory / initial_path).is_file():
+                continue
+            shutil.copy(
+                self.root_directory / initial_path,
+                self.config.tmp_dir / initial_path,
+            )
+
+    # ----------------------------------------------------------------#
+    #                     stage helper functions                     #
+    # ----------------------------------------------------------------#
 
     def add_leaf(self, initial_path: Path) -> str:
         """Add a new leaf to the tree."""
@@ -267,6 +274,10 @@ class TreeSpan:
         path = self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid]
         path.parent.mkdir(parents=True, exist_ok=True)
         return path
+
+    # ----------------------------------------------------------------#
+    #                     Main Cambium functions                     #
+    # ----------------------------------------------------------------#
 
     def _apply_hook(
         self,
@@ -344,7 +355,22 @@ class TreeSpan:
         for directory in self.config.ordered_theme_directories:
             self._copy_static_files_no_overwrite(directory / "static")
 
+    # ----------------------------------------------------------------#
+    #                    other internal functions                    #
+    # ----------------------------------------------------------------#
+
+    def _check_leaf_collisions(self) -> None:
+        """Check for collisions in the final paths of leaves."""
+        # cast to string because it's possible to assign to the dict as a string
+        # instead of a path, and Path("blah") != "blah"
+        final_paths = [
+            str(self.leaves["final_path"][uuid]) for uuid in self.leaves["uuids"]
+        ]
+        if len(final_paths) > len(set(final_paths)):
+            raise ValueError("Collision in leaf output paths")
+
     def _copy_static_files_no_overwrite(self, static_directory: Path) -> None:
+        """Copy files into _build/static, but don't overwrite existing files."""
         if not static_directory.exists():
             return
         logger.debug(
