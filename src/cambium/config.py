@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 builtin_paths_to_ignore: list[str] = [
     "/.cambium",
-    "/_build",
     ".*",
     "__pycache__",
 ]
@@ -105,9 +104,6 @@ class WorkingConfiguration:
         else:
             self.input_config = default_config
 
-        # Populating Ignore Lists
-        self.populate_ignore_lists()
-
         # Creating Path object for root directory and testing
         self.root_dir = Path(self.input_config.root_directory)
         assert (
@@ -116,6 +112,9 @@ class WorkingConfiguration:
 
         # Creating Path object for build directory
         self.build_dir = Path(self.input_config.build_directory)
+
+        # Populating Ignore Lists
+        self.populate_ignore_lists()
 
         # Importing and Compiling Stages
         self.stages = self.input_config.stages
@@ -144,7 +143,7 @@ class WorkingConfiguration:
     def populate_ignore_lists(self) -> None:
         """Combining ignore lists and putting in appropriate dictionary."""
         # Combining Defaults and Input Configuration
-        tmp_ignore_set: set[str] = set()
+        tmp_ignore_set: set[str] = {"/" + str(self.build_dir)}
 
         global builtin_paths_to_ignore
 
