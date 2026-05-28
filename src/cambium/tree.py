@@ -190,9 +190,14 @@ class TreeSpan:
         """Run all tree hooks, passing them the entire tree structure to modify."""
         # initial leaves have input file = output file
         for stage in self.config.stages:
-            logger.debug(f"Running tree_hook for stage {stage}")
-            self.config.stage_dict[stage].tree_hook(self)
-            # this failure is really ugly, maybe catch and throw something nicer?
+            try:
+                logger.debug(f"Running tree_hook for stage {stage}")
+                self.config.stage_dict[stage].tree_hook(self)
+                # TODO: decide if exception should be raised on first treehook failure (current) or wait
+            except Exception as e:
+                errormsg = f"Error running tree hook for stage {stage}. "
+                logger.error(errormsg + f"Error message: {e}")
+                raise e
             self._check_leaf_collisions()
 
     def _init_tmp_files(self) -> None:
