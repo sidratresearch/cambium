@@ -154,7 +154,10 @@ class TreeSpan:
     def _check_disk_space(self) -> None:
         """Check that there is enough free space for both the temp and build dirs."""
         logger.debug("Checking disk space")
-        build_device = (self.build_directory).stat().st_dev
+        build_location = (
+            self.build_directory.absolute().parent
+        )  # if build doesn't exist yet, we can't stat it
+        build_device = build_location.stat().st_dev
         tmp_device = self.config.tmp_dir.stat().st_dev
 
         leaf_bytes, static_bytes = 0, 0
@@ -171,7 +174,7 @@ class TreeSpan:
 
         if build_device == tmp_device:
             required_bytes = 2 * safety_factor * (leaf_bytes + static_bytes)
-            free_bytes = shutil.disk_usage(self.build_directory).free
+            free_bytes = shutil.disk_usage(build_location).free
             logger.debug(f"Requiring {required_bytes/1000} kb of free space")
             if free_bytes < required_bytes:
                 logger.error(
