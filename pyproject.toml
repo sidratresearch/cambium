@@ -15,7 +15,7 @@ authors = [
   { name = "Hansen Jiang", email = "hansen@sidratresearch.com" },
   { name = "Jennifer Scora", email = "jscora@sidratresearch.com" },
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.11,<4.0"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "License :: OSI Approved :: MIT License",
@@ -34,6 +34,7 @@ dynamic = [ "version" ]
 dependencies = [
   "jinja2>=3.1.6,<4",
   "marko>=2.2.2,<3",
+  "pagefind[extended]>=1.5.2",
   "pydantic>=2.13.4,<3",
   "python-slugify>=8.0.4,<9",
   "pyyaml>=6.0.3,<7",

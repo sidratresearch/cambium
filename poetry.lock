@@ -785,6 +785,41 @@ files = [
 ]
 
 [[package]]
+name = "pagefind"
+version = "1.5.2"
+description = "Python API for Pagefind"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "pagefind-1.5.2-py3-none-any.whl", hash = "sha256:6c4086ad9eaa7e8f863085652f6b1093549b1737848d946daa0706ee57f778d1"},
+    {file = "pagefind-1.5.2.tar.gz", hash = "sha256:fffddd6e2016b06bdca83b83d4ac4bef379cf0559f05ecdb6908a8729a27dbf3"},
+]
+
+[package.dependencies]
+pagefind-bin-extended = {version = ">=1,<2", optional = true, markers = "extra == \"extended\""}
+
+[package.extras]
+bin = ["pagefind-bin (>=1,<2)"]
+extended = ["pagefind-bin-extended (>=1,<2)"]
+
+[[package]]
+name = "pagefind-bin-extended"
+version = "1.5.2"
+description = "Pagefind is a library for performant, low-bandwidth, fully static search."
+optional = false
+python-versions = "~=3.9"
+groups = ["main"]
+files = [
+    {file = "pagefind_bin_extended-1.5.2-py3-none-macosx_12_0_arm64.whl", hash = "sha256:9c4e2d7e0def5ba3a7814594e1d91cb6876030c5e05ccec53cc778b94d8af6e6"},
+    {file = "pagefind_bin_extended-1.5.2-py3-none-macosx_12_0_x86_64.whl", hash = "sha256:c4db4b46e5aa42c6641cee257b0767895a1d9471c2332717763116e295bd7340"},
+    {file = "pagefind_bin_extended-1.5.2-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl", hash = "sha256:1762f4a8c2137ca07261b0fec1b441df1ba421a0f124a86e33c43c09ca2d1d6c"},
+    {file = "pagefind_bin_extended-1.5.2-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.musllinux_1_1_aarch64.whl", hash = "sha256:bcf47caa731c423c6ba355f593cf41febde986a296e8dd3a47620c72aa7a18e1"},
+    {file = "pagefind_bin_extended-1.5.2-py3-none-win_amd64.whl", hash = "sha256:2bf653ca30062b50e461887b14cd97be8e44dce6a28b9949b02db4b7f7ca694f"},
+    {file = "pagefind_bin_extended-1.5.2-py3-none-win_arm64.whl", hash = "sha256:2a59c73b19857f84d7f3482c781897bd20d9409ab4b4e146d54c7b67713dd7cb"},
+]
+
+[[package]]
 name = "parso"
 version = "0.8.7"
 description = "A Python Parser"
@@ -1707,5 +1742,5 @@ files = [
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.11"
-content-hash = "10c6102182b92014890fcfdd1e7953be54495a8f78dfb681b5d410b4457c0d5a"
+python-versions = ">=3.11,<4.0"
+content-hash = "48edfb2396d5d1dc758955f689f4105e2e0da3e2f7cb47d76b5773b3e6f5c8d7"
