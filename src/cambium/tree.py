@@ -15,7 +15,7 @@ import shutil
 from collections import deque
 from collections.abc import Callable
 from pathlib import Path
-from typing import Literal, TypedDict
+from typing import Any, Literal, TypedDict
 
 from .metadata import LeafMetadata
 
@@ -224,19 +224,33 @@ class TreeSpan:
     #                     stage helper functions                     #
     # ----------------------------------------------------------------#
 
-    def add_leaf(self, initial_path: Path) -> str:
+    def add_leaf(
+        self,
+        initial_path: Path,
+        final_path: Path | None = None,
+        latest_path: Path | None = None,
+    ) -> str:
         """Add a new leaf to the tree."""
         if len(self.leaves["uuids"]) == self.leaves["uuids"].maxlen:
             raise ValueError("self.leaves will drop items")
 
-        if not isinstance(initial_path, Path):
-            raise ValueError("Create new leaves with a path")
+        # Validate paths
+        self._validate_leaf_path(initial_path)
+        if latest_path is None:
+            latest_path = initial_path
+        else:
+            self._validate_leaf_path(latest_path)
+        if final_path is None:
+            final_path = initial_path
+        else:
+            self._validate_leaf_path(final_path)
 
+        # create the new leaf
         uuid = str(uuid4())
         self.leaves["uuids"].append(uuid)
         self.leaves["initial_path"][uuid] = initial_path
-        self.leaves["latest_path"][uuid] = initial_path
-        self.leaves["final_path"][uuid] = initial_path
+        self.leaves["latest_path"][uuid] = latest_path
+        self.leaves["final_path"][uuid] = final_path
         self.leaves["hooks"][uuid] = {
             "pre_hooks": [],
             "transforms": [],
@@ -267,8 +281,7 @@ class TreeSpan:
         you need to update latest path and then write to it, make two function calls.
         """
         updated = updater(self.leaves[f"{path_type}_path"][leaf_uuid])
-        if not isinstance(updated, Path):
-            raise ValueError("Function to update leaf path should return a Path")
+        self._validate_leaf_path(updated)
         self.leaves[f"{path_type}_path"][leaf_uuid] = updated
         if path_type == "final":
             self._check_leaf_collisions()
@@ -375,6 +388,13 @@ class TreeSpan:
         ]
         if len(final_paths) > len(set(final_paths)):
             raise ValueError("Collision in leaf output paths")
+
+    def _validate_leaf_path(self, path: Any) -> None:
+        """Ensure `path` can be assigned to a leaf initial/latest/final path."""
+        if not isinstance(path, Path):
+            raise ValueError("Use the Path object to set leaf paths")
+        if path.is_absolute():
+            raise ValueError("Use relative paths for leaves")
 
     def _copy_static_files_no_overwrite(self, static_directory: Path) -> None:
         """Copy files into _build/static, but don't overwrite existing files."""

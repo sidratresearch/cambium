@@ -24,9 +24,8 @@ class AddPlaceholderIndex(Stage):
         # TODO: figure out what to do about this
         source_path = Path(".cambium/AddPlaceholderIndex/index.html")
 
-        uuid = tree.add_leaf(directory)
-        # not using tree.update_leaf_path because it doesn't make sense here
-        tree.leaves["final_path"][uuid] = directory / "index.html"
-        tree.leaves["latest_path"][uuid] = source_path
+        uuid = tree.add_leaf(
+            directory, latest_path=source_path, final_path=directory / "index.html"
+        )
 
         tree.abs_write_path(uuid).write_text("")
