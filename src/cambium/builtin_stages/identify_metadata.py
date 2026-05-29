@@ -3,6 +3,7 @@
 import datetime
 from html.parser import HTMLParser
 from pathlib import Path
+from typing import Any
 
 from marko import Markdown
 from marko.block import Heading
@@ -41,7 +42,7 @@ class IdentifyMetadata(Stage):
         # Get all pages that should have metadata extracted
         tree.apply_to_leaves(self._tree_hook_for_leaf)
 
-    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
+    def pre_hook(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
         self._extract_metadata(leaf_uuid=leaf_uuid, tree=tree)
 
     # Utility Functions

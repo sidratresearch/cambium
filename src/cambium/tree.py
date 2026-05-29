@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import re
 import typing
@@ -322,38 +323,73 @@ class TreeSpan:
     ) -> None:
         """Apply `hook_type` hooks for all leaves.
 
-        If a hook function fails, the remaining hook functions for that Leaf should not
-        be run, and the status indicators for future hook types should be set to skip
+        This function has multiple levels of iteration.
+        - We work through stages, in the order they appear in the configuration
+        - For each stage we:
+            - Identify the leaves to run it on
+            - Run a hook initialization function
+            - Loop through the leaves, running the main hook function on each leaf
+            - Run a hook finalization function
 
-        If a hook function errors, we either
-        - raise that error for that leaf immediately, OR
-        - collect errors across all leaves, and raise them collectively (maybe better
-            for multithreading)
+        The purpose of the init and final is to support hooks which require a
+        long-running context manager.
+
+        If a hook function fails, the remaining hook functions for that Leaf are not
+        be run, and an error is raised after all stages have had a chance to run on
+        the other leaves.
+
+        Currently error handling is only managed for the main hook function. Errors
+        that occur in the initialization/finalization functions, or in the context
+        manager itself, are unhandled.
         """
         logger.info(f"Running {hook_type}")
         self.leaves["failed"] = dict.fromkeys(self.leaves["uuids"], False)
 
-        # TODO: figure out how to work this in with apply_to_leaves
-        # maybe each leaf has a method called apply_transforms?
-        for leaf_uuid in self.leaves["uuids"]:
-            stage_names = self.leaves["hooks"][leaf_uuid][hook_type]
-            for stage_name in stage_names:
-                initial_path = self.leaves["initial_path"][leaf_uuid]
-                if self.leaves["failed"][leaf_uuid]:
-                    logger.warning(
-                        f"Skipping stage {stage_name} for file {initial_path} due to previous failure"
-                    )
+        for stage_name, stage_instance in self.config.stage_dict.items():
+
+            # check which leaves we want to run on
+            uuids_to_run = []
+            for uuid in self.leaves["uuids"]:
+                # skip leaves that aren't relevant to this stage
+                if stage_name not in self.leaves["hooks"][uuid][hook_type]:
                     continue
-                stage_instance = self.config.stage_dict[stage_name]
-                try:
-                    hook_function_name = hook_type[:-1]
-                    hook_function = getattr(stage_instance, hook_function_name)
-                    hook_function(leaf_uuid, self)
-                except Exception as e:
-                    errormsg = f"Error running {hook_type} for stage {stage_name} on file {initial_path}. "
-                    logger.error(errormsg + f"Error message: {e}")
-                    self.leaves["failed"][leaf_uuid] = True
-                    raise e
+
+                # skip failed leaves
+                if self.leaves["failed"][uuid]:
+                    initial_path = self.leaves["initial_path"][uuid]
+                    warning = f"Skipping stage {stage_name} for file {initial_path} due to previous failure"
+                    logger.warning(warning)
+                    continue
+
+                uuids_to_run.append(uuid)
+
+            # get the hook functions from the stage
+            hook_init = getattr(stage_instance, f"{hook_type[:-1]}_initialize")
+            hook_main = getattr(stage_instance, f"{hook_type[:-1]}")
+            hook_finalize = getattr(stage_instance, f"{hook_type[:-1]}_finalize")
+
+            # set up a context manager if requested
+            hook_init()  # populate context manager attributes
+            if stage_instance.context_function is not None:
+                context_manager = stage_instance.context_function(
+                    **stage_instance.context_parameters
+                )
+            else:
+                context_manager = contextlib.nullcontext()
+
+            # run hook for all leaves, inside the context manager
+            with context_manager as context:
+                for uuid in uuids_to_run:
+                    try:
+                        hook_main(uuid, self, context)
+                    except Exception as e:
+                        initial_path = self.leaves["initial_path"][uuid]
+                        errormsg = f"Error running {hook_type} for stage {stage_name} on file {initial_path}. "
+                        logger.error(errormsg + f"Error message: {e}")
+                        self.leaves["failed"][uuid] = True
+
+            # do any final cleanup, including wiping context manager attributes
+            hook_finalize()
 
         if any(self.leaves["failed"].values()):
             raise Exception

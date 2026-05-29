@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from typing import Any
 
 from marko import Markdown
 from marko.md_renderer import MarkdownRenderer
@@ -34,7 +35,7 @@ class TransformMarkdown(Stage):
         tree.leaves["hooks"][leaf_uuid]["transforms"].append(TransformMarkdown.__name__)
         self.changed_links.append(tree.leaves["initial_path"][leaf_uuid])
 
-    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
+    def pre_hook(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
         """Rewrite links to markdown files that will get transformed."""
         latest_path = tree.abs_leaf_path(leaf_uuid)
         marko_object = Markdown(renderer=MarkdownRenderer)
@@ -45,7 +46,7 @@ class TransformMarkdown(Stage):
         )
         latest_path.write_text(marko_object.render(document))
 
-    def transform(self, leaf_uuid: str, tree: TreeSpan) -> None:
+    def transform(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
         """Use Marko to write an HTML version of a markdown leaf."""
         markdown_path = tree.abs_leaf_path(leaf_uuid)
         tree.update_leaf_path(leaf_uuid, "latest", self._update_path)

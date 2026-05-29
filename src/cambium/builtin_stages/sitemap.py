@@ -25,8 +25,12 @@ class AddSitemap(Stage):
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.config = AddSitemapConfig.model_validate(config_dict)
-        self.requires = []
         self.entries = []
+
+        # stuff required by Stage
+        self.requires = []
+        self.context_function = None
+        self.context_parameters = {}
 
     def tree_hook(self, tree: TreeSpan) -> None:
         # always attempt to add a sitemap
@@ -53,12 +57,12 @@ class AddSitemap(Stage):
 
         logger.debug("Added sitemap file")
 
-    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
+    def pre_hook(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
         final_path = tree.leaves["final_path"][leaf_uuid]
         if final_path.suffix in (".html", ".htm"):
             self.entries.append(final_path)
 
-    def transform(self, leaf_uuid: str, tree: TreeSpan) -> None:
+    def transform(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
         entry_template = "<url><loc>{full_url}</loc></url>"
         sitemap_template = """
             <?xml version="1.0" encoding="UTF-8"?>
