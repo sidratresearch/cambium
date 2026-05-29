@@ -41,12 +41,6 @@ class Stage:
         self.requires: list[str] = []
         """Other stages that must also be present, unordered"""
 
-        self.context_function: Optional[Callable] = None
-        """A function to call to create a context manager which lives while a hook is being run across all leaves"""
-
-        self.context_parameters: dict[str] = {}
-        """Dictionary of parameters to pass to `self.context_function` as kwargs"""
-
     # Private Utility Functions
 
     def _set_leaf_metadata(
@@ -110,15 +104,11 @@ class Stage:
     #                              Pre-Hook                               #
     # --------------------------------------------------------------------#
 
-    def pre_hook_initialize(self) -> None:
-        """Function to run once, prior to running the pre-hook over all leaves.
-
-        If the pre-hook requires a long-lived context manager, set the relevant
-        attributes here.
-        """
+    def pre_hook_initialize(self, tree: TreeSpan) -> None:
+        """Function to run once, prior to running the pre-hook over all leaves."""
         pass
 
-    def pre_hook(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
+    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """Function run on a single leaf, prior to any major transformations.
 
         This function can write to temporary directories
@@ -127,29 +117,19 @@ class Stage:
         """
         raise NotImplementedError("pre_hook is not defined on this stage")
 
-    def pre_hook_finalize(self) -> None:
-        """Function called after the pre-hook is run on all leaves.
-
-        If the pre-hook used a long-running context manager, the relevant attributes
-        need to be unset here, before the transform or post-hook attempt to re-use
-        them.
-        """
-        self.context_function = None
-        self.context_parameters = None
+    def pre_hook_finalize(self, tree: TreeSpan) -> None:
+        """Function called after the pre-hook is run on all leaves."""
+        pass
 
     # --------------------------------------------------------------------#
     #                           Transform Hook                            #
     # --------------------------------------------------------------------#
 
-    def transform_initialize(self) -> None:
-        """Function to run once, prior to running the transform over all leaves.
-
-        If the transform requires a long-lived context manager, set the relevant
-        attributes here.
-        """
+    def transform_initialize(self, tree: TreeSpan) -> None:
+        """Function to run once, prior to running the transform over all leaves."""
         pass
 
-    def transform(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
+    def transform(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """Function run on a single leaf, applying a major transformation (md -> html).
 
         This function can write to temporary directories
@@ -160,28 +140,19 @@ class Stage:
         """
         raise NotImplementedError("transform is not defined on this stage")
 
-    def transform_finalize(self) -> None:
-        """Function called after the transform is run on all leaves.
-
-        If the transform used a long-running context manager, the relevant attributes
-        need to be unset here, before the post-hook attempts to re-use them.
-        """
-        self.context_function = None
-        self.context_parameters = {}
+    def transform_finalize(self, tree: TreeSpan) -> None:
+        """Function called after the transform is run on all leaves."""
+        pass
 
     # --------------------------------------------------------------------#
     #                             Post-Hook                               #
     # --------------------------------------------------------------------#
 
-    def post_hook_initialize(self) -> None:
-        """Function to run once, prior to running the post-hook over all leaves.
-
-        If the post-hook requires a long-lived context manager, set the relevant
-        attributes here.
-        """
+    def post_hook_initialize(self, tree: TreeSpan) -> None:
+        """Function to run once, prior to running the post-hook over all leaves."""
         pass
 
-    def post_hook(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
+    def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """Function run on a single leaf, after any major transformations.
 
         This function can write to and read from temporary directories
@@ -191,14 +162,9 @@ class Stage:
         """
         raise NotImplementedError("post_hook is not defined on this stage")
 
-    def post_hook_finalize(self) -> None:
-        """Function called after the post-hook is run on all leaves.
-
-        If the post-hook used a long-running context manager, the relevant attributes
-        should be unset here.
-        """
-        self.context_function = None
-        self.context_parameters = None
+    def post_hook_finalize(self, tree: TreeSpan) -> None:
+        """Function called after the post-hook is run on all leaves."""
+        pass
 
 
 def populating_stage_dict(

@@ -52,7 +52,7 @@ class URLEncodeFilenames(Stage):
     def _url_encode_path(self, path: Path) -> Path:
         return Path(slugify(str(path), **slugify_options))
 
-    def pre_hook(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
+    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         leaf_path = tree.abs_leaf_path(leaf_uuid)
 
         if leaf_path.suffix != ".md":

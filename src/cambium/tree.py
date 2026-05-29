@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import contextlib
 import logging
 import re
 import typing
@@ -348,51 +347,57 @@ class TreeSpan:
         for stage_name, stage_instance in self.config.stage_dict.items():
 
             # check which leaves we want to run on
-            uuids_to_run = []
-            for uuid in self.leaves["uuids"]:
-                # skip leaves that aren't relevant to this stage
-                if stage_name not in self.leaves["hooks"][uuid][hook_type]:
-                    continue
+            uuids_to_run = self._get_leaves_for_stage_hook(stage_name, hook_type)
 
-                # skip failed leaves
-                if self.leaves["failed"][uuid]:
-                    initial_path = self.leaves["initial_path"][uuid]
-                    warning = f"Skipping stage {stage_name} for file {initial_path} due to previous failure"
-                    logger.warning(warning)
-                    continue
-
-                uuids_to_run.append(uuid)
+            if len(uuids_to_run) == 0:
+                continue
 
             # get the hook functions from the stage
             hook_init = getattr(stage_instance, f"{hook_type[:-1]}_initialize")
             hook_main = getattr(stage_instance, f"{hook_type[:-1]}")
             hook_finalize = getattr(stage_instance, f"{hook_type[:-1]}_finalize")
 
-            # set up a context manager if requested
-            hook_init()  # populate context manager attributes
-            if stage_instance.context_function is not None:
-                context_manager = stage_instance.context_function(
-                    **stage_instance.context_parameters
-                )
-            else:
-                context_manager = contextlib.nullcontext()
+            hook_init(self)
 
-            # run hook for all leaves, inside the context manager
-            with context_manager as context:
-                for uuid in uuids_to_run:
-                    try:
-                        hook_main(uuid, self, context)
-                    except Exception as e:
-                        initial_path = self.leaves["initial_path"][uuid]
-                        errormsg = f"Error running {hook_type} for stage {stage_name} on file {initial_path}. "
-                        logger.error(errormsg + f"Error message: {e}")
-                        self.leaves["failed"][uuid] = True
+            # run hook for all leaves
+            for uuid in uuids_to_run:
+                try:
+                    hook_main(uuid, self)
+                except Exception as e:
+                    self._handle_hook_exception(e, uuid, stage_name, hook_type)
 
-            # do any final cleanup, including wiping context manager attributes
-            hook_finalize()
+            hook_finalize(self)
 
         if any(self.leaves["failed"].values()):
             raise Exception
+
+    def _handle_hook_exception(
+        self, exception: Exception, leaf_uuid: str, stage_name: str, hook_type: str
+    ) -> None:
+        initial_path = self.leaves["initial_path"][leaf_uuid]
+        errormsg = (
+            f"Error running {hook_type} for stage {stage_name} on file {initial_path}. "
+        )
+        logger.error(errormsg + f"Error message: {exception}")
+        self.leaves["failed"][leaf_uuid] = True
+
+    def _get_leaves_for_stage_hook(self, stage_name: str, hook_type: str) -> list[str]:
+        uuids_to_run = []
+        for uuid in self.leaves["uuids"]:
+            # skip leaves that aren't relevant to this stage
+            if stage_name not in self.leaves["hooks"][uuid][hook_type]:
+                continue
+
+            # skip failed leaves
+            if self.leaves["failed"][uuid]:
+                initial_path = self.leaves["initial_path"][uuid]
+                warning = f"Skipping stage {stage_name} for file {initial_path} due to previous failure"
+                logger.warning(warning)
+                continue
+
+            uuids_to_run.append(uuid)
+
+        return uuids_to_run
 
     def apply_pre_hooks(self) -> None:
         """Run pre-hooks for all leaves."""

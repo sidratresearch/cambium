@@ -26,7 +26,7 @@ class TemplateMarkdown(Stage):
         # Apply to Leaves
         tree.apply_to_leaves(self._tree_hook_for_leaf)
 
-    def post_hook(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
+    def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         self._create_page(leaf_uuid, tree)
 
     # Utility Functions

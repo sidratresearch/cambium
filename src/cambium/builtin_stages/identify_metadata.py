@@ -42,7 +42,7 @@ class IdentifyMetadata(Stage):
         # Get all pages that should have metadata extracted
         tree.apply_to_leaves(self._tree_hook_for_leaf)
 
-    def pre_hook(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
+    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         self._extract_metadata(leaf_uuid=leaf_uuid, tree=tree)
 
     # Utility Functions

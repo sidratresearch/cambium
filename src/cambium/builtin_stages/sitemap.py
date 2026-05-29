@@ -57,12 +57,12 @@ class AddSitemap(Stage):
 
         logger.debug("Added sitemap file")
 
-    def pre_hook(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
+    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         final_path = tree.leaves["final_path"][leaf_uuid]
         if final_path.suffix in (".html", ".htm"):
             self.entries.append(final_path)
 
-    def transform(self, leaf_uuid: str, tree: TreeSpan, context: Any) -> None:
+    def transform(self, leaf_uuid: str, tree: TreeSpan) -> None:
         entry_template = "<url><loc>{full_url}</loc></url>"
         sitemap_template = """
             <?xml version="1.0" encoding="UTF-8"?>

@@ -20,8 +20,6 @@
 
 ## Hook Initialization and Finalization
 
-The actual work functions for pre, post, and transform hooks are run on a leaf-by-leaf basis. However, if the hook requires some persistent state, such as a long-running context manager, present across all leaves, that can be handled with the initialize and finalize functions. See `TreeSpan._apply_hook()` for the usage of these functions.
-
 ## Other Stage Responsibilities
 
 _Tree hooks should be as lightweight as possible_. Tree hooks may rely on eachother, and so cannot be parallelized stage-wise; but may also add or remove leaves, and so cannot be parallelized leaf-wise either.
