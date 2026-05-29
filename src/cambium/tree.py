@@ -313,7 +313,7 @@ class TreeSpan:
         return path
 
     # ----------------------------------------------------------------#
-    #                     Main Cambium functions                     #
+    #                     Main Cambium functions                      #
     # ----------------------------------------------------------------#
 
     def _apply_hook(
@@ -353,6 +353,7 @@ class TreeSpan:
                     errormsg = f"Error running {hook_type} for stage {stage_name} on file {initial_path}. "
                     logger.error(errormsg + f"Error message: {e}")
                     self.leaves["failed"][leaf_uuid] = True
+                    raise e
 
         if any(self.leaves["failed"].values()):
             raise Exception
@@ -373,19 +374,21 @@ class TreeSpan:
         """Copy final leaf versions to build, and do any other cleanup."""
         logger.info("Finalizing output")
 
+        # create _build and subdirs
         if self.build_directory.exists():
-            shutil.rmtree(self.build_directory)  # TODO: make this configurable?
+            shutil.rmtree(self.build_directory)
         self.build_directory.mkdir()
-
         for directory in self.directories_in_build:
             (self.build_directory / directory).mkdir()
 
+        # move files from tmp to build
         for leaf_uuid in self.leaves["uuids"]:
             from_path = self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid]
             to_path = self.build_directory / self.leaves["final_path"][leaf_uuid]
             logger.debug(f"Finalize: Copying {from_path}->{to_path}")
             shutil.copy(from_path, to_path)
 
+        # copy static files over
         self._copy_static_files_no_overwrite(self.root_directory / "static")
         for directory in self.config.ordered_theme_directories:
             self._copy_static_files_no_overwrite(directory / "static")

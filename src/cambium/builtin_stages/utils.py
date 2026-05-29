@@ -115,6 +115,7 @@ def add_heading_anchors(document: Document) -> Document:
             anchor = default_anchor
         anchor_counter[default_anchor] += 1
 
+        # TODO: make the prefix configurable?
         # prepend the id to reduce chance of collisions
         child.id = "cambium-header-anchor-" + anchor
 
