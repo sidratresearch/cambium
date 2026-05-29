@@ -125,7 +125,7 @@ class Stage:
         It can write updated versions of the leaf content (e.g., parse custom markdown
         syntax), or other meta content (e.g., markdown headers)
         """
-        raise NotImplementedError()
+        raise NotImplementedError("pre_hook is not defined on this stage")
 
     def pre_hook_finalize(self) -> None:
         """Function called after the pre-hook is run on all leaves.
@@ -158,7 +158,7 @@ class Stage:
         writing other meta content, that should be a pre or post hook, but writing
         guardrails for that seems overkill
         """
-        raise NotImplementedError()
+        raise NotImplementedError("transform is not defined on this stage")
 
     def transform_finalize(self) -> None:
         """Function called after the transform is run on all leaves.
@@ -189,7 +189,7 @@ class Stage:
         syntax), or other meta content (e.g., markdown headers). It may want to read
         information that was written by this Stage's `pre_hook`
         """
-        raise NotImplementedError()
+        raise NotImplementedError("post_hook is not defined on this stage")
 
     def post_hook_finalize(self) -> None:
         """Function called after the post-hook is run on all leaves.
