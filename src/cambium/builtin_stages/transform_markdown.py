@@ -36,7 +36,7 @@ class TransformMarkdown(Stage):
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """Rewrite links to markdown files that will get transformed."""
-        latest_path = tree.abs_write_path(leaf_uuid)
+        latest_path = tree.abs_leaf_path(leaf_uuid)
         marko_object = Markdown(renderer=MarkdownRenderer)
         document = marko_object.parse(latest_path.read_text())
 
@@ -47,9 +47,9 @@ class TransformMarkdown(Stage):
 
     def transform(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """Use Marko to write an HTML version of a markdown leaf."""
-        markdown_path = tree.abs_write_path(leaf_uuid)
+        markdown_path = tree.abs_leaf_path(leaf_uuid)
         tree.update_leaf_path(leaf_uuid, "latest", self._update_path)
-        html_path = tree.abs_write_path(leaf_uuid)
+        html_path = tree.abs_leaf_path(leaf_uuid)
 
         markdown = (markdown_path).read_text()
         html = markdown_to_html(markdown)

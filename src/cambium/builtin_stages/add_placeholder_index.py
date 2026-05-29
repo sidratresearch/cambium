@@ -28,4 +28,4 @@ class AddPlaceholderIndex(Stage):
             directory, latest_path=source_path, final_path=directory / "index.html"
         )
 
-        tree.abs_write_path(uuid).write_text("")
+        tree.abs_leaf_path(uuid).write_text("")

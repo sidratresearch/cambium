@@ -47,7 +47,7 @@ class AddSitemap(Stage):
         uuid = tree.add_leaf(
             Path(), latest_path=source_path, final_path=Path("sitemap.xml")
         )
-        tree.abs_write_path(uuid).write_text("")
+        tree.abs_leaf_path(uuid).write_text("")
 
         tree.leaves["hooks"][uuid]["transforms"].append(self.__class__.__name__)
 
@@ -78,4 +78,4 @@ class AddSitemap(Stage):
         xml_entries.sort()
 
         sitemap_contents = sitemap_template.format(entries="\n\t  ".join(xml_entries))
-        tree.abs_write_path(leaf_uuid).write_text(sitemap_contents)
+        tree.abs_leaf_path(leaf_uuid).write_text(sitemap_contents)

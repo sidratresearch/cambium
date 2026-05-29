@@ -301,7 +301,7 @@ class TreeSpan:
         if path_type == "final":
             self._check_leaf_collisions()
 
-    def abs_write_path(self, leaf_uuid: str) -> Path:
+    def abs_leaf_path(self, leaf_uuid: str) -> Path:
         """Get the absolute path to a safe writeable location for a leaf.
 
         Ensures that the directory exists to be written to, which is mostly required

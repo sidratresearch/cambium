@@ -67,7 +67,7 @@ class TemplateMarkdown(Stage):
 
     def _create_page(self, leaf_uuid: str, tree: TreeSpan) -> None:
 
-        input_path = tree.abs_write_path(leaf_uuid)
+        input_path = tree.abs_leaf_path(leaf_uuid)
 
         number_of_parents: int = len(
             input_path.parent.relative_to(tree.config.tmp_dir.absolute()).parents

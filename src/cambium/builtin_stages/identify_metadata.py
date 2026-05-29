@@ -70,7 +70,7 @@ class IdentifyMetadata(Stage):
             ).isoformat()
         )
 
-        input_path: Path = tree.abs_write_path(leaf_uuid)
+        input_path: Path = tree.abs_leaf_path(leaf_uuid)
         input_extension: str = input_path.suffix
 
         if input_extension in (".md"):
