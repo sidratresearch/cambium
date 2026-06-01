@@ -83,6 +83,7 @@ class TreeSpan:
         self._check_disk_space()
         self._apply_tree_hooks()
         self._init_tmp_files()
+        self._init_build_directory()
 
     # ----------------------------------------------------------------#
     #                    __init__ helper functions                    #
@@ -234,6 +235,14 @@ class TreeSpan:
                 self.root_directory / initial_path,
                 self.config.tmp_dir / initial_path,
             )
+
+    def _init_build_directory(self) -> None:
+        # create _build and subdirs
+        if self.build_directory.exists():
+            shutil.rmtree(self.build_directory)
+        self.build_directory.mkdir()
+        for directory in self.directories_in_build:
+            (self.build_directory / directory).mkdir()
 
     # ----------------------------------------------------------------#
     #                     stage helper functions                     #
@@ -424,18 +433,11 @@ class TreeSpan:
         """Copy final leaf versions to build, and do any other cleanup."""
         logger.info("Finalizing output")
 
-        # create _build and subdirs - commented out because stages are writing to static
-        # if self.build_directory.exists():
-        #     shutil.rmtree(self.build_directory)
-        self.build_directory.mkdir(exist_ok=True)
-        for directory in self.directories_in_build:
-            (self.build_directory / directory).mkdir(exist_ok=True)
-
         # move files from tmp to build
         for leaf_uuid in self.leaves["uuids"]:
             from_path = self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid]
             to_path = self.build_directory / self.leaves["final_path"][leaf_uuid]
-            logger.debug(f"Finalize: Copying {from_path}->{to_path}")
+            logger.debug(f"Copying {from_path}->{to_path}")
             shutil.copy(from_path, to_path)
 
         # copy static files over
@@ -469,8 +471,8 @@ class TreeSpan:
         if not static_directory.exists():
             return
         logger.debug(
-            f"Copying files from static directory {static_directory} to output. "
-            "Existing files in output will not be overwritten."
+            f"Copying files from static directory `{static_directory}` to output. "
+            f"Existing files in {self.build_directory/'static'} will not be overwritten."
         )
         for current_root, _, files in os.walk(static_directory):
             for file in files:
@@ -480,7 +482,7 @@ class TreeSpan:
 
                 if final_path.exists():
                     logger.debug(
-                        f"Skipping {static_directory/path_from_root} because it exists"
+                        f"Skipping {path_from_root} because {final_path} exists"
                     )
                     continue
 
