@@ -4,9 +4,12 @@ import urllib
 from collections import Counter
 from pathlib import Path
 
-from marko import Markdown
+from marko import Markdown, MarkoExtension
 from marko.block import Document, Heading
 from marko.element import Element
+from marko.ext.gfm.elements import Table
+from marko.ext.gfm.renderer import GFMRendererMixin
+from marko.helpers import render_dispatch
 from marko.html_renderer import HTMLRenderer
 from marko.inline import Image, Link
 from slugify import slugify
@@ -21,6 +24,25 @@ class CambiumHTMLRenderer(HTMLRenderer):
         return heading_template.format(
             level=element.level, id=element.id, children=self.render_children(element)
         )
+
+
+class WrappedBlocksMixin(GFMRendererMixin):
+    """Wrap certain block elements in Cambium-specific divs."""
+
+    @render_dispatch(HTMLRenderer)
+    def render_table(self, element: Element) -> str:
+        """Wraps `table` tags in a div."""
+        rendered_table = super().render_table(element)
+        return f"<div class='cambium-table'>{rendered_table}</div>"
+
+    @render_dispatch(HTMLRenderer)
+    def render_image(self, element: Image) -> str:
+        """Wraps `img` tags in a div."""
+        rendered_img = super().render_image(element)
+        return f"<div class='cambium-img'>{rendered_img}</div>"
+
+
+WrappedTables = MarkoExtension(elements=[Table], renderer_mixins=[WrappedBlocksMixin])
 
 
 def is_external_link(dest: str) -> bool:
@@ -126,7 +148,9 @@ def markdown_to_html(markdown: str) -> str:
     """Main function of the TransformMarkdown stage."""
     # WARNING: The Markdown class is not thread-safe.
     # Create a new instance for each thread.
-    marko_object = Markdown(extensions=["gfm"], renderer=CambiumHTMLRenderer)
+    marko_object = Markdown(
+        extensions=["gfm", WrappedTables], renderer=CambiumHTMLRenderer
+    )
 
     document = marko_object.parse(markdown)
     document = add_heading_anchors(document)
