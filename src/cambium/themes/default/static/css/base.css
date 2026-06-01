@@ -175,6 +175,14 @@ th {
   background-color: #f9f9f9;
 }
 
+th.ascending::after {
+  content: " \25BE";
+}
+
+th.descending::after {
+  content: " \25B4";
+}
+
 td {
   text-align: center;
   font-size: 0.9rem;
