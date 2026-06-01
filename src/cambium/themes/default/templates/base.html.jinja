@@ -1,31 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page_title }}</title>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ page_title }}</title>
-
-  {% if metadata.stage_metadata.PagefindSearch.show_searchbar_on_page %}
-  {% include metadata.stage_metadata.PagefindSearch.head_links %}
-  {% endif %}
-</head>
-<link rel="stylesheet" href="{{ relative_path_modifier }}static/css/base.css" />
-
-<body>
-  {% include 'header.html.jinja' %}
-
-
-  <div class="container main">
-    {% if table_of_contents is defined %}
-    <nav>{{ table_of_contents }}</nav>
+    {% if metadata.stage_metadata.PagefindSearch.show_searchbar_on_page %}
+      {% include metadata.stage_metadata.PagefindSearch.head_links %}
     {% endif %}
+  </head>
+  <link rel="stylesheet" href="{{ relative_path_modifier }}static/css/base.css" />
+  <link rel="stylesheet" href="{{ relative_path_modifier }}static/css/custom.css" />
 
-    <main>{{ main_content }}</main>
-  </div>
+  <body>
+    {% include 'header.html.jinja' %}
 
-  {% include 'footer.html.jinja' %}
-</body>
-<script src="{{ relative_path_modifier }}static/js/base.js"></script>
+    <div class="container main">
+      {% if table_of_contents is defined %}
+        <nav>{{ table_of_contents }}</nav>
+      {% endif %}
 
+      <main>{{ main_content }}</main>
+    </div>
+
+    {% include 'footer.html.jinja' %}
+  </body>
+  <script src="{{ relative_path_modifier }}static/js/base.js"></script>
 </html>

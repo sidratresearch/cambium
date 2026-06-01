@@ -445,6 +445,15 @@ class TreeSpan:
         for directory in self.config.ordered_theme_directories:
             self._copy_static_files_no_overwrite(directory / "static")
 
+        # populate "required" static files
+        required_static = ["css/custom.css"]
+        for path in [
+            self.build_directory / "static" / file for file in required_static
+        ]:
+            if not path.exists():
+                path.parent.mkdir(exist_ok=True)
+                path.write_text("")
+
     # ----------------------------------------------------------------#
     #                    other internal functions                    #
     # ----------------------------------------------------------------#
