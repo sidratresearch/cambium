@@ -363,15 +363,18 @@ class TreeSpan:
             hook_main = getattr(stage_instance, f"{hook_type[:-1]}")
             hook_finalize = getattr(stage_instance, f"{hook_type[:-1]}_finalize")
 
+            logger.debug(f"Running {stage_name} {hook_type[:-1]}_initalize.")
             hook_init(self)
 
             # run hook for all leaves
             for uuid in uuids_to_run:
                 try:
+                    logger.debug(f"Running {stage_name} {hook_type[:-1]}.")
                     hook_main(uuid, self)
                 except Exception as e:
                     self._handle_hook_exception(e, uuid, stage_name, hook_type)
 
+            logger.debug(f"Running {stage_name} {hook_type[:-1]}_finalize.")
             hook_finalize(self)
 
         if any(self.leaves["failed"].values()):
