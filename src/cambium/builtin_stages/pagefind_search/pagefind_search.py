@@ -14,8 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class PagefindSearchConfig(StageConfig):
-    root_selector: str = "<html>"
-    """html selector that pagefind cares about, narrow with `data-pagefind-body`"""
     exclude_selectors: list[str] = []
     force_lanuage: str | None = None
     include_characters: str = "._"
@@ -40,6 +38,7 @@ class PagefindSearch(Stage):
         validated_config = PagefindSearchConfig.model_validate(config_dict)
         pagefind_config = IndexConfig(
             **validated_config.model_dump(),
+            root_selector="html",
         )
 
         self.pagefind_config = pagefind_config
@@ -109,6 +108,9 @@ class PagefindSearch(Stage):
             for uuid in html_leaves:
                 final_path = tree.leaves["final_path"][uuid]
                 content = tree.abs_leaf_path(uuid).read_text()
+                logger.debug(
+                    f"Adding {tree.leaves['initial_path'][uuid]} to Pagefind index."
+                )
                 await index.add_html_file(content=content, source_path=str(final_path))
 
             pf_dir_print = (
