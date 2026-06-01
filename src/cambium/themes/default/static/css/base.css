@@ -161,11 +161,14 @@ table {
 th {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
   max-width: 20rem;
   vertical-align: bottom;
   border-bottom: 1px solid #bbb;
-  font-weight: 400;
-  font-size: 1.2rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.1;
   color: #660000;
   position: sticky;
   top: 0;
@@ -174,6 +177,8 @@ th {
 
 td {
   text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.05;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
   padding-top: 0.5rem;
@@ -212,6 +217,8 @@ tr:nth-child(even) {
   table {
     display: block;
     overflow-x: auto;
-    max-width: 80vw;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
   }
 }
