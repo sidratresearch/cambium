@@ -121,7 +121,7 @@ def get_raw_content(element: Element) -> str:
     return content
 
 
-def add_heading_anchors(document: Document) -> Document:
+def add_heading_anchors(document: Document, heading_id_prefix: str) -> Document:
     """Add GitHub-style slugs as `id` attributes on `Heading` elements.
 
     While Marko has a toc extension, it doesn't handle recurring heading anchors,
@@ -141,14 +141,13 @@ def add_heading_anchors(document: Document) -> Document:
             anchor = default_anchor
         anchor_counter[default_anchor] += 1
 
-        # TODO: make the prefix configurable?
         # prepend the id to reduce chance of collisions
-        child.id = "cambium-header-anchor-" + anchor
+        child.id = heading_id_prefix + anchor
 
     return document
 
 
-def markdown_to_html(markdown: str) -> str:
+def markdown_to_html(markdown: str, heading_id_prefix: str) -> str:
     """Main function of the TransformMarkdown stage."""
     # WARNING: The Markdown class is not thread-safe.
     # Create a new instance for each thread.
@@ -157,6 +156,6 @@ def markdown_to_html(markdown: str) -> str:
     )
 
     document = marko_object.parse(markdown)
-    document = add_heading_anchors(document)
+    document = add_heading_anchors(document, heading_id_prefix)
 
     return marko_object.render(document)
