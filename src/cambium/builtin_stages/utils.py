@@ -29,17 +29,21 @@ class CambiumHTMLRenderer(HTMLRenderer):
 class WrappedBlocksMixin(GFMRendererMixin):
     """Wrap certain block elements in Cambium-specific divs."""
 
+    class_template = "cambium-{tag}-holder"
+
     @render_dispatch(HTMLRenderer)
     def render_table(self, element: Element) -> str:
         """Wraps `table` tags in a div."""
         rendered_table = super().render_table(element)
-        return f"<div class='cambium-table'>{rendered_table}</div>"
+        css_class = self.class_template.format(tag="table")
+        return f"<div class='{css_class}'>{rendered_table}</div>"
 
     @render_dispatch(HTMLRenderer)
     def render_image(self, element: Image) -> str:
         """Wraps `img` tags in a div."""
         rendered_img = super().render_image(element)
-        return f"<div class='cambium-img'>{rendered_img}</div>"
+        css_class = self.class_template.format(tag="img")
+        return f"<div class='{css_class}'>{rendered_img}</div>"
 
 
 WrappedTables = MarkoExtension(elements=[Table], renderer_mixins=[WrappedBlocksMixin])
