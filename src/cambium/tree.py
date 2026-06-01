@@ -312,6 +312,12 @@ class TreeSpan:
         path.parent.mkdir(parents=True, exist_ok=True)
         return path
 
+    def abs_static_stage_path(self, stage_name: str) -> Path:
+        """Get the absolute path to a stage-specific directory in build/static."""
+        path = self.build_directory / "static" / "_cambium" / stage_name
+        path.mkdir(parents=True, exist_ok=True)
+        return path.absolute()
+
     # ----------------------------------------------------------------#
     #                     Main Cambium functions                      #
     # ----------------------------------------------------------------#
@@ -415,12 +421,12 @@ class TreeSpan:
         """Copy final leaf versions to build, and do any other cleanup."""
         logger.info("Finalizing output")
 
-        # create _build and subdirs
-        if self.build_directory.exists():
-            shutil.rmtree(self.build_directory)
-        self.build_directory.mkdir()
+        # create _build and subdirs - commented out because stages are writing to static
+        # if self.build_directory.exists():
+        #     shutil.rmtree(self.build_directory)
+        self.build_directory.mkdir(exist_ok=True)
         for directory in self.directories_in_build:
-            (self.build_directory / directory).mkdir()
+            (self.build_directory / directory).mkdir(exist_ok=True)
 
         # move files from tmp to build
         for leaf_uuid in self.leaves["uuids"]:

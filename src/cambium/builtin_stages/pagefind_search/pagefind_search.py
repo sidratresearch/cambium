@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from pathlib import Path
 from typing import Any
 
 from pagefind.index import IndexConfig, PagefindIndex
@@ -37,7 +38,9 @@ class PagefindSearch(Stage):
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
         validated_config = PagefindSearchConfig.model_validate(config_dict)
-        pagefind_config = IndexConfig(**validated_config.model_dump())
+        pagefind_config = IndexConfig(
+            **validated_config.model_dump(),
+        )
 
         self.pagefind_config = pagefind_config
         self.requires = ["TemplateMarkdown"]  # to have somewhere to put the search box
@@ -47,9 +50,38 @@ class PagefindSearch(Stage):
         self.context_parameters = {}
 
     def tree_hook(self, tree: TreeSpan) -> None:
+        tree.config.stage_jinja_template_directories.append(
+            Path(__file__).parent / "includes/templates"
+        )
         for uuid in tree.leaves["uuids"]:
             if tree.leaves["final_path"][uuid].suffix == ".html":
+                tree.leaves["hooks"][uuid]["pre_hooks"].append(self.__class__.__name__)
                 tree.leaves["hooks"][uuid]["post_hooks"].append(self.__class__.__name__)
+
+        self.abs_pagefind_directory = tree.abs_static_stage_path(
+            self.__class__.__name__
+        )
+
+    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
+        self._set_leaf_metadata("show_searchbar_on_page", True, leaf_uuid, tree)
+        self._set_leaf_metadata(
+            "searchbar_component",
+            "search-component.html.jinja",
+            leaf_uuid,
+            tree,
+        )
+        self._set_leaf_metadata(
+            "head_links",
+            "head.html.jinja",
+            leaf_uuid,
+            tree,
+        )
+        self._set_leaf_metadata(
+            "pagefind_directory",
+            self.abs_pagefind_directory.relative_to(tree.build_directory.absolute()),
+            leaf_uuid,
+            tree,
+        )
 
     def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """Fake post hook function for Pagefind integration."""
@@ -79,8 +111,12 @@ class PagefindSearch(Stage):
                 content = tree.abs_leaf_path(uuid).read_text()
                 await index.add_html_file(content=content, source_path=str(final_path))
 
-            logger.info(
-                f"Writing pagefind files to {tree.build_directory / self.pagefind_directory}"
+            pf_dir_print = (
+                tree.build_directory
+                / self.abs_pagefind_directory.relative_to(
+                    tree.build_directory.absolute()
+                )
             )
-            await index.write_files(str(tree.build_directory / self.pagefind_directory))
+            logger.info(f"Writing pagefind files to {pf_dir_print}")
+            await index.write_files(str(self.abs_pagefind_directory))
             await index.delete_index()  # don't write files to default location

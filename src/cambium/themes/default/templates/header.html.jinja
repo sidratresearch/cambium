@@ -1,7 +1,13 @@
 <header>
-    <div class="container header-bar">
-        <div class="header-left">{{ header_left }}</div>
-        <div class="header-centre">{{ header_centre }}</div>
-        <div class="header-right">{{ header_right }}</div>
+  <div class="container header-bar">
+    <div class="header-left">
+      <a href="{{ relative_path_modifier }}index.html" class="header-link"> {{ site_name }}</a>
     </div>
+    <div class="header-centre">
+      {% if metadata.stage_metadata.PagefindSearch.show_searchbar_on_page %}
+        {% include metadata.stage_metadata.PagefindSearch.searchbar_component %}
+      {% endif %}
+    </div>
+    <div class="header-right">{{ header_right }}</div>
+  </div>
 </header>

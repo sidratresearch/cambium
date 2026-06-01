@@ -1,8 +1,8 @@
 """Cambium stage to apply Jinja templates to transformed markdown files."""
 
+import datetime
 import logging
 from pathlib import Path
-from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -20,11 +20,18 @@ class TemplateMarkdown(Stage):
 
     def tree_hook(self, tree: TreeSpan) -> None:
 
-        # Initialize Jinja Environment
-        self._initialize_jinja(tree)
+        # save a single build time for use in templates
+        self.build_time_utc = datetime.datetime.now(tz=datetime.UTC)
 
         # Apply to Leaves
         tree.apply_to_leaves(self._tree_hook_for_leaf)
+
+    def post_hook_initialize(self, tree: TreeSpan) -> None:
+        for stage_templates_path in tree.config.stage_jinja_template_directories:
+            if stage_templates_path.exists():
+                self.jinja_template_paths.append(stage_templates_path)
+        # Initialize Jinja Environment
+        self._initialize_jinja(tree)
 
     def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         self._create_page(leaf_uuid, tree)
@@ -84,13 +91,18 @@ class TemplateMarkdown(Stage):
 
         # Jinja does not complain in a variable is missing from the environment
         # Something to think about wrt potential stage-added items and custom themes
+
+        # print(self.jinja_template_paths)
         output_html = main_template.render(
-            page_title=f"{tree.leaves['metadata'][leaf_uuid].title} - {tree.config.site_name}",
-            main_content=main_content,
+            # general Cambium utility items
+            site_name=tree.config.site_name,
             relative_path_modifier="../" * number_of_parents,
-            footer_left=tree.config.site_name,
-            header_left=f"<a href='{'../'*number_of_parents}index.html' class='header-link'>{tree.config.site_name}</a>",
-            table_of_contents=tree.leaves["metadata"][leaf_uuid].table_of_contents,
+            metadata=tree.leaves["metadata"][leaf_uuid],
+            # specialist variables created by this stage
+            page_title=f"{tree.leaves['metadata'][leaf_uuid].title} - {tree.config.site_name}",
+            build_time_utc=self.build_time_utc,
+            # actual markdown content
+            main_content=main_content,
         )
 
         input_path.write_text(output_html)
