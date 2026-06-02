@@ -35,7 +35,6 @@ class CambiumConfiguration(BaseModel):
     """Cambium Configuration Object.
 
     Contains all input cambium configuration parameters
-
     """
 
     root_directory: Optional[str] = "."
@@ -186,22 +185,30 @@ class WorkingConfiguration:
 
 
 def initialize_configuration(
-    input_configuration: Optional[CambiumConfiguration] = None,
+    yaml_dict: dict[str, Any], cli_dict: dict[str, Any]
 ) -> None:
     """Initialize the current configuration for a Cambium run.
 
     Parameters
     ----------
-    input_configuration : Optional[CambiumConfiguration], optional
-        The input cambium configuration, by default None
+    yaml_dict : dict[str,Any]
+        Dictionary of values read from a config file
+    cli_dict : dict[str,Any]
+        Dictionary of values passed on the command line
     """
+    # overwrite YAML config values with those passed on the command line
+    merged_dict = {**yaml_dict, **{k: v for k, v in cli_dict.items() if v is not None}}
+
+    # validate all config values together
+    merged_config = CambiumConfiguration(**merged_dict)
+
     global current_config
-    current_config = WorkingConfiguration(input_configuration)
+    current_config = WorkingConfiguration(merged_config)
 
 
 def read_input_configuration(
     cli_path_loc: Optional[str | Path] = None,
-) -> Optional[CambiumConfiguration]:
+) -> dict[str, Any]:
     """Read input configuration from a file, if one exists.
 
     Parameters
@@ -211,8 +218,9 @@ def read_input_configuration(
 
     Returns
     -------
-    Optional[CambiumConfiguration]
-        If a config file was found, return a CambiumConfiguration object
+    dict[str,Any]
+        If a config file was found, return a dictionary of config values, otherwise,
+        returns an empty dictionary
     """
     config_default_path = Path(".cambium/config.yaml")
 
@@ -230,10 +238,10 @@ def read_input_configuration(
     if config_default_path.exists():
         return translate_yaml_configuration(config_default_path)
     else:
-        return None
+        return {}
 
 
-def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
+def translate_yaml_configuration(config_path: Path) -> dict[str, Any]:
     """Read a YAML config file and return a CambiumConfiguration object.
 
     Parameters
@@ -243,8 +251,8 @@ def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
 
     Returns
     -------
-    CambiumConfiguration
-        The interpreted Cambium configuration object
+    dict[str,Any]
+        Dictionary of values from the config file
     """
     # Opening and reading yaml config
     logger.debug(f"Reading configuration file {config_path}")
@@ -276,8 +284,7 @@ def translate_yaml_configuration(config_path: Path) -> CambiumConfiguration:
         keys = ", ".join(config_yaml.keys())
         logger.warning(f"Unused configuration entries in {config_path}: {keys}")
 
-    # Creating the CambiumConfiguration object:
-    return CambiumConfiguration(**input_dict)
+    return input_dict
 
 
 def convert_glob_string_to_regex(glob_string: str) -> str:

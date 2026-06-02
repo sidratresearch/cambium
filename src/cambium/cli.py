@@ -10,11 +10,26 @@ from .tree import TreeSpan
 logger = init_logging()
 app = typer.Typer()
 
+# --------------------------------------------------------------------#
+#                      Subcommand-style options                       #
+# --------------------------------------------------------------------#
+
 
 def version_callback(value: bool) -> None:
     if value:
         print(f"Cambium {__version__}")
         raise typer.Exit
+
+
+version_option = Annotated[
+    bool | None,
+    typer.Option(
+        "--version",
+        help="Print version info",
+        callback=version_callback,
+        is_eager=True,
+    ),
+]
 
 
 def dump_config_callback(value: bool) -> None:
@@ -23,13 +38,23 @@ def dump_config_callback(value: bool) -> None:
         raise typer.Exit
 
 
+dump_config_option = Annotated[
+    bool | None,
+    typer.Option(
+        "--dump-default-config",
+        help="Dump default configuration info to stdout",
+        callback=dump_config_callback,
+        is_eager=True,
+    ),
+]
+
+# --------------------------------------------------------------------#
+#                           Main function                             #
+# --------------------------------------------------------------------#
+
+
 @app.command()
 def main(
-    # controlling options
-    config_path: Annotated[
-        Path | None,
-        typer.Option("--config", "-c", help="Location of Configuration File"),
-    ] = None,
     verbosity_boost: Annotated[
         int,
         typer.Option(
@@ -39,31 +64,41 @@ def main(
             count=True,
         ),
     ] = 0,
+    config_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--config",
+            "-c",
+            help="Location of Configuration File",
+            rich_help_panel="Configuration",
+        ),
+    ] = None,
+    build_directory: Annotated[
+        str | None,
+        typer.Option(
+            "--build-directory",
+            help="Location to build site into, overrides configuration file",
+            rich_help_panel="Configuration",
+        ),
+    ] = None,
+    root_directory: Annotated[
+        str | None,
+        typer.Option(
+            "--root-directory",
+            help="Location of input files for Cambium, overrides configuration file",
+            rich_help_panel="Configuration",
+        ),
+    ] = None,
     # subcommands
-    _: Annotated[
-        bool | None,
-        typer.Option(
-            "--version",
-            help="Print version info",
-            callback=version_callback,
-            is_eager=True,
-        ),
-    ] = None,
-    __: Annotated[
-        bool | None,
-        typer.Option(
-            "--dump-default-config",
-            help="Dump default configuration info to stdout",
-            callback=dump_config_callback,
-            is_eager=True,
-        ),
-    ] = None,
+    _: version_option = None,
+    __: dump_config_option = None,
 ) -> None:
 
     make_ascii_art()
 
-    config_params = config.read_input_configuration(config_path)
-    config.initialize_configuration(config_params)
+    yaml_config = config.read_input_configuration(config_path)
+    cli_config = {"build_directory": build_directory, "root_directory": root_directory}
+    config.initialize_configuration(yaml_config, cli_config)
 
     logger.setLevel(get_loglevel(config.current_config.logging_level, verbosity_boost))
     logger.info("Logger is setup")
