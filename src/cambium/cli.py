@@ -3,9 +3,7 @@ from typing import Annotated
 
 import typer
 
-import cambium  # for version
-
-from . import config
+from . import __version__, config
 from .log import get_loglevel, init_logging
 from .tree import TreeSpan
 
@@ -15,7 +13,7 @@ app = typer.Typer()
 
 def version_callback(value: bool) -> None:
     if value:
-        print(f"Cambium {cambium.__version__}")
+        print(f"Cambium {__version__}")
         raise typer.Exit
 
 
@@ -92,7 +90,7 @@ def make_ascii_art() -> None:
   ░██████   ░█████░██ ░██   ░██   ░██ ░██░█████  ░██ ░█████░██ ░██   ░██   ░██
 
 
-            Version: {cambium.__version__}
+            Version: {__version__}
 
 ^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^^v^v^v^v^v^v^v^v^v^
     """
