@@ -57,7 +57,7 @@ class CambiumConfiguration(BaseModel):
     stages: Optional[list[str]] = [
         "IdentifyMetadata",
         "TransformMarkdown",
-        "AddPlaceholderIndex",
+        "EnsureIndexPages",
         "TemplateMarkdown",
         "URLEncodeFilenames",
         "PagefindSearch",

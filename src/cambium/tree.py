@@ -327,6 +327,22 @@ class TreeSpan:
         path.mkdir(parents=True, exist_ok=True)
         return path.absolute()
 
+    def get_leaf_from_path(self, path: Path, path_type: Literal["final_path"]) -> str:
+        """Fetch the leaf UUID associated with a certain path."""
+        self._validate_leaf_path(path)
+        uuids = [u for u in self.leaves["uuids"] if self.leaves[path_type][u] == path]
+
+        if len(uuids) == 0:
+            raise RuntimeError(
+                f"No leaves found with {path_type.replace('_',' ')}={path}."
+            )
+        if len(uuids) > 1:
+            raise RuntimeError(
+                f"Multiple leaves found with {path_type.replace('_',' ')}={path}."
+            )
+
+        return uuids[0]
+
     # ----------------------------------------------------------------#
     #                     Main Cambium functions                      #
     # ----------------------------------------------------------------#
@@ -471,7 +487,7 @@ class TreeSpan:
     def _validate_leaf_path(self, path: Any) -> None:
         """Ensure `path` can be assigned to a leaf initial/latest/final path."""
         if not isinstance(path, Path):
-            raise ValueError("Use the Path object to set leaf paths")
+            raise ValueError("Use the Path object to work with leaf paths")
         if path.is_absolute():
             raise ValueError("Use relative paths for leaves")
 

@@ -1,7 +1,7 @@
 """Built-in Stages Initialization"""
 
 from . import (
-    add_placeholder_index,
+    ensure_index_pages,
     identify_metadata,
     sitemap,
     templating_markdown,
@@ -11,9 +11,9 @@ from . import (
 from .pagefind_search import pagefind_search
 
 __all__ = [
-    "pagefind_search",
-    "add_placeholder_index",
+    "ensure_index_pages",
     "identify_metadata",
+    "pagefind_search",
     "sitemap",
     "templating_markdown",
     "transform_markdown",
