@@ -21,3 +21,15 @@ def init_logging() -> logging.Logger:
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
     return root_logger
+
+
+def get_loglevel(level_str: str, verbosity_count: int) -> int:
+    """Get a numeric log level combining config file and CLI values."""
+    config_level: int = logging.getLevelNamesMapping()[level_str]
+
+    if verbosity_count == 0:
+        return config_level
+
+    adjustment = -10 * verbosity_count
+    new_level = config_level + adjustment
+    return max(10, new_level)

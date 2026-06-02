@@ -6,7 +6,7 @@ import typer
 import cambium  # for version
 
 from . import config
-from .log import init_logging
+from .log import get_loglevel, init_logging
 from .tree import TreeSpan
 
 logger = init_logging()
@@ -27,10 +27,21 @@ def dump_config_callback(value: bool) -> None:
 
 @app.command()
 def main(
+    # controlling options
     config_path: Annotated[
         Path | None,
         typer.Option("--config", "-c", help="Location of Configuration File"),
     ] = None,
+    verbosity_boost: Annotated[
+        int,
+        typer.Option(
+            "--verbose",
+            "-v",
+            help="Increase verbosity (repeatable)",
+            count=True,
+        ),
+    ] = 0,
+    # subcommands
     _: Annotated[
         bool | None,
         typer.Option(
@@ -56,7 +67,7 @@ def main(
     config_params = config.read_input_configuration(config_path)
     config.initialize_configuration(config_params)
 
-    logger.setLevel(config.current_config.logging_level)
+    logger.setLevel(get_loglevel(config.current_config.logging_level, verbosity_boost))
     logger.info("Logger is setup")
 
     treespan = TreeSpan(config.current_config)
