@@ -80,10 +80,7 @@ class TreeSpan:
         # TODO: error collection for leaf generation
         # if there are errors in initial leaf generation, raise them now
 
-        self._check_disk_space()
         self._apply_tree_hooks()
-        self._init_tmp_files()
-        self._init_build_directory()
 
     # ----------------------------------------------------------------#
     #                    __init__ helper functions                    #
@@ -164,44 +161,6 @@ class TreeSpan:
                 path = Path(f"{current_root}/{f}".removeprefix("./"))
                 self.add_leaf(path)
 
-    def _check_disk_space(self) -> None:
-        """Check that there is enough free space for both the temp and build dirs."""
-        logger.debug("Checking disk space")
-        build_location = (
-            self.build_directory.absolute().parent
-        )  # if build doesn't exist yet, we can't stat it
-        build_device = build_location.stat().st_dev
-        tmp_device = self.config.tmp_dir.stat().st_dev
-
-        leaf_bytes, static_bytes = 0, 0
-        for uuid in self.leaves["uuids"]:
-            leaf_bytes += self.leaves["initial_path"][uuid].stat().st_size
-        for static_directory in [
-            self.root_directory / "static",
-            *self.config.ordered_theme_directories,
-        ]:
-            for static_file in static_directory.glob("**/*"):
-                static_bytes += static_file.stat().st_size
-
-        safety_factor = 1.5  # require this much extra space for theme, md->HTML, etc.
-
-        if build_device == tmp_device:
-            required_bytes = 2 * safety_factor * (leaf_bytes + static_bytes)
-            free_bytes = shutil.disk_usage(build_location).free
-            logger.debug(f"Requiring {required_bytes/1000} kb of free space")
-            if free_bytes < required_bytes:
-                logger.error(
-                    f"Not enough free space on disk. {required_bytes/1000} kb needed."
-                )
-                raise RuntimeError
-        else:
-            # TODO: handle checks for tmp being on a different drive
-            # tmp should have safety*leaf bytes
-            # build should have safety * (leaf_bytes + static_bytes)
-            logger.warning(
-                "Temporary storage is located on a different drive from build directory"
-            )
-
     def _apply_tree_hooks(self) -> None:
         """Run all tree hooks, passing them the entire tree structure to modify."""
         # initial leaves have input file = output file
@@ -215,34 +174,6 @@ class TreeSpan:
                 logger.error(errormsg + f"Error message: {e}")
                 raise e
             self._check_leaf_collisions()
-
-    def _init_tmp_files(self) -> None:
-        """Copy all leaves into temporary storage at their initial paths.
-
-        Between tree hooks and pre hooks we need to copy all files into a tempdir
-        so that pre-hooks and transformers can use latest_path as relative to temp dir.
-        """
-        logger.info(
-            f"Copying {len(self.leaves['uuids'])} source files to temporary storage"
-        )
-        for directory in self.directories_in_build:
-            (self.config.tmp_dir / directory).mkdir()
-        for leaf_uuid in self.leaves["uuids"]:
-            initial_path = self.leaves["initial_path"][leaf_uuid]
-            if not (self.root_directory / initial_path).is_file():
-                continue
-            shutil.copy(
-                self.root_directory / initial_path,
-                self.config.tmp_dir / initial_path,
-            )
-
-    def _init_build_directory(self) -> None:
-        # create _build and subdirs
-        if self.build_directory.exists():
-            shutil.rmtree(self.build_directory)
-        self.build_directory.mkdir()
-        for directory in self.directories_in_build:
-            (self.build_directory / directory).mkdir()
 
     # ----------------------------------------------------------------#
     #                     stage helper functions                     #
@@ -433,6 +364,12 @@ class TreeSpan:
 
         return uuids_to_run
 
+    def prepare_tree(self) -> None:
+        """Preparation steps not taken during dry run."""
+        self._check_disk_space()
+        self._init_tmp_files()
+        self._init_build_directory()
+
     def apply_pre_hooks(self) -> None:
         """Run pre-hooks for all leaves."""
         self._apply_hook("pre_hooks")
@@ -490,6 +427,72 @@ class TreeSpan:
             raise ValueError("Use the Path object to work with leaf paths")
         if path.is_absolute():
             raise ValueError("Use relative paths for leaves")
+
+    def _check_disk_space(self) -> None:
+        """Check that there is enough free space for both the temp and build dirs."""
+        logger.debug("Checking disk space")
+        build_location = (
+            self.build_directory.absolute().parent
+        )  # if build doesn't exist yet, we can't stat it
+        build_device = build_location.stat().st_dev
+        tmp_device = self.config.tmp_dir.stat().st_dev
+
+        leaf_bytes, static_bytes = 0, 0
+        for uuid in self.leaves["uuids"]:
+            leaf_bytes += self.leaves["initial_path"][uuid].stat().st_size
+        for static_directory in [
+            self.root_directory / "static",
+            *self.config.ordered_theme_directories,
+        ]:
+            for static_file in static_directory.glob("**/*"):
+                static_bytes += static_file.stat().st_size
+
+        safety_factor = 1.5  # require this much extra space for theme, md->HTML, etc.
+
+        if build_device == tmp_device:
+            required_bytes = 2 * safety_factor * (leaf_bytes + static_bytes)
+            free_bytes = shutil.disk_usage(build_location).free
+            logger.debug(f"Requiring {required_bytes/1000} kb of free space")
+            if free_bytes < required_bytes:
+                logger.error(
+                    f"Not enough free space on disk. {required_bytes/1000} kb needed."
+                )
+                raise RuntimeError
+        else:
+            # TODO: handle checks for tmp being on a different drive
+            # tmp should have safety*leaf bytes
+            # build should have safety * (leaf_bytes + static_bytes)
+            logger.warning(
+                "Temporary storage is located on a different drive from build directory"
+            )
+
+    def _init_tmp_files(self) -> None:
+        """Copy all leaves into temporary storage at their initial paths.
+
+        Between tree hooks and pre hooks we need to copy all files into a tempdir
+        so that pre-hooks and transformers can use latest_path as relative to temp dir.
+        """
+        logger.info(
+            f"Copying {len(self.leaves['uuids'])} source files to temporary storage"
+        )
+        for directory in self.directories_in_build:
+            (self.config.tmp_dir / directory).mkdir()
+        for leaf_uuid in self.leaves["uuids"]:
+            initial_path = self.leaves["initial_path"][leaf_uuid]
+            if not (self.root_directory / initial_path).is_file():
+                continue
+            shutil.copy(
+                self.root_directory / initial_path,
+                self.config.tmp_dir / initial_path,
+            )
+
+    def _init_build_directory(self) -> None:
+        # create _build and subdirs
+        if self.build_directory.exists():
+            shutil.rmtree(self.build_directory)
+        self.build_directory.mkdir()
+        for directory in self.directories_in_build:
+            (self.build_directory / directory).mkdir()
 
     def _copy_static_files_no_overwrite(self, static_directory: Path) -> None:
         """Copy files into _build/static, but don't overwrite existing files."""
