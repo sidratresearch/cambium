@@ -60,6 +60,7 @@ class CambiumConfiguration(BaseModel):
         "TemplateMarkdown",
         "URLEncodeFilenames",
         "PagefindSearch",
+        "CheckLinks",
     ]
     "Ordered List of Stages to Use"
 

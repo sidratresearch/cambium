@@ -87,8 +87,25 @@ def rewrite_urlsafe_links(
     return element
 
 
+def resolve_internal_link(
+    link: Path, parent_directory: Path, build_directory: Path
+) -> Path:
+    """Resolve internal paths as they may appear in user files.
+
+    For "../a.html" located in "[root]/b/c.html", this returns "a.html"
+    """
+    return (
+        (build_directory / parent_directory / link)
+        .resolve()
+        .relative_to(build_directory.absolute())
+    )
+
+
 def rewrite_md_links(
-    element: Element, parent_directory: Path, links_to_update: list[Path]
+    element: Element,
+    parent_directory: Path,
+    links_to_update: list[Path],
+    build_directory: Path,
 ) -> Element:
     """Change links to markdown files point to their transformed HTML versions."""
     if isinstance(element, str):
@@ -98,15 +115,20 @@ def rewrite_md_links(
         if is_external_link(element.dest):
             return Element
 
-        # TODO: check this actually works with more complicated relative links
-        if (parent_directory / element.dest) in links_to_update:
+        resolved = resolve_internal_link(
+            element.dest, parent_directory, build_directory
+        )
+        if resolved in links_to_update:
             # TODO: handle .MD etc
             # TODO: change this to use TransformMarkdown._update_path
             element.dest = element.dest.removesuffix(".md") + ".html"
+
         return element
 
     for child in element.children:
-        child = rewrite_md_links(child, parent_directory, links_to_update)
+        child = rewrite_md_links(
+            child, parent_directory, links_to_update, build_directory
+        )
     return element
 
 

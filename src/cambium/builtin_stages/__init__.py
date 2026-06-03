@@ -1,6 +1,7 @@
 """Built-in Stages Initialization"""
 
 from . import (
+    check_links,
     ensure_index_pages,
     identify_metadata,
     sitemap,
@@ -11,6 +12,7 @@ from . import (
 from .pagefind_search import pagefind_search
 
 __all__ = [
+    "check_links",
     "ensure_index_pages",
     "identify_metadata",
     "pagefind_search",

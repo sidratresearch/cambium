@@ -60,7 +60,10 @@ class TransformMarkdown(Stage):
         document = marko_object.parse(latest_path.read_text())
 
         document = rewrite_md_links(
-            document, tree.leaves["initial_path"][leaf_uuid].parent, self.changed_links
+            document,
+            tree.leaves["initial_path"][leaf_uuid].parent,
+            self.changed_links,
+            tree.build_directory,
         )
         latest_path.write_text(marko_object.render(document))
 
