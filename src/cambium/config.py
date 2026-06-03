@@ -58,7 +58,7 @@ class CambiumConfiguration(BaseModel):
         "TransformMarkdown",
         "EnsureIndexPages",
         "TemplateMarkdown",
-        "URLEncodeFilenames",
+        # "URLEncodeFilenames", # remove from default until relative paths are handled
         "PagefindSearch",
         "CheckLinks",
     ]
