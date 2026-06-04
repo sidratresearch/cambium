@@ -394,9 +394,9 @@ class TreeSpan:
             shutil.copy(from_path, to_path)
 
         # copy static files over
-        self._copy_static_files_no_overwrite(self.root_directory / "static")
+        self._copy_static_files_no_overwrite(self.root_directory)
         for directory in self.config.ordered_theme_directories:
-            self._copy_static_files_no_overwrite(directory / "static")
+            self._copy_static_files_no_overwrite(directory)
 
         # populate "required" static files
         required_static = ["css/custom.css"]
@@ -494,27 +494,64 @@ class TreeSpan:
         for directory in self.directories_in_build:
             (self.build_directory / directory).mkdir()
 
-    def _copy_static_files_no_overwrite(self, static_directory: Path) -> None:
-        """Copy files into _build/static, but don't overwrite existing files."""
+    def _get_static_paths(
+        self, static_directory: Path
+    ) -> tuple[list[Path], list[tuple[Path, Path]]]:
+        """Get a list of files to be copied into build/static.
+
+        Accepts only absolute paths for safety, given that we expect:
+        - top-level directories in root
+        - sub directories in root/.cambium
+        - directories from the installed cambium package
+        """
+        # TODO: check how this returned relative path business handles if build is not a subdir of root, that might break a lot of stuff actually
+        if not static_directory.is_absolute():
+            logger.error(
+                f"Only use absolute paths when listing static files. Recieved relative path {static_directory}."
+            )
+            raise RuntimeError
         if not static_directory.exists():
-            return
-        logger.debug(
-            f"Copying files from static directory `{static_directory}` to output. "
-            f"Existing files in {self.build_directory/'static'} will not be overwritten."
-        )
-        for current_root, _, files in os.walk(static_directory):
+            return []
+
+        static_files, static_subdirectories = [], []
+        for current_root, directories, files in os.walk(static_directory):
             for file in files:
                 path_from_root = Path(current_root) / file
                 path_from_static = path_from_root.relative_to(static_directory)
                 final_path = self.build_directory / "static" / path_from_static
 
-                if final_path.exists():
-                    logger.debug(
-                        f"Skipping {path_from_root} because {final_path} exists"
-                    )
-                    continue
-
                 initial_path = static_directory / path_from_static
-                final_path.parent.mkdir(parents=True, exist_ok=True)
-                logger.debug(f"Copying static file {initial_path} to {final_path}")
-                shutil.copy(initial_path, final_path)
+                static_files.append((initial_path, final_path))
+
+            for directory in directories:
+                directory_full = static_directory / current_root / directory
+                directory_build = (
+                    self.build_directory
+                    / "static"
+                    / directory_full.relative_to(static_directory)
+                )
+                static_subdirectories.append(directory_build)
+
+        return static_subdirectories, static_files
+
+    def _copy_static_files_no_overwrite(self, parent_directory: Path) -> None:
+        """Copy files into _build/static, but don't overwrite existing files."""
+        logger.debug(
+            f"Copying files from `{parent_directory/'static'}` to output. "
+            f"Existing files in {self.build_directory/'static'} will not be overwritten."
+        )
+        directories, files = self._get_static_paths(
+            (parent_directory / "static").absolute()
+        )
+        for directory in directories:
+            directory.mkdir(exist_ok=True)
+
+        for initial_path, final_path in files:
+
+            if final_path.exists():
+                logger.debug(f"Skipping {initial_path} because {final_path} exists")
+                continue
+
+            logger.debug(f"Copying static file {initial_path} to {final_path}")
+            shutil.copy(initial_path, final_path)
+
