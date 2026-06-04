@@ -537,7 +537,7 @@ class TreeSpan:
             )
             raise RuntimeError
         if not static_directory.exists():
-            return []
+            return [], []
 
         static_files, static_subdirectories = [], []
         for current_root, directories, files in os.walk(static_directory):
