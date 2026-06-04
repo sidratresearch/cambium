@@ -131,7 +131,7 @@ def main(
 
 def make_ascii_art() -> None:
     ascii_art = f"""
-^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^^v^v^v^v^v^v^v^v^v^
+^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^
 
   ░██████                             ░██        ░██
  ░██   ░██                            ░██
@@ -144,7 +144,7 @@ def make_ascii_art() -> None:
 
             Version: {__version__}
 
-^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^^v^v^v^v^v^v^v^v^v^
+^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^
     """
 
     print(ascii_art)
