@@ -37,11 +37,6 @@ class AddSitemap(Stage):
         # if you want to disable it because you've got your own, edit config
         self._add_sitemap_leaf(tree)
 
-        # register a prehook to run after the tree structure is finalized, when
-        # we'll know all final paths
-        for leaf_uuid in tree.leaves["uuids"]:
-            tree.leaves["hooks"][leaf_uuid]["pre_hooks"].append(self.__class__.__name__)
-
     def _add_sitemap_leaf(self, tree: TreeSpan) -> None:
         logger.debug("Adding new leaf for sitemap.xml")
 
@@ -52,15 +47,18 @@ class AddSitemap(Stage):
             Path(), latest_path=source_path, final_path=Path("sitemap.xml")
         )
         tree.abs_leaf_path(uuid).write_text("")
-
         tree.leaves["hooks"][uuid]["transforms"].append(self.__class__.__name__)
-
         logger.debug("Added sitemap file")
 
-    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        final_path = tree.leaves["final_path"][leaf_uuid]
-        if final_path.suffix in (".html", ".htm"):
-            self.entries.append(final_path)
+    def transform_initialize(self, tree: TreeSpan) -> None:
+        """Populate the list of all HTML final paths.
+
+        We could put this in the tree hook and just assume that all html-creating
+        stages are already run, but that's not necessary.
+        """
+        for final_path in tree.leaf_final_paths():
+            if final_path.suffix in (".html", ".htm"):
+                self.entries.append(final_path)
 
     def transform(self, leaf_uuid: str, tree: TreeSpan) -> None:
         entry_template = "<url><loc>{full_url}</loc></url>"

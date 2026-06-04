@@ -22,6 +22,7 @@ class EnsureIndexPages(Stage):
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.requires = []
+        # TODO: doesn't technically *require* TransformMarkdown, but if both are enabled, this should be after
         self.config = EnsureIndexPagesConfig.model_validate(config_dict)
 
     def tree_hook(self, tree: TreeSpan) -> None:
@@ -30,7 +31,7 @@ class EnsureIndexPages(Stage):
 
     def _get_index_for_dir(self, directory: Path, tree: TreeSpan) -> None:
         """Ensure directory contains a leaf that will be built to index.html."""
-        final_paths = [tree.leaves["final_path"][uuid] for uuid in tree.leaves["uuids"]]
+        final_paths = tree.leaf_final_paths()
         directory_has_index = directory / "index.html" in final_paths
         index_path_options = [directory / p for p in self.config.useable_as_index]
         option_existence = [p in final_paths for p in index_path_options]
