@@ -114,6 +114,9 @@ def main(
     treespan = TreeSpan(config.current_config)
 
     if dry_run:
+        logger.warning(
+            f"Dry run file structure does not include paths within {treespan.build_directory}/static/_cambium"
+        )
         print(json.dumps(treespan.filestructure_in_build, indent=2))
         return
 
