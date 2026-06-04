@@ -1,5 +1,6 @@
 """Utility functions for builtin stages."""
 
+import logging
 import urllib
 from collections import Counter
 from pathlib import Path
@@ -13,6 +14,8 @@ from marko.helpers import render_dispatch
 from marko.html_renderer import HTMLRenderer
 from marko.inline import Image, Link
 from slugify import slugify
+
+logger = logging.getLogger(__name__)
 
 
 class CambiumHTMLRenderer(HTMLRenderer):
@@ -94,11 +97,13 @@ def resolve_internal_link(
 
     For "../a.html" located in "[root]/b/c.html", this returns "a.html"
     """
-    return (
-        (build_directory / parent_directory / link)
-        .resolve()
-        .relative_to(build_directory.absolute())
-    )
+    full = (build_directory / parent_directory / link).resolve()
+    try:
+        return full.relative_to(build_directory.absolute())
+    except ValueError:
+        raise ValueError(
+            f"Error resolving internal link {link}, perhaps this file is outside the root directory?"
+        )
 
 
 def rewrite_md_links(
