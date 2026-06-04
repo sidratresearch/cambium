@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Annotated
 
@@ -64,6 +65,13 @@ def main(
             count=True,
         ),
     ] = 0,
+    dry_run: Annotated[
+        bool,
+        typer.Option(
+            "--dry-run",
+            help="Don't process or write output, only determine and output the file structure",
+        ),
+    ] = False,
     config_path: Annotated[
         Path | None,
         typer.Option(
@@ -104,6 +112,11 @@ def main(
     logger.info("Logger is setup")
 
     treespan = TreeSpan(config.current_config)
+
+    if dry_run:
+        print(json.dumps(treespan.filestructure_in_build, indent=2))
+        return
+
     treespan.prepare_tree()
     treespan.apply_pre_hooks()
     treespan.transform()

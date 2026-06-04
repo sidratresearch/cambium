@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
 
 import os
 import shutil
-from collections import deque
+from collections import defaultdict, deque
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal, TypedDict
@@ -51,6 +51,7 @@ class TreeSpan:
     root_directory: Path
     build_directory: Path
     directories_in_build: list[Path] = []
+    filestructure_in_build: dict[str, Any]
 
     def __init__(self, working_config: WorkingConfiguration) -> None:
         self.config: WorkingConfiguration = working_config
@@ -81,6 +82,7 @@ class TreeSpan:
         # if there are errors in initial leaf generation, raise them now
 
         self._apply_tree_hooks()
+        self._build_final_tree()
 
     # ----------------------------------------------------------------#
     #                    __init__ helper functions                    #
@@ -174,6 +176,27 @@ class TreeSpan:
                 logger.error(errormsg + f"Error message: {e}")
                 raise e
             self._check_leaf_collisions()
+
+    def _build_final_tree(self) -> None:
+        """Generate a nested human-readable file structure for the entire output dir."""
+        # generate a list of all paths
+        all_files = self.leaf_final_paths()
+        all_directories = self.directories_in_build.copy()
+
+        for parent_directory in [
+            self.root_directory,
+            *self.config.ordered_theme_directories,
+        ]:
+            static_directory = (parent_directory / "static").absolute()
+            directories, files = self._get_static_paths(static_directory)
+            files_list = [f[1].relative_to(self.build_directory) for f in files]
+            directories_list = [
+                d.relative_to(self.build_directory) for d in directories
+            ]
+            all_files += files_list
+            all_directories += directories_list
+
+        self.filestructure_in_build = make_nested_filetree(all_directories, all_files)
 
     # ----------------------------------------------------------------#
     #                     stage helper functions                     #
@@ -273,6 +296,9 @@ class TreeSpan:
             )
 
         return uuids[0]
+
+    def leaf_final_paths(self) -> list[Path]:
+        return [self.leaves["final_path"][uuid] for uuid in self.leaves["uuids"]]
 
     # ----------------------------------------------------------------#
     #                     Main Cambium functions                      #
@@ -555,3 +581,33 @@ class TreeSpan:
             logger.debug(f"Copying static file {initial_path} to {final_path}")
             shutil.copy(initial_path, final_path)
 
+
+def nested_dict_set(
+    dictionary: dict[Any, Any], keys: list[Any], value: Any, intermediate: Any
+) -> None:
+    """Recurse down a dictionary to set a new value."""
+    if len(keys) == 1:
+        dictionary[keys[0]] = value
+        return
+    if not dictionary[keys[0]]:
+        dictionary[keys[0]] = intermediate
+    nested_dict_set(dictionary[keys[0]], keys[1:], value, intermediate)
+
+
+def make_nested_filetree(
+    directories: list[Path], files: list[Path]
+) -> defaultdict[str, Any]:
+    """Create a nested tree structure from a list of files and directories."""
+    node = lambda: defaultdict(node)
+    tree = node()
+
+    for d in sorted(directories):
+        keys = [p + "/" for p in d.parts]
+        nested_dict_set(tree, keys, node(), node())
+
+    for f in sorted(files):
+        keys = f.parts
+        keys = [p + "/" for p in f.parts[:-1]] + [f.name]
+        nested_dict_set(tree, keys, None, {})
+
+    return tree
