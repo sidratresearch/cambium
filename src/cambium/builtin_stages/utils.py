@@ -98,9 +98,12 @@ def resolve_internal_link(
     For "../a.html" located in "[root]/b/c.html", this returns "a.html"
     """
     full = (build_directory / parent_directory / link).resolve()
+    build_abs = build_directory.absolute()
     try:
-        return full.relative_to(build_directory.absolute())
+        return full.relative_to(build_abs)
     except ValueError:
+        # definitionally both paths will be absolute
+        # so the only option is full isn't within build
         raise ValueError(
             f"Error resolving internal link {link}, perhaps this file is outside the root directory?"
         )
