@@ -46,6 +46,9 @@ class CambiumConfiguration(BaseModel):
     paths_to_ignore: Optional[list[str]] = []
     "List of Files and Directories to Ignore"
 
+    protected_build_paths: Optional[list[str]] = []
+    "List of directories/filenames that should *not* appear in the output directory"
+
     extensions_to_ignore: Optional[list[str]] = []
     "File Extensions to Ignore"
 
@@ -120,6 +123,11 @@ class WorkingConfiguration:
         # Populating Ignore Lists
         self.populate_ignore_lists()
 
+        # Populate lists of protected paths
+        self.protected_build_paths = sort_user_paths(
+            self.input_config.protected_build_paths
+        )
+
         # Importing and Compiling Stages
         self.stages = self.input_config.stages
         self.stage_dict = populating_stage_dict(
@@ -159,20 +167,10 @@ class WorkingConfiguration:
         for ignore_entry in self.input_config.paths_to_ignore:
             tmp_ignore_set.add(ignore_entry)
 
-        # Sorting through ignorable entries and removing trailing slash (if exists):
-        for ignore_entry in tmp_ignore_set:
-
-            if ignore_entry[-1] == "/":
-                ignore_entry = ignore_entry[:-1]
-
-            if "*" in ignore_entry:
-                self.ignore_lists["globs"].append(
-                    convert_glob_string_to_regex(ignore_entry)
-                )
-            elif ignore_entry[0] == "/":
-                self.ignore_lists["paths"].append(ignore_entry)
-            else:
-                self.ignore_lists["names"].append(ignore_entry)
+        sorted_entries = sort_user_paths(tmp_ignore_set)
+        self.ignore_lists["globs"] = sorted_entries["globs"]
+        self.ignore_lists["paths"] = sorted_entries["paths"]
+        self.ignore_lists["names"] = sorted_entries["names"]
 
         # Adding Extensions to ignore:
         self.ignore_lists["extensions"] = (
@@ -308,3 +306,20 @@ def dump_default_config() -> None:
     )
 
     print(header + "\n\n" + config_yaml)
+
+
+def sort_user_paths(path_strings: list[str]) -> dict[str, list[str]]:
+    """Sort user-provided path strings into globs/paths/names."""
+    result = {"globs": [], "paths": [], "names": []}
+    for entry in path_strings:
+
+        if entry[-1] == "/":
+            entry = entry[:-1]
+
+        if "*" in entry:
+            result["globs"].append(convert_glob_string_to_regex(entry))
+        elif entry[0] == "/":
+            result["paths"].append(entry)
+        else:
+            result["names"].append(entry)
+    return result

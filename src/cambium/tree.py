@@ -196,7 +196,56 @@ class TreeSpan:
             all_files += files_list
             all_directories += directories_list
 
+        all_directories.append(Path("static/_cambium"))
+
         self.filestructure_in_build = make_nested_filetree(all_directories, all_files)
+
+        self._check_protected_build_paths(all_directories, all_files)
+
+    def _check_protected_build_paths(
+        self, directories: list[Path], files: list[Path]
+    ) -> None:
+        """Check expected tree structure against any user-provided protected paths."""
+        bad_generated_paths = []
+
+        combined = [
+            item
+            for sublist in self.config.protected_build_paths.values()
+            for item in sublist
+        ]
+        if len(combined) > 0:
+            logger.warning(
+                f"Protected build paths do not apply within {self.build_directory}/static/_cambium."
+            )
+
+        # filter by absolute path
+        for absolute_ignore in self.config.protected_build_paths["paths"]:
+            matcher = f".{absolute_ignore}"
+            bad_generated_paths += [f"{d}/" for d in directories if f"./{d}" == matcher]
+            bad_generated_paths += [f for f in files if f"./{f}" == matcher]
+
+        # filter by name
+        for name in self.config.protected_build_paths["names"]:
+            bad_generated_paths += [f"{d}/" for d in directories if name in d.parts]
+            bad_generated_paths += [f for f in files if name in f.parts]
+
+        # filter by glob
+        for pattern in self.config.protected_build_paths["globs"]:
+            bad_generated_paths += [
+                f"{d}/"
+                for d in directories
+                if re.match(pattern, f"./{d}".removeprefix("./"))
+            ]
+            bad_generated_paths += [
+                f"{f}/" for f in files if re.match(pattern, f"./{f}".removeprefix("./"))
+            ]
+
+        if len(bad_generated_paths) > 0:
+            bad_paths_str = ", ".join([str(p) for p in bad_generated_paths])
+            logger.error(
+                f"Protected build paths prevent the following files/directories from being created in {self.build_directory}: {bad_paths_str}"
+            )
+            raise RuntimeError
 
     # ----------------------------------------------------------------#
     #                     stage helper functions                     #
