@@ -5,8 +5,10 @@ import logging
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
+from pydantic import BaseModel
 
 from cambium.builtin_stages.utils import markdown_to_html
+from cambium.metadata import LeafMetadata
 
 from ..stage import Stage
 from ..tree import TreeSpan
@@ -14,8 +16,16 @@ from ..tree import TreeSpan
 logger = logging.getLogger(__name__)
 
 
-class TemplateMarkdown(Stage):
+class CambiumJinjaVariables(BaseModel, extra="forbid"):
+    site_name: str
+    relative_path_modifier: str
+    page_title: str
+    metadata: LeafMetadata
+    build_time_utc: datetime.datetime
+    main_content: str
 
+
+class TemplateMarkdown(Stage):
     jinja_template_paths: list[Path] = []
 
     # Primary Hook Functions
@@ -94,13 +104,10 @@ class TemplateMarkdown(Stage):
             f"Applying Jinja template {template_name} to {tree.leaves['latest_path'][leaf_uuid]}"
         )
 
-        main_template = self.jinja_env.get_template(template_name)
-        main_content = input_path.read_text()
-
         # Jinja does not complain in a variable is missing from the environment
         # Something to think about wrt potential stage-added items and custom themes
 
-        output_html = main_template.render(
+        cambium_jinja_variables = CambiumJinjaVariables(
             # general Cambium utility items
             site_name=tree.config.site_name,
             relative_path_modifier="../" * number_of_parents,
@@ -109,7 +116,9 @@ class TemplateMarkdown(Stage):
             page_title=f"{tree.leaves['metadata'][leaf_uuid].title} - {tree.config.site_name}",
             build_time_utc=self.build_time_utc,
             # actual markdown content
-            main_content=main_content,
+            main_content=input_path.read_text(),
         )
 
+        main_template = self.jinja_env.get_template(template_name)
+        output_html = main_template.render(**cambium_jinja_variables.model_dump())
         input_path.write_text(output_html)
