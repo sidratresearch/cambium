@@ -50,6 +50,8 @@ class PagefindSearch(Stage):
 
     def tree_hook(self, tree: TreeSpan) -> None:
         templates_dir = Path(__file__).parent / "includes/templates"
+        static_dir = Path(__file__).parent / "includes/static"
+        tree.config.stage_theme_directories["static"].append(static_dir)
         tree.config.stage_theme_directories["templates"].append(templates_dir)
 
         for uuid in tree.leaves["uuids"]:

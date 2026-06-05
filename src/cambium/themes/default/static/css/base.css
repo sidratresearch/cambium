@@ -9,7 +9,6 @@
   --default-font-size: 14pt;
   --default-accent-color: #cc0000;
   --default-hover-color: #660000;
-  --pf-font: var(--default-font);
 }
 
 /* Base Elements */
