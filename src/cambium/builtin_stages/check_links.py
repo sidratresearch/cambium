@@ -128,11 +128,16 @@ class CheckLinks(Stage):
             destination, file_directory, tree.build_directory
         )
 
+        initial_path = tree.leaves["initial_path"][leaf_uuid]
+        if dest_full.parts[0] == "static":
+            logger.debug(
+                f"Not checking link to static file {dest_full} in {initial_path}"
+            )
+            return
         if (
             dest_full not in self.leaf_final_paths
             and dest_full not in tree.directories_in_build
         ):
-            initial_path = tree.leaves["initial_path"][leaf_uuid]
             logger.warning(
                 f"{initial_path} contains a link to {dest_full} which is not a known file."
             )
