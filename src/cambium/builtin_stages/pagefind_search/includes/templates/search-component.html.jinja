@@ -1,2 +1,4 @@
-<pagefind-modal-trigger></pagefind-modal-trigger>
-<pagefind-modal></pagefind-modal>
+{% if metadata.stage_metadata.PagefindSearch.show_searchbar_on_page %}
+  <pagefind-modal-trigger></pagefind-modal-trigger>
+  <pagefind-modal></pagefind-modal>
+{% endif %}

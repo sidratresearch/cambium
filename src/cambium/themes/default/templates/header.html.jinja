@@ -6,7 +6,7 @@
       </a>
     </div>
     <div class="header-centre">
-      {% if metadata.stage_metadata.PagefindSearch is defined and metadata.stage_metadata.PagefindSearch.show_searchbar_on_page %}
+      {% if metadata.stage_metadata.PagefindSearch is defined %}
         {% include metadata.stage_metadata.PagefindSearch.searchbar_component %}
       {% endif %}
     </div>
