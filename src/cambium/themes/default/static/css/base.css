@@ -163,24 +163,6 @@ header {
       flex: 0 1 15%;
       justify-content: end;
     }
-
-    a.menu-button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 2s;
-
-      &:hover svg.menu-icon {
-        fill: var(--default-accent-color);
-      }
-
-      svg.menu-icon {
-        width: 2rem;
-        height: 2rem;
-        fill: var(--default-bg-color);
-        transition: all 0.25s;
-      }
-    }
   }
 }
 
@@ -194,6 +176,40 @@ footer {
     flex-direction: row;
     justify-content: space-between;
   }
+}
+
+/* Menu Styling */
+button.menu-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: unset;
+  border: none;
+  z-index: 100;
+
+  &:hover svg.menu-icon {
+    fill: var(--default-accent-color);
+  }
+
+  svg.menu-icon {
+    width: 2rem;
+    height: 2rem;
+    fill: var(--default-bg-color);
+    transition: fill 0.25s;
+
+    &.menu-icon-inactive {
+      opacity: 0;
+    }
+  }
+}
+
+div.menu-panel {
+  position: fixed;
+  height: 100vh;
+  top: 0;
+  min-width: 400px;
+  background-color: #444444;
+  z-index: 90;
 }
 
 /* Table Styling */
