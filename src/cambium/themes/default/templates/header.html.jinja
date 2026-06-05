@@ -1,15 +1,15 @@
 <header>
   <div class="container header-bar">
     <div class="header-left">
-      <a href="{{ relative_path_modifier }}index.html" class="header-link site-title"> {{ site_name }}</a>
+      <a href="{{ relative_path_modifier }}index.html" class="header-link site-title">
+        {{ site_name }}
+      </a>
     </div>
     <div class="header-centre">
-      {% if metadata.stage_metadata.PagefindSearch.show_searchbar_on_page %}
-      {% include metadata.stage_metadata.PagefindSearch.searchbar_component %}
+      {% if metadata.stage_metadata.PagefindSearch is defined and metadata.stage_metadata.PagefindSearch.show_searchbar_on_page %}
+        {% include metadata.stage_metadata.PagefindSearch.searchbar_component %}
       {% endif %}
     </div>
-    <div class="header-right">
-      {% include 'menu.html.jinja' %}
-    </div>
+    <div class="header-right">{% include 'menu.html.jinja' %}</div>
   </div>
 </header>

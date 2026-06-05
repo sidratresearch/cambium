@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ page_title }}</title>
 
-    {% if metadata.stage_metadata.PagefindSearch.show_searchbar_on_page %}
+    {% if metadata.stage_metadata.PagefindSearch is defined and metadata.stage_metadata.PagefindSearch.show_searchbar_on_page %}
       {% include metadata.stage_metadata.PagefindSearch.head_links %}
     {% endif %}
   </head>
