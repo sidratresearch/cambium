@@ -619,7 +619,7 @@ class TreeSpan:
             (parent_directory / "static").absolute()
         )
         for directory in directories:
-            directory.mkdir(exist_ok=True)
+            directory.mkdir(exist_ok=True, parents=True)
 
         for initial_path, final_path in files:
 
