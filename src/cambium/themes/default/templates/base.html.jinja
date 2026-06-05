@@ -1,9 +1,19 @@
+{% set title %}
+  {# set the tab title based on whether or not the specific page has a title #}
+  {% if metadata.title %}
+    {{ metadata.title }}
+    - {{ site_name }}
+  {% else %}
+    {{ site_name }}
+  {% endif %}
+{% endset %}
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ page_title }}</title>
+    <title>{{ title }}</title>
 
     {% if metadata.stage_metadata.PagefindSearch is defined and metadata.stage_metadata.PagefindSearch.show_searchbar_on_page %}
       {% include metadata.stage_metadata.PagefindSearch.head_links %}

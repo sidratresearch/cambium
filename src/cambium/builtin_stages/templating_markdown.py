@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 class CambiumJinjaVariables(BaseModel, extra="forbid"):
     site_name: str
     relative_path_modifier: str
-    page_title: str
     metadata: LeafMetadata
     build_time_utc: datetime.datetime
     main_content: str
@@ -39,9 +38,11 @@ class TemplateMarkdown(Stage):
         tree.apply_to_leaves(self._tree_hook_for_leaf)
 
     def post_hook_initialize(self, tree: TreeSpan) -> None:
+        # load in templates registered by other stages
         for stage_templates_path in tree.config.stage_jinja_template_directories:
             if stage_templates_path.exists():
                 self.jinja_template_paths.append(stage_templates_path)
+
         # Initialize Jinja Environment
         self._initialize_jinja(tree)
 
@@ -58,7 +59,6 @@ class TemplateMarkdown(Stage):
         tree.leaves["hooks"][leaf_uuid]["post_hooks"].append(self.__class__.__name__)
 
     def _populate_jinja_template_paths(self, tree: TreeSpan) -> None:
-
         for tmp_theme_path in tree.config.ordered_theme_directories:
             if (tmp_theme_path / "templates").exists():
                 self.jinja_template_paths.append(tmp_theme_path / "templates")
@@ -92,13 +92,10 @@ class TemplateMarkdown(Stage):
         self.jinja_env.globals = self._read_jinja_globals(tree)
 
     def _create_page(self, leaf_uuid: str, tree: TreeSpan) -> None:
-
         input_path = tree.abs_leaf_path(leaf_uuid)
-
         number_of_parents: int = len(
             input_path.parent.relative_to(tree.config.tmp_dir.absolute()).parents
         )
-
         template_name = "base.html.jinja"
         logger.debug(
             f"Applying Jinja template {template_name} to {tree.leaves['latest_path'][leaf_uuid]}"
@@ -113,7 +110,6 @@ class TemplateMarkdown(Stage):
             relative_path_modifier="../" * number_of_parents,
             metadata=tree.leaves["metadata"][leaf_uuid],
             # specialist variables created by this stage
-            page_title=f"{tree.leaves['metadata'][leaf_uuid].title} - {tree.config.site_name}",
             build_time_utc=self.build_time_utc,
             # actual markdown content
             main_content=input_path.read_text(),
