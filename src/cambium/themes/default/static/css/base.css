@@ -184,7 +184,6 @@ button.menu-button {
   justify-content: center;
   background-color: unset;
   border: none;
-  z-index: 100;
 
   &:hover svg.menu-icon {
     fill: var(--default-accent-color);
@@ -208,7 +207,6 @@ div.menu-panel {
   top: 0;
   min-width: 400px;
   background-color: #444444;
-  z-index: 90;
 }
 
 /* Table Styling */
