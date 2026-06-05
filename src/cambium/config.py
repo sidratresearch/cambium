@@ -144,7 +144,7 @@ class WorkingConfiguration:
             Path(__file__).parent / f"themes/{self.input_config.theme}",
         ]
 
-        self.stage_jinja_template_directories = []
+        self.stage_theme_directories = {"static": [], "templates": []}
 
     def __del__(self) -> None:
         """Clean up All Lingering Directories."""

@@ -39,9 +39,13 @@ class TemplateMarkdown(Stage):
 
     def post_hook_initialize(self, tree: TreeSpan) -> None:
         # load in templates registered by other stages
-        for stage_templates_path in tree.config.stage_jinja_template_directories:
-            if stage_templates_path.exists():
-                self.jinja_template_paths.append(stage_templates_path)
+        for stage_templates in tree.config.stage_theme_directories["templates"]:
+            if stage_templates.exists():
+                self.jinja_template_paths.append(stage_templates)
+            else:
+                logger.warning(
+                    f"{stage_templates} was registered as a stage template path, but doesn't exist."
+                )
 
         # Initialize Jinja Environment
         self._initialize_jinja(tree)

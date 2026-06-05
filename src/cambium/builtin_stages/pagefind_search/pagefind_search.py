@@ -49,9 +49,9 @@ class PagefindSearch(Stage):
         self.context_parameters = {}
 
     def tree_hook(self, tree: TreeSpan) -> None:
-        tree.config.stage_jinja_template_directories.append(
-            Path(__file__).parent / "includes/templates"
-        )
+        templates_dir = Path(__file__).parent / "includes/templates"
+        tree.config.stage_theme_directories["templates"].append(templates_dir)
+
         for uuid in tree.leaves["uuids"]:
             if tree.leaves["final_path"][uuid].suffix == ".html":
                 tree.leaves["hooks"][uuid]["pre_hooks"].append(self.__class__.__name__)

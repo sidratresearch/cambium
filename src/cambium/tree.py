@@ -472,6 +472,8 @@ class TreeSpan:
         self._copy_static_files_no_overwrite(self.root_directory)
         for directory in self.config.ordered_theme_directories:
             self._copy_static_files_no_overwrite(directory)
+        for directory in self.config.stage_theme_directories["static"]:
+            self._copy_static_files_no_overwrite(directory.parent)
 
         # populate "required" static files
         required_static = ["css/custom.css"]
