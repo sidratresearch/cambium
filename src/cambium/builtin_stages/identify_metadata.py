@@ -5,7 +5,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from marko import Markdown
-from marko.block import Heading
+from marko.block import BlankLine, Heading, HTMLBlock
 
 from ..stage import Stage
 from ..tree import TreeSpan
@@ -98,7 +98,14 @@ class IdentifyMetadata(Stage):
             return
 
         # extract title
-        # Getting first element, and testing if it's a heading
-        heading = doc.children[0]
-        if isinstance(heading, Heading) and (heading.level == 1):
-            tree.leaves["metadata"][leaf_uuid].title = get_raw_content(heading)
+        # skip over html comments and blank lines
+        isComment = (
+            lambda element: isinstance(element, HTMLBlock)
+            and len(element.children) == 0
+        )
+        for element in doc.children:
+            if isinstance(element, Heading) and (element.level == 1):
+                tree.leaves["metadata"][leaf_uuid].title = get_raw_content(element)
+                break
+            elif not (isComment(element) or isinstance(element, BlankLine)):
+                break
