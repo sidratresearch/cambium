@@ -6,6 +6,8 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+from cambium.builtin_stages.utils import markdown_to_html
+
 from ..stage import Stage
 from ..tree import TreeSpan
 
@@ -56,22 +58,28 @@ class TemplateMarkdown(Stage):
 
         logger.debug(f"Found Jinja templates {self.jinja_template_paths}")
 
+    def _read_jinja_globals(self, tree: TreeSpan) -> dict[str, str]:
+        variable_paths = tree.root_directory.glob(".cambium/jinja_variables/**/*")
+
+        jinja_globals: dict[str, str] = {}
+        for path in variable_paths:
+            print(f"Reading Jinja variables from {path}")
+            if path.name in jinja_globals:
+                raise ValueError("Multiple files {path.name} in jinja_variables")
+
+            variable = path.read_text()
+            if path.suffix == ".md":
+                variable = markdown_to_html(variable, None)
+            jinja_globals[path.name.removesuffix(path.suffix)] = variable
+        return jinja_globals
+
     def _initialize_jinja(self, tree: TreeSpan) -> None:
         """Initializing Jinja Templating Environment."""
         self._populate_jinja_template_paths(tree)
-        self.jinja_env = Environment(loader=FileSystemLoader(self.jinja_template_paths))
-
-    def _create_sidebar(self) -> None:
-        pass
-
-    def _create_footer(self) -> None:
-        pass
-
-    def _create_header(self) -> None:
-        pass
-
-    def _create_menu(self) -> None:
-        pass
+        self.jinja_env = Environment(
+            loader=FileSystemLoader(self.jinja_template_paths),
+        )
+        self.jinja_env.globals = self._read_jinja_globals(tree)
 
     def _create_page(self, leaf_uuid: str, tree: TreeSpan) -> None:
 
@@ -92,7 +100,6 @@ class TemplateMarkdown(Stage):
         # Jinja does not complain in a variable is missing from the environment
         # Something to think about wrt potential stage-added items and custom themes
 
-        # print(self.jinja_template_paths)
         output_html = main_template.render(
             # general Cambium utility items
             site_name=tree.config.site_name,

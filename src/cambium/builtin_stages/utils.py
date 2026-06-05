@@ -183,7 +183,7 @@ def add_heading_anchors(document: Document, heading_id_prefix: str) -> Document:
     return document
 
 
-def markdown_to_html(markdown: str, heading_id_prefix: str) -> str:
+def markdown_to_html(markdown: str, heading_id_prefix: str | None) -> str:
     """Main function of the TransformMarkdown stage."""
     # WARNING: The Markdown class is not thread-safe.
     # Create a new instance for each thread.
@@ -192,6 +192,7 @@ def markdown_to_html(markdown: str, heading_id_prefix: str) -> str:
     )
 
     document = marko_object.parse(markdown)
-    document = add_heading_anchors(document, heading_id_prefix)
+    if heading_id_prefix is not None:
+        document = add_heading_anchors(document, heading_id_prefix)
 
     return marko_object.render(document)
