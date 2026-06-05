@@ -7,6 +7,9 @@
   --default-bg-color: #f9f9f9;
   --default-font-color: #222222;
   --default-font-size: 14pt;
+  --default-accent-color: #cc0000;
+  --default-hover-color: #660000;
+  --pf-font: var(--default-font);
 }
 
 /* Base Elements */
@@ -30,7 +33,7 @@ body {
 
 h1 {
   font-weight: 300;
-  color: #cc0000;
+  color: var(--default-accent-color);
   font-size: 3.5rem;
   margin-top: 0rem;
   margin-bottom: 1rem;
@@ -78,11 +81,12 @@ p {
 }
 
 a {
-  color: #cc0000;
+  color: var(--default-accent-color);
+  transition: all 0.25s;
 }
 
 a:hover {
-  color: #660000;
+  color: var(--default-hover-color);
 }
 
 ul {
@@ -119,8 +123,8 @@ header {
   background-color: #444444;
   color: #f9f9f9;
   font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
 }
 
 div.header-bar {
@@ -134,6 +138,53 @@ div.header-bar {
 div.header-bar a {
   text-decoration: none;
   color: #f9f9f9;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+div.header-left,
+div.header-centre,
+div.header-right {
+  display: flex;
+}
+
+div.header-left {
+  flex: 0 1 15%;
+  justify-content: start;
+
+  .site-title {
+    text-transform: uppercase;
+    font-size: 1.2rem;
+  }
+}
+
+div.header-centre {
+  flex: 1 0 auto;
+  justify-content: center;
+  text-align: center;
+}
+
+div.header-right {
+  flex: 0 1 15%;
+  justify-content: end;
+}
+
+a.menu-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 2s;
+
+  svg.menu-icon {
+    width: 2rem;
+    height: 2rem;
+    fill: var(--default-bg-color);
+    transition: all 0.25s;
+  }
+}
+
+a.menu-button:hover svg.menu-icon {
+  fill: var(--default-accent-color);
 }
 
 footer {
@@ -229,4 +280,11 @@ tr:nth-child(even) {
     margin-left: 0;
     margin-right: 0;
   }
+}
+
+/* Overriding Pagefind Styles */
+
+pagefind-modal-trigger {
+  display: inline-flex;
+  align-items: center;
 }
