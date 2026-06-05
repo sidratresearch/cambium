@@ -7,10 +7,11 @@ import logging
 from collections import defaultdict
 from html.parser import HTMLParser
 from pathlib import Path
+from typing import Any
 
 from cambium.builtin_stages.utils import is_external_link, resolve_internal_link
 
-from ..stage import Stage
+from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
 
 logger = logging.getLogger(__name__)
@@ -36,7 +37,17 @@ class LinkParser(HTMLParser):
                 self.anchor_ids.append(value)
 
 
+class CheckLinksConfig(StageConfig):
+    links_to_ignore: list[str] = []
+    """Link destinations that should not be checked"""
+    # TODO: use path/glob/name options like other path config items
+
+
 class CheckLinks(Stage):
+    def __init__(self, config_dict: dict[str, Any]) -> None:
+        self.config = CheckLinksConfig.model_validate(config_dict)
+        self.requires = []
+
     def tree_hook(self, tree: TreeSpan) -> None:
         tree.apply_to_leaves(self._tree_hook_for_leaf)
 
@@ -127,6 +138,9 @@ class CheckLinks(Stage):
         dest_full = resolve_internal_link(
             destination, file_directory, tree.build_directory
         )
+
+        if str(dest_full) in self.config.links_to_ignore:
+            return
 
         initial_path = tree.leaves["initial_path"][leaf_uuid]
         if dest_full.parts[0] == "static":
