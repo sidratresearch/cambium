@@ -138,6 +138,7 @@ class CheckLinks(Stage):
 
         # TODO: hack for current issue w/ menu
         if destination.startswith("/"):
+            logger.warning("Link checks for absolute links are not yet implemented.")
             return
 
         dest_full = resolve_internal_link(
