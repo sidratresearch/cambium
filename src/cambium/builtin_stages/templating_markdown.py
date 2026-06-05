@@ -69,18 +69,25 @@ class TemplateMarkdown(Stage):
         logger.debug(f"Found Jinja templates {self.jinja_template_paths}")
 
     def _read_jinja_globals(self, tree: TreeSpan) -> dict[str, str]:
-        variable_paths = tree.root_directory.glob(".cambium/jinja_variables/**/*")
+        search_path = tree.root_directory / ".cambium/jinja_variables"
+        variable_paths = search_path.glob("**/*")
 
         jinja_globals: dict[str, str] = {}
         for path in variable_paths:
-            print(f"Reading Jinja variables from {path}")
+            logger.debug(f"Reading Jinja variables from {path}")
+            globals_key = path.name.removesuffix(path.suffix)
+
+            if globals_key in CambiumJinjaVariables.model_fields:
+                raise ValueError(
+                    f"{globals_key} ({path.name}) is a reserved name and cannot be used in {search_path}."
+                )
             if path.name in jinja_globals:
-                raise ValueError("Multiple files {path.name} in jinja_variables")
+                raise ValueError(f"Multiple files {path.name} in {search_path}.")
 
             variable = path.read_text()
             if path.suffix == ".md":
                 variable = markdown_to_html(variable, None)
-            jinja_globals[path.name.removesuffix(path.suffix)] = variable
+            jinja_globals[globals_key] = variable
         return jinja_globals
 
     def _initialize_jinja(self, tree: TreeSpan) -> None:
