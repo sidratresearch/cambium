@@ -26,6 +26,11 @@ class LinkParser(HTMLParser):
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         for name, value in attrs:
             if name in ["href", "src"]:
+                # <link> href
+                # <script> src
+                # <img> src
+                # <a> href
+                # add srcset stuff
                 self.links.append((tag.lower(), name, value))
             if name == "id":
                 self.anchor_ids.append(value)
@@ -84,10 +89,10 @@ class CheckLinks(Stage):
         if "#" in destination:
             page_destination, anchor = destination.split("#")
         else:
-            page_destination, anchor = destination, None
+            page_destination, anchor = destination, ""
 
         # validate the page existence
-        if len(page_destination) == 0:
+        if len(page_destination) == 0 or page_destination == "/":
             destination_uuid = leaf_uuid
         else:
             destination_uuid = self._check_internal_link_no_anchor(
@@ -95,7 +100,7 @@ class CheckLinks(Stage):
             )
 
         # don't check anchor if page failed, or there is no anchor
-        if destination_uuid is None or anchor is None:
+        if destination_uuid is None or len(anchor) == 0:
             return
 
         self._check_anchor_link(destination_uuid, anchor, leaf_uuid, tree)
