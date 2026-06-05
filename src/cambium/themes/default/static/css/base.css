@@ -202,11 +202,6 @@ button.menu-button {
 }
 
 div.menu-panel {
-  position: fixed;
-  height: 100vh;
-  top: 0;
-  min-width: 400px;
-  background-color: #444444;
 }
 
 /* Table Styling */
