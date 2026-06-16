@@ -65,15 +65,16 @@ class PagefindSearch(Stage):
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         self._set_leaf_metadata("show_searchbar_on_page", True, leaf_uuid, tree)
+        # TODO: set some guard/warning against stages accidentally reusing template names
         self._set_leaf_metadata(
             "searchbar_component",
-            "search-component.html.jinja",
+            "pagefindsearch-search-component.html.jinja",
             leaf_uuid,
             tree,
         )
         self._set_leaf_metadata(
             "head_links",
-            "head.html.jinja",
+            "pagefindsearch-head.html.jinja",
             leaf_uuid,
             tree,
         )
