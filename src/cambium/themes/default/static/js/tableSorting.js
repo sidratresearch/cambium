@@ -32,6 +32,9 @@ function sortRows(event) {
   const currentColumnIndex = siblings.length;
 
   const tableBody = tableElement.querySelector("tbody");
+  if (tableElement.querySelectorAll("tbody").length > 1) {
+    console.warn("Table sorting only affects the first `<tbody>` in a table.");
+  }
   const tableBodyRows = Array.from(tableBody.querySelectorAll("tr"));
 
   tableBodyRows.sort((row1, row2) => {
