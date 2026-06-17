@@ -1,5 +1,5 @@
 function onMenuToggle(menuPanel) {
-  menuPanel.toggleAttribute("hidden");
+  menuPanel.classList.toggle("hidden");
 }
 
 export function attachMenuButtonListener() {

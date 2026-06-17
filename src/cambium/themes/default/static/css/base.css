@@ -287,6 +287,13 @@ table {
   }
 }
 
+/* Utility Styling */
+
+div.hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
 /* Overriding Pagefind Styles */
 
 pagefind-modal-trigger {
