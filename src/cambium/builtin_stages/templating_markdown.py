@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from cambium.builtin_stages.utils import markdown_to_html
 from cambium.metadata import LeafMetadata
 
+from .. import __version__
 from ..stage import Stage
 from ..tree import TreeSpan
 
@@ -19,6 +20,8 @@ logger = logging.getLogger(__name__)
 class CambiumJinjaVariables(BaseModel, extra="forbid"):
     site_name: str
     relative_path_modifier: str
+    cambium_version: str
+    initial_path: Path
     metadata: LeafMetadata
     build_time_utc: datetime.datetime
     main_content: str
@@ -117,9 +120,11 @@ class TemplateMarkdown(Stage):
 
         cambium_jinja_variables = CambiumJinjaVariables(
             # general Cambium utility items
+            cambium_version=__version__,
             site_name=tree.config.site_name,
             relative_path_modifier="../" * number_of_parents,
             metadata=tree.leaves["metadata"][leaf_uuid],
+            initial_path=tree.leaves["initial_path"][leaf_uuid],
             # specialist variables created by this stage
             build_time_utc=self.build_time_utc,
             # actual markdown content

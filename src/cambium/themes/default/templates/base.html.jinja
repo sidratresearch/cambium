@@ -13,7 +13,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Cambium v{{ cambium_version }}" />
     <title>{{ title }}</title>
+
+    <!-- Grabbable with JS -->
+    <meta name="cambium-data" value="" data-initial-path="{{ initial_path }}" />
 
     {% include 'head.html.jinja' %}
 
