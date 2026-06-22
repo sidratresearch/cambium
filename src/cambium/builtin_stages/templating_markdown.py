@@ -7,12 +7,11 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 
-from cambium.builtin_stages.utils import markdown_to_html
-from cambium.metadata import LeafMetadata
-
 from .. import __version__
+from ..metadata import LeafMetadata
 from ..stage import Stage
 from ..tree import TreeSpan
+from .utils import markdown_to_html
 
 logger = logging.getLogger(__name__)
 

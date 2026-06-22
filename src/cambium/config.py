@@ -11,8 +11,7 @@ from typing import Any, Literal, Optional
 import yaml
 from pydantic import BaseModel
 
-import cambium  # for version
-
+from . import __version__
 from .stage import populating_stage_dict
 
 # At runtime of this file the log level has not been set
@@ -300,7 +299,7 @@ def dump_default_config() -> None:
     config_yaml = yaml.safe_dump(default_config.model_dump())
     header = "\n".join(
         [
-            f"# Cambium {cambium.__version__} default configuration",
+            f"# Cambium {__version__} default configuration",
             "# Created with `cambium --dump-default-config`",
         ]
     )

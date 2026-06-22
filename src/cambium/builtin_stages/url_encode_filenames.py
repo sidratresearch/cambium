@@ -8,10 +8,9 @@ from marko import Markdown
 from marko.md_renderer import MarkdownRenderer
 from slugify import slugify
 
-from cambium.builtin_stages.utils import rewrite_urlsafe_links
-
 from ..stage import Stage
 from ..tree import TreeSpan
+from .utils import rewrite_urlsafe_links
 
 logger = logging.getLogger(__name__)
 

@@ -9,10 +9,9 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
-from cambium.builtin_stages.utils import is_external_link, resolve_internal_link
-
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
+from .utils import is_external_link, resolve_internal_link
 
 logger = logging.getLogger(__name__)
 
