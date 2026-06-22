@@ -128,6 +128,21 @@ def main(
         print(json.dumps(treespan.filestructure_in_build, indent=2))
         return
 
+    if dev_server:
+        logger.info("Running dev server")
+        # get list of files to watch: regular cambium, static files, skip cambium ignores
+
+        # run build
+        # start http server
+
+        # check for file modifications, and re-run build
+
+        # TODO: wipe _build so the reload js doesn't end up in prod
+        # or run the dev server off of a different folder
+
+        # TODO: how do we handle config changes?
+        return
+
     build(treespan)
 
     logger.info("Cambium complete!")
