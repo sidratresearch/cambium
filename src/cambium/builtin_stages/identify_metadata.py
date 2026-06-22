@@ -6,6 +6,7 @@ from pathlib import Path
 
 from marko import Markdown
 from marko.block import BlankLine, Heading, HTMLBlock
+from slugify import slugify
 
 from ..stage import Stage
 from ..tree import TreeSpan
@@ -56,16 +57,22 @@ class IdentifyMetadata(Stage):
         tree.leaves["hooks"][leaf_uuid]["pre_hooks"].append(self.__class__.__name__)
 
     def _extract_metadata(self, leaf_uuid: str, tree: TreeSpan) -> None:
+        metadata_obj = tree.leaves["metadata"][leaf_uuid]
+
+        # set a `page_id`
+        # TODO: should `cambium-page-` be a stage option or moved into the jinja?
+        metadata_obj.page_id = "cambium-page-" + slugify(
+            str(tree.leaves["final_path"][leaf_uuid].with_suffix(""))
+        )
+
         # set basic metadata items from `stat`
         stat_data = (
             tree.root_directory / tree.leaves["initial_path"][leaf_uuid]
         ).stat()
-        tree.leaves["metadata"][leaf_uuid].initial_filesize = stat_data.st_size
-        tree.leaves["metadata"][leaf_uuid].modification_time = (
-            datetime.datetime.fromtimestamp(
-                stat_data.st_mtime, tz=datetime.UTC
-            ).isoformat()
-        )
+        metadata_obj.initial_filesize = stat_data.st_size
+        metadata_obj.modification_time = datetime.datetime.fromtimestamp(
+            stat_data.st_mtime, tz=datetime.UTC
+        ).isoformat()
 
         input_path: Path = tree.abs_leaf_path(leaf_uuid)
         input_extension: str = input_path.suffix

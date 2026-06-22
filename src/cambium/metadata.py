@@ -32,6 +32,9 @@ class LeafMetadata(BaseModel):
     table_of_contents: Optional[str] = None
     """HTML string with headings, only defined for markdown files"""
 
+    page_id: Optional[str] = None
+    """String used as an HTML ID unique to this page"""
+
     # in addition to the "loose" default metadata items we provide, include a "stage"
     # or "extra" attribute here that maps stage name to a dict of that stage's custom
     # metadata items
