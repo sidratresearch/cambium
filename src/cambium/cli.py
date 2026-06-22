@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 
@@ -50,16 +50,9 @@ dump_config_option = Annotated[
 ]
 
 
-def dev_callback(value: bool) -> None:
-    if value:
-        print("Running dev server")
-
-
 dev_option = Annotated[
     bool | None,
-    typer.Option(
-        "--dev", help="Run Cambium in development server mode", callback=dev_callback
-    ),
+    typer.Option("--dev", help="Run Cambium in development server mode"),
 ]
 
 
@@ -111,23 +104,20 @@ def main(
             rich_help_panel="Configuration",
         ),
     ] = None,
+    dev_server: dev_option = None,
     # subcommands
     _: version_option = None,
     __: dump_config_option = None,
-    ___: dev_option = None,
 ) -> None:
 
     make_ascii_art()
 
-    yaml_config = config.read_input_configuration(config_path)
-    cli_config = {"build_directory": build_directory, "root_directory": root_directory}
-    config.initialize_configuration(yaml_config, cli_config)
-
-    logger.setLevel(get_loglevel(config.current_config.logging_level, verbosity_boost))
-    logger.info("Logger is setup")
-
-    if dev_option:
-        config.current_config.dev_server = True
+    cli_config = {
+        "build_directory": build_directory,
+        "root_directory": root_directory,
+        "dev_server": dev_server,
+    }
+    setup_config(config_path, cli_config, verbosity_boost)
 
     treespan = TreeSpan(config.current_config)
 
@@ -138,13 +128,29 @@ def main(
         print(json.dumps(treespan.filestructure_in_build, indent=2))
         return
 
+    build(treespan)
+
+    logger.info("Cambium complete!")
+
+
+def setup_config(
+    config_path: Path | None, cli_config: dict[str, Any], verbosity_boost: int
+) -> None:
+    """Process file and command-line configuration, and set up logger."""
+    yaml_config = config.read_input_configuration(config_path)
+    config.initialize_configuration(yaml_config, cli_config)
+
+    logger.setLevel(get_loglevel(config.current_config.logging_level, verbosity_boost))
+    logger.info("Logger is setup")
+
+
+def build(treespan: TreeSpan) -> None:
+    """Run all of the Cambium TreeSpan functions."""
     treespan.prepare_tree()
     treespan.apply_pre_hooks()
     treespan.transform()
     treespan.apply_post_hooks()
     treespan.finalize()
-
-    logger.info("Cambium complete!")
 
 
 def make_ascii_art() -> None:
