@@ -12,7 +12,7 @@ from marko.ext.gfm.elements import Table
 from marko.ext.gfm.renderer import GFMRendererMixin
 from marko.helpers import render_dispatch
 from marko.html_renderer import HTMLRenderer
-from marko.inline import Image, Link
+from marko.inline import Image, InlineHTML, Link, RawText
 from slugify import slugify
 
 logger = logging.getLogger(__name__)
@@ -150,7 +150,11 @@ def get_raw_content(element: Element) -> str:
     """Get the pure text content of an element."""
     content = ""
     for child in element.children:
-        if isinstance(child, str):
+        if isinstance(child, RawText):
+            content += child.children
+        elif isinstance(child, InlineHTML):
+            continue
+        elif isinstance(child, str):  # link titles, etc.
             content += child
         else:
             content += get_raw_content(child)
@@ -170,6 +174,10 @@ def add_heading_anchors(document: Document, heading_id_prefix: str) -> Document:
 
         content = get_raw_content(child)
         default_anchor = slugify(content)
+        if len(default_anchor) == 0:
+            # entirely HTML headings will result in empty anchors...
+            # if you're doing that you should probably just include an ID in your HTML
+            logger.warning(f"Generated heading anchor for {child} is empty!")
 
         if anchor_counter[default_anchor] > 0:
             anchor = default_anchor + f"-{anchor_counter[default_anchor]}"
