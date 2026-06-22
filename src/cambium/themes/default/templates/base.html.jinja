@@ -42,4 +42,12 @@
     {% include 'footer.html.jinja' %}
   </body>
   <script src="{{ relative_path_modifier }}static/js/base.js" type="module"></script>
+
+  {% if dev_server %}
+    <script
+      src="{{ relative_path_modifier }}static/js/dev-server-reload/dev-server-reload.js"
+      type="module"
+      data-debug
+    ></script>
+  {% endif %}
 </html>

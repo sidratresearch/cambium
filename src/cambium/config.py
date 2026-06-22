@@ -145,6 +145,8 @@ class WorkingConfiguration:
 
         self.stage_theme_directories = {"static": [], "templates": []}
 
+        self.dev_server = False
+
     def __del__(self) -> None:
         """Clean up All Lingering Directories."""
         # Cleaning up temporary directory

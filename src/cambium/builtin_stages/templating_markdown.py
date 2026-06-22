@@ -24,6 +24,7 @@ class CambiumJinjaVariables(BaseModel, extra="forbid"):
     metadata: LeafMetadata
     build_time_utc: datetime.datetime
     main_content: str
+    dev_server: bool
 
 
 class TemplateMarkdown(Stage):
@@ -124,6 +125,7 @@ class TemplateMarkdown(Stage):
             relative_path_modifier="../" * number_of_parents,
             metadata=tree.leaves["metadata"][leaf_uuid],
             initial_path=tree.leaves["initial_path"][leaf_uuid],
+            dev_server=tree.config.dev_server,
             # specialist variables created by this stage
             build_time_utc=self.build_time_utc,
             # actual markdown content

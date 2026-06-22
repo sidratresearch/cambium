@@ -49,6 +49,20 @@ dump_config_option = Annotated[
     ),
 ]
 
+
+def dev_callback(value: bool) -> None:
+    if value:
+        print("Running dev server")
+
+
+dev_option = Annotated[
+    bool | None,
+    typer.Option(
+        "--dev", help="Run Cambium in development server mode", callback=dev_callback
+    ),
+]
+
+
 # --------------------------------------------------------------------#
 #                           Main function                             #
 # --------------------------------------------------------------------#
@@ -100,6 +114,7 @@ def main(
     # subcommands
     _: version_option = None,
     __: dump_config_option = None,
+    ___: dev_option = None,
 ) -> None:
 
     make_ascii_art()
@@ -110,6 +125,9 @@ def main(
 
     logger.setLevel(get_loglevel(config.current_config.logging_level, verbosity_boost))
     logger.info("Logger is setup")
+
+    if dev_option:
+        config.current_config.dev_server = True
 
     treespan = TreeSpan(config.current_config)
 
