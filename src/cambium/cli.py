@@ -60,24 +60,24 @@ def main(
         ),
     ] = None,
     dev_server: Annotated[
-        bool | None,
+        bool,
         typer.Option("--dev", help="Run Cambium in development server mode"),
-    ] = None,
+    ] = False,
     # subcommands
     version_option: Annotated[
-        bool | None,
+        bool,
         typer.Option(
             "--version",
             help="Print version info",
         ),
-    ] = None,
+    ] = False,
     dump_config_option: Annotated[
-        bool | None,
+        bool,
         typer.Option(
             "--dump-default-config",
             help="Dump default configuration info to stdout",
         ),
-    ] = None,
+    ] = False,
 ) -> None:
 
     ## Quick-exit options
