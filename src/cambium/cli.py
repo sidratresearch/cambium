@@ -12,51 +12,6 @@ logger = init_logging()
 app = typer.Typer()
 
 # --------------------------------------------------------------------#
-#                      Subcommand-style options                       #
-# --------------------------------------------------------------------#
-
-
-def version_callback(value: bool) -> None:
-    if value:
-        print(f"Cambium {__version__}")
-        raise typer.Exit
-
-
-version_option = Annotated[
-    bool | None,
-    typer.Option(
-        "--version",
-        help="Print version info",
-        callback=version_callback,
-        is_eager=True,
-    ),
-]
-
-
-def dump_config_callback(value: bool) -> None:
-    if value:
-        config.dump_default_config()
-        raise typer.Exit
-
-
-dump_config_option = Annotated[
-    bool | None,
-    typer.Option(
-        "--dump-default-config",
-        help="Dump default configuration info to stdout",
-        callback=dump_config_callback,
-        is_eager=True,
-    ),
-]
-
-
-dev_option = Annotated[
-    bool | None,
-    typer.Option("--dev", help="Run Cambium in development server mode"),
-]
-
-
-# --------------------------------------------------------------------#
 #                           Main function                             #
 # --------------------------------------------------------------------#
 
@@ -104,11 +59,34 @@ def main(
             rich_help_panel="Configuration",
         ),
     ] = None,
-    dev_server: dev_option = None,
+    dev_server: Annotated[
+        bool | None,
+        typer.Option("--dev", help="Run Cambium in development server mode"),
+    ] = None,
     # subcommands
-    _: version_option = None,
-    __: dump_config_option = None,
+    version_option: Annotated[
+        bool | None,
+        typer.Option(
+            "--version",
+            help="Print version info",
+        ),
+    ] = None,
+    dump_config_option: Annotated[
+        bool | None,
+        typer.Option(
+            "--dump-default-config",
+            help="Dump default configuration info to stdout",
+        ),
+    ] = None,
 ) -> None:
+
+    ## Quick-exit options
+    if version_option:
+        print(f"Cambium {__version__}")
+        return
+    if dump_config_option:
+        config.dump_default_config()
+        return
 
     make_ascii_art()
 
