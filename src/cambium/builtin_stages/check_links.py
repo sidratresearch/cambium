@@ -44,6 +44,8 @@ class CheckLinksConfig(StageConfig):
 
 
 class CheckLinks(Stage):
+    gave_absolute_links_warning = False
+
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.config = CheckLinksConfig.model_validate(config_dict)
         self.requires = []
@@ -138,7 +140,11 @@ class CheckLinks(Stage):
 
         # TODO: hack for current issue w/ menu
         if destination.startswith("/"):
-            logger.warning("Link checks for absolute links are not yet implemented.")
+            if not self.gave_absolute_links_warning:
+                logger.warning(
+                    "Link checks for absolute links are not yet implemented."
+                )
+                self.gave_absolute_links_warning = True
             return
 
         dest_full = resolve_internal_link(
