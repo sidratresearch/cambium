@@ -4,6 +4,7 @@ Currently only checks internal links, discarding anchors.
 """
 
 import logging
+import urllib
 from collections import defaultdict
 from html.parser import HTMLParser
 from pathlib import Path
@@ -144,6 +145,8 @@ class CheckLinks(Stage):
             destination, file_directory, tree.build_directory
         )
 
+        dest_full = Path(urllib.parse.unquote_plus(str(dest_full)))
+
         if str(dest_full) in self.config.links_to_ignore:
             return
 
@@ -153,6 +156,7 @@ class CheckLinks(Stage):
                 f"Not checking link to static file {dest_full} in {initial_path}"
             )
             return
+
         if (
             dest_full not in self.leaf_final_paths
             and dest_full not in tree.directories_in_build
