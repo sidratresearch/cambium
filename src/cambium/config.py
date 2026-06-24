@@ -44,7 +44,9 @@ class CLIConfiguration(BaseModel):
 
     root_directory: build_directory_type = None
     build_directory: build_directory_type = None
-    dev_server: Optional[bool] = False
+    dev_server: bool
+    dev_server_port: int
+    dev_server_interval: float
 
 
 class FileConfiguration(BaseModel):
@@ -172,6 +174,8 @@ class WorkingConfiguration:
         self.logging_level = self.input_config.logging_level
         self.site_name = self.input_config.site_name
         self.dev_server = self.input_config.dev_server
+        self.dev_server_port = self.input_config.dev_server_port
+        self.dev_server_interval = self.input_config.dev_server_interval
 
     def __del__(self) -> None:
         """Clean up All Lingering Directories."""

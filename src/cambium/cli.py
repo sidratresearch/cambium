@@ -64,8 +64,29 @@ def main(
     ] = None,
     dev_server: Annotated[
         bool,
-        typer.Option("--dev", help="Run Cambium in development server mode"),
+        typer.Option(
+            "--dev",
+            help="Run Cambium in development server mode",
+            rich_help_panel="Development Server",
+        ),
     ] = False,
+    dev_server_port: Annotated[
+        int,
+        typer.Option(
+            "--port",
+            help="Port to host the development server",
+            rich_help_panel="Development Server",
+        ),
+    ] = 8000,
+    dev_server_interval: Annotated[
+        float,
+        typer.Option(
+            "--watch-interval",
+            help="Frequency with whech to check the filesystem for changes (seconds)",
+            min=0.01,
+            rich_help_panel="Development Server",
+        ),
+    ] = 0.5,
     # subcommands
     version_option: Annotated[
         bool,
@@ -97,6 +118,8 @@ def main(
         "build_directory": build_directory,
         "root_directory": root_directory,
         "dev_server": dev_server,
+        "dev_server_port": dev_server_port,
+        "dev_server_interval": dev_server_interval,
     }
     setup_config(config_path, cli_config, verbosity_boost)
     treespan = TreeSpan(config.current_config)
@@ -111,6 +134,7 @@ def main(
 
     if dev_server:
         run_dev_server(treespan)
+        # TODO: clean up the ctrl-c around this
         return
 
     build(treespan)
@@ -201,17 +225,19 @@ def run_dev_server(tree: TreeSpan) -> None:
     # TODO: check for config file changes and warn
     # TODO: run the dev server off of a different folder (not _build)
 
-    port = 8001  # make cli option
-    start_http_server(port, tree.build_directory)
+    start_http_server(tree.config.dev_server_port, tree.build_directory)
 
     watched_files = get_watched_files(tree)
     last_checked = time.monotonic()
     build(tree)
-    # add minimum time between checks
+    logger.info(
+        f"Checking for file changes every {tree.config.dev_server_interval} seconds."
+    )
+
     while True:
         tree.config.reset_tmp_dir()
         current_time = time.monotonic()
-        if (last_checked is None) or (current_time - last_checked > 2):
+        if current_time - last_checked > tree.config.dev_server_interval:
             logger.debug("Checking for file changes.")
             last_checked = current_time
             files_changed, watched_files = check_file_changes(watched_files, tree)
