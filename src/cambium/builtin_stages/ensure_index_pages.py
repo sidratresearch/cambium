@@ -24,10 +24,14 @@ class EnsureIndexPages(Stage):
         self.requires = []
         # TODO: doesn't technically *require* TransformMarkdown, but if both are enabled, this should be after
         self.config = EnsureIndexPagesConfig.model_validate(config_dict)
+        self.directories_added = []
 
     def tree_hook(self, tree: TreeSpan) -> None:
         for directory in [Path(), *tree.directories_in_build]:
             self._get_index_for_dir(directory, tree)
+        if len(self.directories_added) > 0:
+            dirs = ", ".join([str(p) for p in self.directories_added])
+            logger.info(f"Added index files to directories: {dirs}")
 
     def _get_index_for_dir(self, directory: Path, tree: TreeSpan) -> None:
         """Ensure directory contains a leaf that will be built to index.html."""
@@ -40,7 +44,8 @@ class EnsureIndexPages(Stage):
         if not any(option_existence):
             if not directory_has_index:
                 self._create_index_leaf(directory, tree)
-                logger.info(f"Added index file for directory {directory}")
+                logger.debug(f"Added index file for directory {directory}")
+                self.directories_added.append(directory)
             return
 
         # cases where one readme file exists
