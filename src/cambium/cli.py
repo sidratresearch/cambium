@@ -9,7 +9,7 @@ import typer
 
 from . import __version__, config
 from .log import get_loglevel, init_logging
-from .tree import TreeSpan
+from .tree import TreeSpan, walk_directory_tree
 
 logger = init_logging()
 app = typer.Typer()
@@ -170,9 +170,8 @@ def get_watched_files(tree: TreeSpan) -> str:
     This function may change to return an object that can be iterated on
     the file level to support incremental rebuilds.
     """
-    paths = [
-        tree.leaves["initial_path"][leaf_uuid] for leaf_uuid in (tree.leaves["uuids"])
-    ]
+    _, paths = walk_directory_tree(tree)
+
     return str({path: path.stat().st_mtime for path in sorted(paths)})
 
 
@@ -215,8 +214,7 @@ def run_dev_server(tree: TreeSpan) -> None:
     any templated markdown files.
     """
     logger.info("Running Cambium in dev server mode, use CTRL-c to quit")
-    # TODO: consider adding static files, new files to watched files
-    # TODO: what happens when files are deleted?
+    # TODO: consider adding static files
     # TODO: check for config file changes and warn
     # TODO: run the dev server off of a different folder (not _build)
 
@@ -237,10 +235,10 @@ def run_dev_server(tree: TreeSpan) -> None:
             if current_time - last_checked > tree.config.dev_server_interval:
                 logger.debug("Checking for file changes.")
                 last_checked = current_time
-                tree.config.reset_tmp_dir()
-                tree = TreeSpan(config.current_config)
                 files_changed, watched_files = check_file_changes(watched_files, tree)
                 if files_changed:
+                    tree.config.tmp_dir_obj.cleanup()  # clean up old tree
+                    tree = TreeSpan(config.current_config)  # make new tree
                     logger.info("Re-running Cambium")
                     build(tree)
     except KeyboardInterrupt:
