@@ -134,7 +134,6 @@ def main(
 
     if dev_server:
         run_dev_server(treespan)
-        # TODO: clean up the ctrl-c around this
         return
 
     build(treespan)
@@ -192,7 +191,7 @@ def check_file_changes(watched_files: str, tree: TreeSpan) -> tuple[bool, str]:
     return files_changed, new_file_status
 
 
-def start_http_server(port: int, directory: Path) -> None:
+def start_http_server(port: int, directory: Path) -> multiprocessing.Process:
     """Start the simple Python http.server, serving files from `directory`."""
 
     class CambiumSimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -210,6 +209,8 @@ def start_http_server(port: int, directory: Path) -> None:
     server.start()  # confirmed via htop that this process gets cleaned up on ctrl-c
     logger.info(f"Serving to http://localhost:{port}")
 
+    return server
+
 
 def run_dev_server(tree: TreeSpan) -> None:
     """Run Cambium in development server mode.
@@ -219,31 +220,37 @@ def run_dev_server(tree: TreeSpan) -> None:
     be seen on localhost, and includes an auto-reload script in the HTML of
     any templated markdown files.
     """
-    logger.info("Running dev server")
+    logger.info("Running Cambium in dev server mode, use CTRL-c to quit")
     # TODO: consider adding static files, new files to watched files
     # TODO: what happens when files are deleted?
     # TODO: check for config file changes and warn
     # TODO: run the dev server off of a different folder (not _build)
 
-    start_http_server(tree.config.dev_server_port, tree.build_directory)
-
-    watched_files = get_watched_files(tree)
-    last_checked = time.monotonic()
-    build(tree)
-    logger.info(
-        f"Checking for file changes every {tree.config.dev_server_interval} seconds."
+    server_process = start_http_server(
+        tree.config.dev_server_port, tree.build_directory
     )
 
-    while True:
-        tree.config.reset_tmp_dir()
-        current_time = time.monotonic()
-        if current_time - last_checked > tree.config.dev_server_interval:
-            logger.debug("Checking for file changes.")
-            last_checked = current_time
-            files_changed, watched_files = check_file_changes(watched_files, tree)
-            if files_changed:
-                logger.info("Re-running Cambium")
-                build(tree)
+    try:
+        watched_files = get_watched_files(tree)
+        last_checked = time.monotonic()
+        build(tree)
+        logger.info(
+            f"Checking for changes every {tree.config.dev_server_interval} seconds."
+        )
+
+        while True:
+            tree.config.reset_tmp_dir()
+            current_time = time.monotonic()
+            if current_time - last_checked > tree.config.dev_server_interval:
+                logger.debug("Checking for file changes.")
+                last_checked = current_time
+                files_changed, watched_files = check_file_changes(watched_files, tree)
+                if files_changed:
+                    logger.info("Re-running Cambium")
+                    build(tree)
+    except KeyboardInterrupt:
+        logger.info("Closing dev server")
+        server_process.terminate()  # prints "Process Process-1" to sys.derr
 
 
 def make_ascii_art() -> None:
