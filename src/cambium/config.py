@@ -36,7 +36,11 @@ build_directory_type = Optional[str]
 
 
 class CLIConfiguration(BaseModel):
-    """Validation for config options that can be set on the command line."""
+    """Validation for config options that can be set on the command line.
+
+    This class does no processing, only validates types which are later used
+    by WorkingConfiguration.
+    """
 
     root_directory: build_directory_type = None
     build_directory: build_directory_type = None
@@ -48,6 +52,9 @@ class FileConfiguration(BaseModel):
 
     Contains all input cambium configuration parameters that can be set in
     the config file.
+
+    This class does no processing, only validates types which are later used
+    by WorkingConfiguration.
     """
 
     root_directory: root_directory_type = "."
