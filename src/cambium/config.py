@@ -31,6 +31,18 @@ current_config: Optional[WorkingConfiguration] = None
 """Globally importable reference to the mutable runtime configuration."""
 
 
+root_directory_type = Optional[str]
+build_directory_type = Optional[str]
+
+
+class CLIConfiguration(BaseModel):
+    """Validation for config options that can be set on the command line."""
+
+    root_directory: build_directory_type = None
+    build_directory: build_directory_type = None
+    dev_server: Optional[bool] = False
+
+
 class FileConfiguration(BaseModel):
     """Cambium Configuration Object.
 
@@ -38,10 +50,10 @@ class FileConfiguration(BaseModel):
     the config file.
     """
 
-    root_directory: Optional[str] = "."
+    root_directory: root_directory_type = "."
     "Root Directory of Content"
 
-    build_directory: Optional[str] = "_build/"
+    build_directory: build_directory_type = "_build/"
     "Build Directory of Output"
 
     paths_to_ignore: Optional[list[str]] = []
@@ -81,6 +93,14 @@ class FileConfiguration(BaseModel):
     """Builtin Theme to Use"""
 
 
+class MergedConfiguration(FileConfiguration, CLIConfiguration):
+    """Merging of CLI and file config options.
+
+    Used to provide typing to this combination of options for when they are
+    passed to the WorkingConfiguration.
+    """
+
+    pass
 
 
 class WorkingConfiguration:
@@ -99,7 +119,7 @@ class WorkingConfiguration:
 
     input_config: Optional[FileConfiguration] = None
 
-    def __init__(self, input_config: Optional[FileConfiguration] = None) -> None:
+    def __init__(self, input_config: Optional[MergedConfiguration] = None) -> None:
 
         # Setting Temporary Directory
         self.setup_tmp_dir()
@@ -200,11 +220,15 @@ def initialize_configuration(
     cli_dict : dict[str,Any]
         Dictionary of values passed on the command line
     """
-    # overwrite YAML config values with those passed on the command line
-    merged_dict = {**yaml_dict, **{k: v for k, v in cli_dict.items() if v is not None}}
+    validated_yaml = FileConfiguration(**yaml_dict)
+    validated_cli = CLIConfiguration(**cli_dict)
 
-    # validate all config values together
-    merged_config = CambiumConfiguration(**merged_dict)
+    # combine the file and cli options, where CLI options are overrides
+    merged_validated = {
+        **validated_yaml.model_dump(),
+        **{k: v for k, v in validated_cli.model_dump().items() if v is not None},
+    }
+    merged_config = MergedConfiguration(**merged_validated)
 
     global current_config
     current_config = WorkingConfiguration(merged_config)
