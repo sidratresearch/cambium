@@ -24,9 +24,9 @@ class EnsureIndexPages(Stage):
         self.requires = []
         # TODO: doesn't technically *require* TransformMarkdown, but if both are enabled, this should be after
         self.config = EnsureIndexPagesConfig.model_validate(config_dict)
-        self.directories_added = []
 
     def tree_hook(self, tree: TreeSpan) -> None:
+        self.directories_added = []
         for directory in [Path(), *tree.directories_in_build]:
             self._get_index_for_dir(directory, tree)
         if len(self.directories_added) > 0:

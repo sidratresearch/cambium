@@ -170,16 +170,10 @@ def get_watched_files(tree: TreeSpan) -> str:
     This function may change to return an object that can be iterated on
     the file level to support incremental rebuilds.
     """
-    return str(
-        {
-            tree.leaves["initial_path"][leaf_uuid]: (
-                tree.root_directory / tree.leaves["initial_path"][leaf_uuid]
-            )
-            .stat()
-            .st_mtime
-            for leaf_uuid in sorted(tree.leaves["uuids"])
-        }
-    )
+    paths = [
+        tree.leaves["initial_path"][leaf_uuid] for leaf_uuid in (tree.leaves["uuids"])
+    ]
+    return str({path: path.stat().st_mtime for path in sorted(paths)})
 
 
 def check_file_changes(watched_files: str, tree: TreeSpan) -> tuple[bool, str]:
@@ -239,11 +233,12 @@ def run_dev_server(tree: TreeSpan) -> None:
         )
 
         while True:
-            tree.config.reset_tmp_dir()
             current_time = time.monotonic()
             if current_time - last_checked > tree.config.dev_server_interval:
                 logger.debug("Checking for file changes.")
                 last_checked = current_time
+                tree.config.reset_tmp_dir()
+                tree = TreeSpan(config.current_config)
                 files_changed, watched_files = check_file_changes(watched_files, tree)
                 if files_changed:
                     logger.info("Re-running Cambium")

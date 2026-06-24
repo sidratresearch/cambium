@@ -50,14 +50,13 @@ class TreeSpan:
     # These work as class attr so long as we never have multiple instances of TreeSpan
     root_directory: Path
     build_directory: Path
-    directories_in_build: list[Path] = []
-    filestructure_in_build: dict[str, Any]
 
     def __init__(self, working_config: WorkingConfiguration) -> None:
         self.config: WorkingConfiguration = working_config
 
         self.root_directory = self.config.root_dir
         self.build_directory = self.config.build_dir
+        self.directories_in_build = []
 
         # TODO: there's not currently anything stopping a stage from setting a leaf path to something that isn't a Path, then when another stage tries to acces .suffix, it breaks
         # maybe using a pydantic model would help?
