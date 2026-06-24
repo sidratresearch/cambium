@@ -72,7 +72,9 @@ class TreeSpan:
             "failed": {},
         }
 
-        directories_in_build, leaf_paths = walk_directory_tree(self)
+        directories_in_build, leaf_paths = walk_directory_tree(
+            self.root_directory, self.config.ignore_lists
+        )
         self.directories_in_build = directories_in_build
         for path in leaf_paths:
             self.add_leaf(path)
@@ -593,12 +595,17 @@ def make_nested_filetree(
     return tree
 
 
-def walk_directory_tree(tree: TreeSpan) -> tuple[list[Path], list[Path]]:
+def walk_directory_tree(
+    root_directory: Path, ignore_lists: dict[str, list[str]] | None
+) -> tuple[list[Path], list[Path]]:
     """Find all files/directories in the root that Cambium cares about."""
     logger.debug("Discovering files to process")
+
     directories_in_build, leaf_paths = [], []
-    ignore_lists = tree.config.ignore_lists
-    for current_root, directories, files in os.walk(tree.root_directory, topdown=True):
+    if ignore_lists is None:
+        ignore_lists = {"paths": [], "names": [], "globs": [], "extensions": []}
+
+    for current_root, directories, files in os.walk(root_directory, topdown=True):
         # current_root: string starting w ./ (except on first loop, where it's ".")
         # directories: list of strings, not ending with /
         # files: list of strings

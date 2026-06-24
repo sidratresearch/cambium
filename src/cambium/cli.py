@@ -170,7 +170,14 @@ def get_watched_files(tree: TreeSpan) -> str:
     This function may change to return an object that can be iterated on
     the file level to support incremental rebuilds.
     """
-    _, paths = walk_directory_tree(tree)
+    _, paths = walk_directory_tree(tree.root_directory, tree.config.ignore_lists)
+    for other_dir in [
+        tree.root_directory / "static",
+        tree.root_directory / ".cambium",
+    ]:
+        if other_dir.exists():
+            _, static_paths = walk_directory_tree(other_dir, None)
+            paths = paths + static_paths
 
     return str({path: path.stat().st_mtime for path in sorted(paths)})
 
