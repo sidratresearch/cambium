@@ -110,32 +110,7 @@ def main(
         return
 
     if dev_server:
-        logger.info("Running dev server")
-        # TODO: consider adding static files, new files to watched files
-        # TODO: what happens when files are deleted?
-        # TODO: check for config file changes and warn
-        # TODO: run the dev server off of a different folder (not _build)
-
-        port = 8001  # make cli option
-        start_http_server(port, treespan.build_directory)
-
-        watched_files = get_watched_files(treespan)
-        last_checked = time.monotonic()
-        build(treespan)
-        # add minimum time between checks
-        while True:
-            treespan.config.reset_tmp_dir()
-            current_time = time.monotonic()
-            if (last_checked is None) or (current_time - last_checked > 2):
-                logger.debug("Checking for file changes.")
-                last_checked = current_time
-                files_changed, watched_files = check_file_changes(
-                    watched_files, treespan
-                )
-                if files_changed:
-                    logger.info("Re-running Cambium")
-                    build(treespan)  # do you need to wipe the tmpdir?
-
+        run_dev_server(treespan)
         return
 
     build(treespan)
@@ -210,6 +185,39 @@ def start_http_server(port: int, directory: Path) -> None:
     server = multiprocessing.Process(target=httpd.serve_forever, daemon=True)
     server.start()  # confirmed via htop that this process gets cleaned up on ctrl-c
     logger.info(f"Serving to http://localhost:{port}")
+
+
+def run_dev_server(tree: TreeSpan) -> None:
+    """Run Cambium in development server mode.
+
+    Sets up a list of files to watch, and re-runs Cambium whenever any of
+    those files changes. Also backgrounds an http server so the results can
+    be seen on localhost, and includes an auto-reload script in the HTML of
+    any templated markdown files.
+    """
+    logger.info("Running dev server")
+    # TODO: consider adding static files, new files to watched files
+    # TODO: what happens when files are deleted?
+    # TODO: check for config file changes and warn
+    # TODO: run the dev server off of a different folder (not _build)
+
+    port = 8001  # make cli option
+    start_http_server(port, tree.build_directory)
+
+    watched_files = get_watched_files(tree)
+    last_checked = time.monotonic()
+    build(tree)
+    # add minimum time between checks
+    while True:
+        tree.config.reset_tmp_dir()
+        current_time = time.monotonic()
+        if (last_checked is None) or (current_time - last_checked > 2):
+            logger.debug("Checking for file changes.")
+            last_checked = current_time
+            files_changed, watched_files = check_file_changes(watched_files, tree)
+            if files_changed:
+                logger.info("Re-running Cambium")
+                build(tree)
 
 
 def make_ascii_art() -> None:
