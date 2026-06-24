@@ -250,7 +250,7 @@ def run_dev_server(tree: TreeSpan) -> None:
                     build(tree)
     except KeyboardInterrupt:
         logger.info("Closing dev server")
-        server_process.terminate()  # prints "Process Process-1" to sys.derr
+        server_process.terminate()  # prints "Process Process-1" to sys.stderr
 
 
 def make_ascii_art() -> None:
