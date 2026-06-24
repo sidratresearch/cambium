@@ -23,6 +23,7 @@ builtin_paths_to_ignore: list[str] = [
     "/.cambium",
     ".*",
     "__pycache__",
+    "*.*~",  # tempfiles made while saving may end in ~
 ]
 """Built-in Cambium Directories to Ignore"""
 
