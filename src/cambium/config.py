@@ -28,12 +28,14 @@ builtin_paths_to_ignore: list[str] = [
 
 
 current_config: Optional[WorkingConfiguration] = None
+"""Globally importable reference to the mutable runtime configuration."""
 
 
 class CambiumConfiguration(BaseModel):
     """Cambium Configuration Object.
 
-    Contains all input cambium configuration parameters
+    Contains all input cambium configuration parameters that can be set in
+    the config file.
     """
 
     root_directory: Optional[str] = "."
@@ -101,8 +103,7 @@ class WorkingConfiguration:
     def __init__(self, input_config: Optional[CambiumConfiguration] = None) -> None:
 
         # Setting Temporary Directory
-        self.tmp_dir_obj = tempfile.TemporaryDirectory(prefix="cambium_")
-        self.tmp_dir = Path(self.tmp_dir_obj.name)
+        self.setup_tmp_dir()
 
         # Setting Input Configuration if set, otherwise use default:
         if input_config is not None:
@@ -133,19 +134,18 @@ class WorkingConfiguration:
             self.stages, self.input_config.stage_config, logger
         )
 
-        # Exposing Simple Parameters (that require no additional processing)
-        self.max_leaves = self.input_config.max_leaves
-        self.logging_level = self.input_config.logging_level
-        self.site_name = self.input_config.site_name
-
+        # Save lists of theme directories
         self.ordered_theme_directories = [
             self.root_dir / ".cambium/theme",
             Path(__file__).parent / f"themes/{self.input_config.theme}",
         ]
-
         self.stage_theme_directories = {"static": [], "templates": []}
 
-        self.dev_server = False
+        # Exposing Simple Parameters (that require no additional processing)
+        self.max_leaves = self.input_config.max_leaves
+        self.logging_level = self.input_config.logging_level
+        self.site_name = self.input_config.site_name
+        self.dev_server = self.input_config.dev_server
 
     def __del__(self) -> None:
         """Clean up All Lingering Directories."""
@@ -154,6 +154,11 @@ class WorkingConfiguration:
 
     def __repr__(self) -> str:
         return f"""Cambium Working Configuration:\nTemporary Directory Path: {self.tmp_dir}"""
+
+    def setup_tmp_dir(self) -> None:
+        """Create and save references to a temporary directory."""
+        self.tmp_dir_obj = tempfile.TemporaryDirectory(prefix="cambium_")
+        self.tmp_dir = Path(self.tmp_dir_obj.name)
 
     def populate_ignore_lists(self) -> None:
         """Combining ignore lists and putting in appropriate dictionary."""
