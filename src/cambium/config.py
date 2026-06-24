@@ -186,6 +186,11 @@ class WorkingConfiguration:
         self.tmp_dir_obj = tempfile.TemporaryDirectory(prefix="cambium_")
         self.tmp_dir = Path(self.tmp_dir_obj.name)
 
+    def reset_tmp_dir(self) -> None:
+        """Delete the current temporary directory, and make a new one."""
+        self.tmp_dir_obj.cleanup()
+        self.setup_tmp_dir()
+
     def populate_ignore_lists(self) -> None:
         """Combining ignore lists and putting in appropriate dictionary."""
         # Combining Defaults and Input Configuration

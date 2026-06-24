@@ -1,4 +1,7 @@
+import http.server
 import json
+import multiprocessing
+import time
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -80,7 +83,7 @@ def main(
     ] = False,
 ) -> None:
 
-    ## Quick-exit options
+    # Quick-exit options
     if version_option:
         print(f"Cambium {__version__}")
         return
@@ -88,37 +91,51 @@ def main(
         config.dump_default_config()
         return
 
+    # Common setup tasks
     make_ascii_art()
-
     cli_config = {
         "build_directory": build_directory,
         "root_directory": root_directory,
         "dev_server": dev_server,
     }
     setup_config(config_path, cli_config, verbosity_boost)
-
     treespan = TreeSpan(config.current_config)
 
     if dry_run:
+        skipped_dir = f"{treespan.build_directory}/static/_cambium"
         logger.warning(
-            f"Dry run file structure does not include paths within {treespan.build_directory}/static/_cambium"
+            f"Dry run file structure does not include paths within {skipped_dir}"
         )
         print(json.dumps(treespan.filestructure_in_build, indent=2))
         return
 
     if dev_server:
         logger.info("Running dev server")
-        # get list of files to watch: regular cambium, static files, skip cambium ignores
+        # TODO: consider adding static files, new files to watched files
+        # TODO: what happens when files are deleted?
+        # TODO: check for config file changes and warn
+        # TODO: run the dev server off of a different folder (not _build)
 
-        # run build
-        # start http server
+        port = 8001  # make cli option
+        start_http_server(port, treespan.build_directory)
 
-        # check for file modifications, and re-run build
+        watched_files = get_watched_files(treespan)
+        last_checked = time.monotonic()
+        build(treespan)
+        # add minimum time between checks
+        while True:
+            treespan.config.reset_tmp_dir()
+            current_time = time.monotonic()
+            if (last_checked is None) or (current_time - last_checked > 2):
+                logger.debug("Checking for file changes.")
+                last_checked = current_time
+                files_changed, watched_files = check_file_changes(
+                    watched_files, treespan
+                )
+                if files_changed:
+                    logger.info("Re-running Cambium")
+                    build(treespan)  # do you need to wipe the tmpdir?
 
-        # TODO: wipe _build so the reload js doesn't end up in prod
-        # or run the dev server off of a different folder
-
-        # TODO: how do we handle config changes?
         return
 
     build(treespan)
@@ -144,6 +161,55 @@ def build(treespan: TreeSpan) -> None:
     treespan.transform()
     treespan.apply_post_hooks()
     treespan.finalize()
+
+
+def get_watched_files(tree: TreeSpan) -> str:
+    """Get the state of watched files in some format that can be compared.
+
+    In the future we could hash the contents of files, include static files,
+    check for file deletion, watch the files in .cambium, etc.
+
+    This function may change to return an object that can be iterated on
+    the file level to support incremental rebuilds.
+    """
+    return str(
+        {
+            tree.leaves["initial_path"][leaf_uuid]: (
+                tree.root_directory / tree.leaves["initial_path"][leaf_uuid]
+            )
+            .stat()
+            .st_mtime
+            for leaf_uuid in sorted(tree.leaves["uuids"])
+        }
+    )
+
+
+def check_file_changes(watched_files: str, tree: TreeSpan) -> tuple[bool, str]:
+    """Check if any files have changed, compared to `watched_files`."""
+    new_file_status = get_watched_files(tree)
+
+    files_changed = watched_files != new_file_status
+
+    return files_changed, new_file_status
+
+
+def start_http_server(port: int, directory: Path) -> None:
+    """Start the simple Python http.server, serving files from `directory`."""
+
+    class CambiumSimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs) -> None:
+            super().__init__(*args, directory=directory, **kwargs)
+
+        def log_message(self, format, *args) -> None:
+            """Override the default logging which uses sys.stderr.write."""
+            formatted = (format % args).translate(self._control_char_table)
+            logger.debug(formatted)
+
+    httpd = http.server.HTTPServer(("", port), CambiumSimpleHTTPRequestHandler)
+
+    server = multiprocessing.Process(target=httpd.serve_forever, daemon=True)
+    server.start()  # confirmed via htop that this process gets cleaned up on ctrl-c
+    logger.info(f"Serving to http://localhost:{port}")
 
 
 def make_ascii_art() -> None:
