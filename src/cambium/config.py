@@ -31,7 +31,7 @@ current_config: Optional[WorkingConfiguration] = None
 """Globally importable reference to the mutable runtime configuration."""
 
 
-class CambiumConfiguration(BaseModel):
+class FileConfiguration(BaseModel):
     """Cambium Configuration Object.
 
     Contains all input cambium configuration parameters that can be set in
@@ -81,7 +81,6 @@ class CambiumConfiguration(BaseModel):
     """Builtin Theme to Use"""
 
 
-default_config = CambiumConfiguration()
 
 
 class WorkingConfiguration:
@@ -98,9 +97,9 @@ class WorkingConfiguration:
         "names": [],
     }
 
-    input_config: Optional[CambiumConfiguration] = None
+    input_config: Optional[FileConfiguration] = None
 
-    def __init__(self, input_config: Optional[CambiumConfiguration] = None) -> None:
+    def __init__(self, input_config: Optional[FileConfiguration] = None) -> None:
 
         # Setting Temporary Directory
         self.setup_tmp_dir()
@@ -109,7 +108,7 @@ class WorkingConfiguration:
         if input_config is not None:
             self.input_config = input_config
         else:
-            self.input_config = default_config
+            self.input_config = FileConfiguration()
 
         # Creating Path object for root directory and testing
         self.root_dir = Path(self.input_config.root_directory)
@@ -275,7 +274,7 @@ def translate_yaml_configuration(config_path: Path) -> dict[str, Any]:
         raise ValueError(errormsg)
 
     # Extracting required dictionary parameters from the YAML
-    configuration_parameters = CambiumConfiguration.model_fields.keys()
+    configuration_parameters = FileConfiguration.model_fields.keys()
 
     input_dict = {}
 
@@ -303,7 +302,7 @@ def dump_default_config() -> None:
     """Print the default configuration in YAML format."""
     # TODO: how are we going to communicate the builtin_paths_to_ignore to the user?
 
-    config_yaml = yaml.safe_dump(default_config.model_dump())
+    config_yaml = yaml.safe_dump(FileConfiguration().model_dump())
     header = "\n".join(
         [
             f"# Cambium {__version__} default configuration",
