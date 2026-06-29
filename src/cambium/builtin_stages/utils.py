@@ -98,7 +98,7 @@ def resolve_internal_link(
     For "../a.html" located in "[root]/b/c.html", this returns "a.html"
     """
     full = (build_directory / parent_directory / link).resolve()
-    build_abs = build_directory.absolute()
+    build_abs = build_directory.resolve()
     try:
         return full.relative_to(build_abs)
     except ValueError:

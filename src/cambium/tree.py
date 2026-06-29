@@ -98,6 +98,9 @@ class TreeSpan:
             # directories: list of strings, not ending with /
             # files: list of strings
 
+            # handle root_directory not being cwd
+            current_root = current_root.replace(str(self.root_directory), ".")
+
             if (current_root == ".") and ("static" in directories):
                 logger.debug("Ignoring top level directory `static`")
                 directories.remove("static")
@@ -403,6 +406,7 @@ class TreeSpan:
                 try:
                     hook_main(uuid, self)
                 except Exception as e:
+                    # TODO: add a `fail-fast` option that raises an exception here
                     self._handle_hook_exception(e, uuid, stage_name, hook_type)
 
             logger.debug(f"Running {stage_name} {hook_type[:-1]}_finalize.")
@@ -516,7 +520,9 @@ class TreeSpan:
 
         leaf_bytes, static_bytes = 0, 0
         for uuid in self.leaves["uuids"]:
-            leaf_bytes += self.leaves["initial_path"][uuid].stat().st_size
+            leaf_bytes += (
+                (self.root_directory / self.leaves["initial_path"][uuid]).stat().st_size
+            )
         for static_directory in [
             self.root_directory / "static",
             *self.config.ordered_theme_directories,
