@@ -203,7 +203,7 @@ class CambiumSimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 def serve_forever(port, directory) -> None:
     """Picklable function which starts an http server."""
     handler = functools.partial(CambiumSimpleHTTPRequestHandler, directory=directory)
-    httpd = http.server.ThreadingHTTPServer(("", port), handler)
+    httpd = http.server.HTTPServer(("", port), handler)
     httpd.serve_forever()
 
 
