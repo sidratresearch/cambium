@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -123,5 +124,9 @@ class PagefindSearch(Stage):
                 )
             )
             logger.info(f"Writing pagefind files to {pf_dir_print}")
+
             await index.write_files(str(self.abs_pagefind_directory))
-            await index.delete_index()  # don't write files to default location
+
+            # Manually Closing Context to make it play nice with Windows
+            index._service._backend._transport.close()
+            index._service = None
