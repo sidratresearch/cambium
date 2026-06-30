@@ -200,20 +200,19 @@ class CambiumSimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         logger.debug(formatted)
 
 
+def serve_forever(port, directory) -> None:
+    """Picklable function which starts an http server."""
+    handler = functools.partial(CambiumSimpleHTTPRequestHandler, directory=directory)
+    httpd = http.server.ThreadingHTTPServer(("", port), handler)
+    httpd.serve_forever()
+
+
 def start_http_server(port: int, directory: Path) -> multiprocessing.Process:
     """Start the simple Python http.server, serving files from `directory`."""
 
-    handler = functools.partial(CambiumSimpleHTTPRequestHandler, directory=directory)
-
-    httpd = http.server.ThreadingHTTPServer(("", port), handler)
-
-    # potentially slightly hacky way to remove the requirement that Process
-    # args must be picklable; technically this is supposed to be run in
-    # __main__ somewhere
-    # see the note in: https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions
-    multiprocessing.set_start_method("fork")
-
-    server = multiprocessing.Process(target=httpd.serve_forever, daemon=True)
+    server = multiprocessing.Process(
+        target=serve_forever, args=([port, directory]), daemon=True
+    )
     server.start()  # confirmed via htop that this process gets cleaned up on ctrl-c
     logger.info(f"Serving to http://localhost:{port}")
 
