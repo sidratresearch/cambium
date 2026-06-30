@@ -69,9 +69,10 @@ strict_xfail = true
 [tool.tox]
 env_list = [ { prefix = "3.", start = 11, stop = 14 } ]
 requires = [ "tox>=4.53" ]
+# env_run_base: defaults for *all* environments
+env_run_base.package = "wheel"  # build a wheel and use it for all envs
+env_run_base.wheel_build_env = ".pkg"  # re-use the wheel, built in an env called ".pkg"
 env_run_base.description = "Run tests with pytest"
-env_run_base.package = "wheel"
-env_run_base.wheel_build_env = ".pkg"  # we don't have an env called ".pkg" ?
 env_run_base.deps = [ "pytest>=9.0.3,<10" ]
 env_run_base.commands = [
   [
