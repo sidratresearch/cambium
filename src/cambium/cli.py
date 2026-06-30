@@ -1,3 +1,4 @@
+import functools
 import http.server
 import json
 import multiprocessing
@@ -191,19 +192,26 @@ def check_file_changes(watched_files: str, tree: TreeSpan) -> tuple[bool, str]:
     return files_changed, new_file_status
 
 
+class CambiumSimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+
+    def log_message(self, format, *args) -> None:
+        """Override the default logging which uses sys.stderr.write."""
+        formatted = (format % args).translate(self._control_char_table)
+        logger.debug(formatted)
+
+
 def start_http_server(port: int, directory: Path) -> multiprocessing.Process:
     """Start the simple Python http.server, serving files from `directory`."""
 
-    class CambiumSimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-        def __init__(self, *args, **kwargs) -> None:
-            super().__init__(*args, directory=directory, **kwargs)
+    handler = functools.partial(CambiumSimpleHTTPRequestHandler, directory=directory)
 
-        def log_message(self, format, *args) -> None:
-            """Override the default logging which uses sys.stderr.write."""
-            formatted = (format % args).translate(self._control_char_table)
-            logger.debug(formatted)
+    httpd = http.server.ThreadingHTTPServer(("", port), handler)
 
-    httpd = http.server.HTTPServer(("", port), CambiumSimpleHTTPRequestHandler)
+    # potentially slightly hacky way to remove the requirement that Process
+    # args must be picklable; technically this is supposed to be run in
+    # __main__ somewhere
+    # see the note in: https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions
+    multiprocessing.set_start_method("fork")
 
     server = multiprocessing.Process(target=httpd.serve_forever, daemon=True)
     server.start()  # confirmed via htop that this process gets cleaned up on ctrl-c
