@@ -501,6 +501,7 @@ class TreeSpan:
         self.build_directory.mkdir()
         for directory in self.directories_in_build:
             (self.build_directory / directory).mkdir()
+        (self.build_directory / "static").mkdir()
 
     def _get_static_paths(
         self, static_directory: Path
