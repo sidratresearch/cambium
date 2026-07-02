@@ -82,11 +82,6 @@ if (
         }
         try {
           location.reload();
-          // console.warn(`Cancelled reload of ${url}`, {
-          //   etags: [etag, newETag],
-          //   lastMod: [lastModified, newLastModified],
-          //   length: [contentLength, newContentLength],
-          // });
         } catch (e) {
           location = location;
         }
