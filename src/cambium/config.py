@@ -164,10 +164,13 @@ class WorkingConfiguration:
         )
 
         # Save lists of theme directories
+        cambium_themes_folder = Path(__file__).parent / "themes"
         self.ordered_theme_directories = [
             self.root_dir / ".cambium/theme",
-            Path(__file__).parent / f"themes/{self.input_config.theme}",
+            cambium_themes_folder / self.input_config.theme,
         ]
+        if self.input_config.dev_server:
+            self.ordered_theme_directories.append(cambium_themes_folder / "dev-server")
         self.stage_theme_directories = {"static": [], "templates": []}
 
         # Exposing Simple Parameters (that require no additional processing)
