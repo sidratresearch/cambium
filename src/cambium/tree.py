@@ -474,9 +474,9 @@ class TreeSpan:
 
         # copy static files over
         self._copy_static_files_no_overwrite(self.root_directory)
-        for directory in self.config.ordered_theme_directories:
+        for directory in self.config.ordered_theme_directories:  # theme files
             self._copy_static_files_no_overwrite(directory)
-        for directory in self.config.stage_theme_directories["static"]:
+        for directory in self.config.stage_theme_directories["static"]:  # stage themes
             self._copy_static_files_no_overwrite(directory.parent)
 
         # populate "required" static files
