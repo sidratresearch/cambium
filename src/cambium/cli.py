@@ -2,6 +2,7 @@ import functools
 import http.server
 import json
 import multiprocessing
+import sys
 import time
 from pathlib import Path
 from typing import Annotated, Any
@@ -203,13 +204,17 @@ class CambiumSimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 def serve_forever(port, directory) -> None:
     """Picklable function which starts an http server."""
     handler = functools.partial(CambiumSimpleHTTPRequestHandler, directory=directory)
-    httpd = http.server.HTTPServer(("", port), handler)
+    try:
+        httpd = http.server.HTTPServer(("", port), handler)
+    except OSError as e:
+        logger.error(f"An error occurred starting the HTTP server on port {port}: {e}")
+        sys.exit(1)
+
     httpd.serve_forever()
 
 
 def start_http_server(port: int, directory: Path) -> multiprocessing.Process:
     """Start the simple Python http.server, serving files from `directory`."""
-
     server = multiprocessing.Process(
         target=serve_forever, args=([port, directory]), daemon=True
     )
@@ -217,6 +222,12 @@ def start_http_server(port: int, directory: Path) -> multiprocessing.Process:
     logger.info(f"Serving to http://localhost:{port}")
 
     return server
+
+
+def check_server_process(server_process: multiprocessing.Process) -> None:
+    """Exit if the HTTP server has closed."""
+    if server_process.exitcode == 1:
+        raise typer.Exit
 
 
 def run_dev_server(tree: TreeSpan) -> None:
@@ -228,17 +239,19 @@ def run_dev_server(tree: TreeSpan) -> None:
     any templated markdown files.
     """
     logger.info("Running Cambium in dev server mode, use CTRL-c to quit")
-    # TODO: consider adding static files
+    # TODO: consider tracking static files
     # TODO: check for config file changes and warn
     # TODO: run the dev server off of a different folder (not _build)
 
     server_process = start_http_server(
         tree.config.dev_server_port, tree.build_directory
     )
+    check_server_process(server_process)
 
     try:
         watched_files = get_watched_files(tree)
         last_checked = time.monotonic()
+        check_server_process(server_process)
         build(tree)
         logger.info(
             f"Checking for changes every {tree.config.dev_server_interval} seconds."
@@ -247,6 +260,7 @@ def run_dev_server(tree: TreeSpan) -> None:
         while True:
             current_time = time.monotonic()
             if current_time - last_checked > tree.config.dev_server_interval:
+                check_server_process(server_process)
                 logger.debug("Checking for file changes.")
                 last_checked = current_time
                 files_changed, watched_files = check_file_changes(watched_files, tree)
