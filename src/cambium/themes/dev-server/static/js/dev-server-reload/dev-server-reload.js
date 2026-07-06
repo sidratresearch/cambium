@@ -24,14 +24,51 @@ if (
   const debug = true; // document.currentScript?.hasAttribute("data-debug") || false;
 
   let watching = new Set();
-  watch(location.href, true);
-  let requestedReload = false;
+  let reloadIsRequested = false;
 
+  // Add a dev server indicator
+  const indicator = createDevServerIndicator();
+  populateDevServerIndicator(indicator, reloadIsRequested);
+
+  watch(location.href, true);
   new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
       watch(entry.name, false);
     }
   }).observe({ type: "resource", buffered: true });
+
+  function requestReload(causingUrl) {
+    if (debug) {
+      console.log("[simple-live-reload] change detected in", causingUrl.href);
+    }
+    reloadIsRequested = true;
+    populateDevServerIndicator(indicator, reloadIsRequested);
+  }
+
+  async function performReload(requestOptions) {
+    // confirm that the HTML is ready to go
+    let checkURL = location.href;
+    if (checkURL.endsWith("/")) {
+      checkURL = checkURL + "index.html";
+    }
+    const readyForReload =
+      (await fetch(checkURL, requestOptions)).status === 200;
+    if (!readyForReload) {
+      return;
+    }
+
+    // perform the reload
+    if (debug) {
+      console.log("[simple-live-reload] reloading", location.href);
+    }
+    try {
+      location.reload();
+      reloadIsRequested = false;
+      populateDevServerIndicator(indicator, reloadIsRequested);
+    } catch (e) {
+      location = location;
+    }
+  }
 
   function watch(urlString, isPrimary) {
     if (!urlString) return;
@@ -78,10 +115,7 @@ if (
         (lastModified && lastModified !== newLastModified) ||
         (contentLength && contentLength !== newContentLength)
       ) {
-        if (debug) {
-          console.log("[simple-live-reload] change detected in", url.href);
-        }
-        requestedReload = true;
+        requestReload(url);
       }
 
       etag = newETag !== null ? newETag : etag;
@@ -89,20 +123,8 @@ if (
       contentLength =
         newContentLength !== null ? newContentLength : contentLength;
 
-      if (isPrimary && requestedReload) {
-        const readyForReload = true;
-        // (await fetch(location.href, request)).status === 200;
-        if (readyForReload) {
-          if (debug) {
-            console.log("[simple-live-reload] reloading", url.href);
-          }
-          try {
-            location.reload();
-            requestedReload = false;
-          } catch (e) {
-            location = location;
-          }
-        }
+      if (isPrimary && reloadIsRequested) {
+        await performReload(request);
       }
     }
 
@@ -112,5 +134,30 @@ if (
       "visibilitychange",
       () => !document.hidden && check(),
     );
+  }
+}
+
+function createDevServerIndicator() {
+  const indicator = document.createElement("div");
+  document.body.appendChild(indicator);
+  indicator.style.backgroundColor = "#4c7e97";
+  indicator.style.color = "white";
+  indicator.style.position = "sticky";
+  indicator.style.width = "fit-content";
+  indicator.style.bottom = 0;
+  indicator.style.margin = "0 auto";
+  indicator.style.padding = "0.5em";
+  return indicator;
+}
+
+function populateDevServerIndicator(indicator, reloadIsRequested) {
+  const indicatorContent = {
+    watching: "Cambium Development Server",
+    reloading: "Reload requested",
+  };
+  if (reloadIsRequested) {
+    indicator.textContent = indicatorContent["reloading"];
+  } else {
+    indicator.textContent = indicatorContent["watching"];
   }
 }
