@@ -24,15 +24,16 @@ if (
   const debug = true; // document.currentScript?.hasAttribute("data-debug") || false;
 
   let watching = new Set();
-  watch(location.href);
+  watch(location.href, true);
+  let requestedReload = false;
 
   new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
-      watch(entry.name);
+      watch(entry.name, false);
     }
   }).observe({ type: "resource", buffered: true });
 
-  function watch(urlString) {
+  function watch(urlString, isPrimary) {
     if (!urlString) return;
     const url = new URL(urlString);
     if (url.origin !== location.origin) return;
@@ -80,17 +81,29 @@ if (
         if (debug) {
           console.log("[simple-live-reload] change detected in", url.href);
         }
-        try {
-          location.reload();
-        } catch (e) {
-          location = location;
-        }
+        requestedReload = true;
       }
 
       etag = newETag !== null ? newETag : etag;
       lastModified = newLastModified !== null ? newLastModified : lastModified;
       contentLength =
         newContentLength !== null ? newContentLength : contentLength;
+
+      if (isPrimary && requestedReload) {
+        const readyForReload = true;
+        // (await fetch(location.href, request)).status === 200;
+        if (readyForReload) {
+          if (debug) {
+            console.log("[simple-live-reload] reloading", url.href);
+          }
+          try {
+            location.reload();
+            requestedReload = false;
+          } catch (e) {
+            location = location;
+          }
+        }
+      }
     }
 
     check();
