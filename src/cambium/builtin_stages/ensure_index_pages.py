@@ -1,6 +1,7 @@
 """Cambium stage to ensure all directories contain index.html files."""
 
 import logging
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,13 @@ class EnsureIndexPages(Stage):
         self.requires = []
         # TODO: doesn't technically *require* TransformMarkdown, but if both are enabled, this should be after
         self.config = EnsureIndexPagesConfig.model_validate(config_dict)
+
+        if sys.platform == "win32":
+            casefolded = [f.casefold() for f in self.config.useable_as_index]
+            casefolded = list(set(casefolded))
+            if len(casefolded) < len(self.config.useable_as_index):
+                self.config.useable_as_index = casefolded
+
         self.directories_added = []
 
     def tree_hook(self, tree: TreeSpan) -> None:
