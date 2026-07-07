@@ -137,7 +137,6 @@ class CheckLinks(Stage):
         tree: TreeSpan,
     ) -> str | None:
         """Verify that an internal link points to a location in final paths."""
-
         # TODO: hack for current issue w/ menu
         if destination.startswith("/"):
             if not self.gave_absolute_links_warning:

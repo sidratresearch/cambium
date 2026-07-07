@@ -2,7 +2,6 @@
 
 import logging
 from pathlib import Path
-from typing import Any
 
 from marko import Markdown
 from marko.md_renderer import MarkdownRenderer
