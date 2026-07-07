@@ -50,14 +50,13 @@ class TreeSpan:
     # These work as class attr so long as we never have multiple instances of TreeSpan
     root_directory: Path
     build_directory: Path
-    directories_in_build: list[Path] = []
-    filestructure_in_build: dict[str, Any]
 
     def __init__(self, working_config: WorkingConfiguration) -> None:
         self.config: WorkingConfiguration = working_config
 
         self.root_directory = self.config.root_dir
         self.build_directory = self.config.build_dir
+        self.directories_in_build = []
 
         # TODO: there's not currently anything stopping a stage from setting a leaf path to something that isn't a Path, then when another stage tries to acces .suffix, it breaks
         # maybe using a pydantic model would help?
@@ -72,7 +71,14 @@ class TreeSpan:
             "hooks": {"pre_hooks": [], "transforms": [], "post_hooks": []},
             "failed": {},
         }
-        self._walk_directory_tree()
+
+        directories_in_build, leaf_paths = walk_directory_tree(
+            self.root_directory, self.config.ignore_lists
+        )
+        self.directories_in_build = directories_in_build
+        for path in leaf_paths:
+            self.add_leaf(path)
+
         if len(self.leaves["uuids"]) == 0:
             logger.warning("Collected 0 files.")
         else:
@@ -87,84 +93,6 @@ class TreeSpan:
     # ----------------------------------------------------------------#
     #                    __init__ helper functions                    #
     # ----------------------------------------------------------------#
-
-    def _walk_directory_tree(self) -> None:
-        """Find all files/directories in the root that Cambium cares about."""
-        logger.debug("Discovering files to process")
-        for current_root, directories, files in os.walk(
-            self.root_directory, topdown=True
-        ):
-            # current_root: string starting w ./ (except on first loop, where it's ".")
-            # directories: list of strings, not ending with /
-            # files: list of strings
-
-            # handle root_directory not being cwd
-            current_root = current_root.replace(str(self.root_directory), ".")
-
-            if (current_root == ".") and ("static" in directories):
-                logger.debug("Ignoring top level directory `static`")
-                directories.remove("static")
-
-            # filter by absolute path
-            for absolute_ignore in self.config.ignore_lists["paths"]:
-                matcher = f".{absolute_ignore}"  # add the leading dot
-                remove_directories = [
-                    d for d in directories if f"{current_root}/{d}" == matcher
-                ]
-                remove_files = [f for f in files if f"{current_root}/{f}" == matcher]
-                for d in remove_directories:
-                    directories.remove(d)
-                    logger.debug(f"Ignoring directory '{d}', removed by path")
-                for f in remove_files:
-                    files.remove(f)
-                    logger.debug(f"Ignoring file '{f}', removed by path")
-
-            # filter by name
-            for name in self.config.ignore_lists["names"]:
-                if name in directories:
-                    directories.remove(name)
-                    logger.debug(f"Ignoring directory '{d}', removed by name")
-                if name in files:
-                    files.remove(name)
-                    logger.debug(f"Ignoring file '{f}', removed by name")
-
-            # filter by glob
-            for pattern in self.config.ignore_lists["globs"]:
-                remove_directories = [
-                    d
-                    for d in directories
-                    if re.match(pattern, f"{current_root}/{d}".removeprefix("./"))
-                ]
-                remove_files = [
-                    f
-                    for f in files
-                    if re.match(pattern, f"{current_root}/{f}".removeprefix("./"))
-                ]
-                for d in remove_directories:
-                    directories.remove(d)
-                    logger.debug(f"Ignoring directory '{d}', removed by glob")
-
-                for f in remove_files:
-                    files.remove(f)
-                    logger.debug(f"Ignoring file '{f}', removed by glob")
-
-            # filter files by ext
-            for extension in self.config.ignore_lists["extensions"]:
-                remove_files = [f for f in files if f.endswith(f".{extension}")]
-                for f in remove_files:
-                    files.remove(f)
-                    logger.debug(f"Ignoring file '{f}', removed by extension")
-
-            # save dirs to list
-            for d in directories:
-                self.directories_in_build.append(
-                    Path(f"{current_root}/{d}".removeprefix("./"))
-                )
-
-            # assign UUIDs to files
-            for f in files:
-                path = Path(f"{current_root}/{f}".removeprefix("./"))
-                self.add_leaf(path)
 
     def _apply_tree_hooks(self) -> None:
         """Run all tree hooks, passing them the entire tree structure to modify."""
@@ -576,6 +504,7 @@ class TreeSpan:
         self.build_directory.mkdir()
         for directory in self.directories_in_build:
             (self.build_directory / directory).mkdir()
+        (self.build_directory / "static").mkdir()
 
     def _get_static_paths(
         self, static_directory: Path
@@ -668,3 +597,87 @@ def make_nested_filetree(
         nested_dict_set(tree, keys, None, {})
 
     return tree
+
+
+def walk_directory_tree(
+    root_directory: Path, ignore_lists: dict[str, list[str]] | None
+) -> tuple[list[Path], list[Path]]:
+    """Find all files/directories in the root that Cambium cares about."""
+    logger.debug("Discovering files to process")
+
+    directories_in_build, leaf_paths = [], []
+    if ignore_lists is None:
+        ignore_lists = {"paths": [], "names": [], "globs": [], "extensions": []}
+
+    for current_root, directories, files in os.walk(root_directory, topdown=True):
+        # current_root: string starting w ./ (except on first loop, where it's ".")
+        # directories: list of strings, not ending with /
+        # files: list of strings
+
+        # handle root_directory not being cwd
+        current_root = current_root.replace(str(root_directory), ".")
+
+        if (current_root == ".") and ("static" in directories):
+            logger.debug("Ignoring top level directory `static`")
+            directories.remove("static")
+
+        # filter by absolute path
+        for absolute_ignore in ignore_lists["paths"]:
+            matcher = f".{absolute_ignore}"  # add the leading dot
+            remove_directories = [
+                d for d in directories if f"{current_root}/{d}" == matcher
+            ]
+            remove_files = [f for f in files if f"{current_root}/{f}" == matcher]
+            for d in remove_directories:
+                directories.remove(d)
+                logger.debug(f"Ignoring directory '{d}', removed by path")
+            for f in remove_files:
+                files.remove(f)
+                logger.debug(f"Ignoring file '{f}', removed by path")
+
+        # filter by name
+        for name in ignore_lists["names"]:
+            if name in directories:
+                directories.remove(name)
+                logger.debug(f"Ignoring directory '{d}', removed by name")
+            if name in files:
+                files.remove(name)
+                logger.debug(f"Ignoring file '{f}', removed by name")
+
+        # filter by glob
+        for pattern in ignore_lists["globs"]:
+            remove_directories = [
+                d
+                for d in directories
+                if re.match(pattern, f"{current_root}/{d}".removeprefix("./"))
+            ]
+            remove_files = [
+                f
+                for f in files
+                if re.match(pattern, f"{current_root}/{f}".removeprefix("./"))
+            ]
+            for d in remove_directories:
+                directories.remove(d)
+                logger.debug(f"Ignoring directory '{d}', removed by glob")
+
+            for f in remove_files:
+                files.remove(f)
+                logger.debug(f"Ignoring file '{f}', removed by glob")
+
+        # filter files by ext
+        for extension in ignore_lists["extensions"]:
+            remove_files = [f for f in files if f.endswith(f".{extension}")]
+            for f in remove_files:
+                files.remove(f)
+                logger.debug(f"Ignoring file '{f}', removed by extension")
+
+        # save dirs to list
+        for d in directories:
+            directories_in_build.append(Path(f"{current_root}/{d}".removeprefix("./")))
+
+        # assign UUIDs to files
+        for f in files:
+            path = Path(f"{current_root}/{f}".removeprefix("./"))
+            leaf_paths.append(path)
+
+    return directories_in_build, leaf_paths

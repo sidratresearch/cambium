@@ -32,9 +32,8 @@ class EnsureIndexPages(Stage):
             if len(casefolded) < len(self.config.useable_as_index):
                 self.config.useable_as_index = casefolded
 
-        self.directories_added = []
-
     def tree_hook(self, tree: TreeSpan) -> None:
+        self.directories_added = []
         for directory in [Path(), *tree.directories_in_build]:
             self._get_index_for_dir(directory, tree)
         if len(self.directories_added) > 0:

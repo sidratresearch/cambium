@@ -23,23 +23,47 @@ builtin_paths_to_ignore: list[str] = [
     "/.cambium",
     ".*",
     "__pycache__",
+    "*.*~",  # tempfiles made while saving may end in ~
 ]
 """Built-in Cambium Directories to Ignore"""
 
 
 current_config: Optional[WorkingConfiguration] = None
+"""Globally importable reference to the mutable runtime configuration."""
 
 
-class CambiumConfiguration(BaseModel):
-    """Cambium Configuration Object.
+root_directory_type = Optional[str]
+build_directory_type = Optional[str]
 
-    Contains all input cambium configuration parameters
+
+class CLIConfiguration(BaseModel):
+    """Validation for config options that can be set on the command line.
+
+    This class does no processing, only validates types which are later used
+    by WorkingConfiguration.
     """
 
-    root_directory: Optional[str] = "."
+    root_directory: build_directory_type = None
+    build_directory: build_directory_type = None
+    dev_server: bool
+    dev_server_port: int
+    dev_server_interval: float
+
+
+class FileConfiguration(BaseModel):
+    """Cambium Configuration Object.
+
+    Contains all input cambium configuration parameters that can be set in
+    the config file.
+
+    This class does no processing, only validates types which are later used
+    by WorkingConfiguration.
+    """
+
+    root_directory: root_directory_type = "."
     "Root Directory of Content"
 
-    build_directory: Optional[str] = "_build/"
+    build_directory: build_directory_type = "_build/"
     "Build Directory of Output"
 
     paths_to_ignore: Optional[list[str]] = []
@@ -79,7 +103,14 @@ class CambiumConfiguration(BaseModel):
     """Builtin Theme to Use"""
 
 
-default_config = CambiumConfiguration()
+class MergedConfiguration(FileConfiguration, CLIConfiguration):
+    """Merging of CLI and file config options.
+
+    Used to provide typing to this combination of options for when they are
+    passed to the WorkingConfiguration.
+    """
+
+    pass
 
 
 class WorkingConfiguration:
@@ -96,19 +127,18 @@ class WorkingConfiguration:
         "names": [],
     }
 
-    input_config: Optional[CambiumConfiguration] = None
+    input_config: Optional[FileConfiguration] = None
 
-    def __init__(self, input_config: Optional[CambiumConfiguration] = None) -> None:
+    def __init__(self, input_config: Optional[MergedConfiguration] = None) -> None:
 
         # Setting Temporary Directory
-        self.tmp_dir_obj = tempfile.TemporaryDirectory(prefix="cambium_")
-        self.tmp_dir = Path(self.tmp_dir_obj.name)
+        self.setup_tmp_dir()
 
         # Setting Input Configuration if set, otherwise use default:
         if input_config is not None:
             self.input_config = input_config
         else:
-            self.input_config = default_config
+            self.input_config = FileConfiguration()
 
         # Creating Path object for root directory and testing
         self.root_dir = Path(self.input_config.root_directory)
@@ -133,17 +163,23 @@ class WorkingConfiguration:
             self.stages, self.input_config.stage_config, logger
         )
 
+        # Save lists of theme directories
+        cambium_themes_folder = Path(__file__).parent / "themes"
+        self.ordered_theme_directories = [
+            self.root_dir / ".cambium/theme",
+            cambium_themes_folder / self.input_config.theme,
+        ]
+        if self.input_config.dev_server:
+            self.ordered_theme_directories.append(cambium_themes_folder / "dev-server")
+        self.stage_theme_directories = {"static": [], "templates": []}
+
         # Exposing Simple Parameters (that require no additional processing)
         self.max_leaves = self.input_config.max_leaves
         self.logging_level = self.input_config.logging_level
         self.site_name = self.input_config.site_name
-
-        self.ordered_theme_directories = [
-            self.root_dir / ".cambium/theme",
-            Path(__file__).parent / f"themes/{self.input_config.theme}",
-        ]
-
-        self.stage_theme_directories = {"static": [], "templates": []}
+        self.dev_server = self.input_config.dev_server
+        self.dev_server_port = self.input_config.dev_server_port
+        self.dev_server_interval = self.input_config.dev_server_interval
 
     def __del__(self) -> None:
         """Clean up All Lingering Directories."""
@@ -152,6 +188,11 @@ class WorkingConfiguration:
 
     def __repr__(self) -> str:
         return f"""Cambium Working Configuration:\nTemporary Directory Path: {self.tmp_dir}"""
+
+    def setup_tmp_dir(self) -> None:
+        """Create and save references to a temporary directory."""
+        self.tmp_dir_obj = tempfile.TemporaryDirectory(prefix="cambium_")
+        self.tmp_dir = Path(self.tmp_dir_obj.name)
 
     def populate_ignore_lists(self) -> None:
         """Combining ignore lists and putting in appropriate dictionary."""
@@ -194,11 +235,15 @@ def initialize_configuration(
     cli_dict : dict[str,Any]
         Dictionary of values passed on the command line
     """
-    # overwrite YAML config values with those passed on the command line
-    merged_dict = {**yaml_dict, **{k: v for k, v in cli_dict.items() if v is not None}}
+    validated_yaml = FileConfiguration(**yaml_dict)
+    validated_cli = CLIConfiguration(**cli_dict)
 
-    # validate all config values together
-    merged_config = CambiumConfiguration(**merged_dict)
+    # combine the file and cli options, where CLI options are overrides
+    merged_validated = {
+        **validated_yaml.model_dump(),
+        **{k: v for k, v in validated_cli.model_dump().items() if v is not None},
+    }
+    merged_config = MergedConfiguration(**merged_validated)
 
     global current_config
     current_config = WorkingConfiguration(merged_config)
@@ -268,7 +313,7 @@ def translate_yaml_configuration(config_path: Path) -> dict[str, Any]:
         raise ValueError(errormsg)
 
     # Extracting required dictionary parameters from the YAML
-    configuration_parameters = CambiumConfiguration.model_fields.keys()
+    configuration_parameters = FileConfiguration.model_fields.keys()
 
     input_dict = {}
 
@@ -296,7 +341,7 @@ def dump_default_config() -> None:
     """Print the default configuration in YAML format."""
     # TODO: how are we going to communicate the builtin_paths_to_ignore to the user?
 
-    config_yaml = yaml.safe_dump(default_config.model_dump())
+    config_yaml = yaml.safe_dump(FileConfiguration().model_dump())
     header = "\n".join(
         [
             f"# Cambium {__version__} default configuration",
