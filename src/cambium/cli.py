@@ -64,6 +64,9 @@ def main(
             rich_help_panel="Configuration",
         ),
     ] = None,
+    no_ascii: Annotated[
+        bool, typer.Option("--no-ascii", help="Hide the Cambium ascii art")
+    ] = False,
     dev_server: Annotated[
         bool,
         typer.Option(
@@ -102,6 +105,7 @@ def main(
         typer.Option(
             "--dump-default-config",
             help="Dump default configuration info to stdout",
+            rich_help_panel="Configuration",
         ),
     ] = False,
 ) -> None:
@@ -115,7 +119,8 @@ def main(
         return
 
     # Common setup tasks
-    make_ascii_art()
+    if not no_ascii:
+        make_ascii_art()
     cli_config = {
         "build_directory": build_directory,
         "root_directory": root_directory,
