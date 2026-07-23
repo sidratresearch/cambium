@@ -146,8 +146,11 @@ class WorkingConfiguration:
             self.root_dir.exists()
         ), f"The specified root directory, {self.root_dir} does not exist"
 
-        # Creating Path object for build directory
+        # Creating Path object for build directory - will always be absolute
         self.build_dir = Path(self.input_config.build_directory)
+        if not self.build_dir.is_absolute():
+            resolved_root = self.root_dir.resolve()
+            self.build_dir = resolved_root / self.build_dir
 
         # Populating Ignore Lists
         self.populate_ignore_lists()
@@ -197,7 +200,18 @@ class WorkingConfiguration:
     def populate_ignore_lists(self) -> None:
         """Combining ignore lists and putting in appropriate dictionary."""
         # Combining Defaults and Input Configuration
-        tmp_ignore_set: set[str] = {"/" + str(self.build_dir)}
+        tmp_ignore_set: set[str] = set()
+        try:
+            # if the build directory is inside the root directory (i.e. if
+            # that relative_to works), then we need to ignore it when walking
+            # the filetree, and ignore it with the path that would be seen
+            # during the walk (which is the relative path)
+            # prefix with / to have this get treated as a path ignore not a name ignore
+            tmp_ignore_set.add(
+                f"/{self.build_dir.relative_to(self.root_dir.resolve())}"
+            )
+        except ValueError:
+            pass
 
         global builtin_paths_to_ignore
 

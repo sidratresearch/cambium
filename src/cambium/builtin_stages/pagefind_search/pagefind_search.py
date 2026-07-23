@@ -107,6 +107,9 @@ class PagefindSearch(Stage):
         """Read all HTML pages into the Pagefind index."""
         logger.info("Building Pagefind index")
 
+        if not self.abs_pagefind_directory.exists():
+            self.abs_pagefind_directory.mkdir(parents=True)
+
         async with PagefindIndex(config=self.pagefind_config) as index:
             for uuid in html_leaves:
                 final_path = tree.leaves["final_path"][uuid]
@@ -118,9 +121,7 @@ class PagefindSearch(Stage):
 
             pf_dir_print = (
                 tree.build_directory
-                / self.abs_pagefind_directory.relative_to(
-                    tree.build_directory.absolute()
-                )
+                / self.abs_pagefind_directory.relative_to(tree.build_directory)
             )
             logger.info(f"Writing pagefind files to {pf_dir_print}")
 
