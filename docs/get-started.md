@@ -25,7 +25,7 @@ You can preview your site by running `python -m http.server -d _build` to start 
 Cambium reads the configuration file at `.cambium/config.yaml` if it exists. You can create this file with the default options by running
 
 ```bash
-mkdir .cambium && cambium --dump-default-config > .cambium/config.yaml
+mkdir .cambium && cambium --dump-default-config >.cambium/config.yaml
 ```
 
 ## Custom styling
@@ -36,6 +36,18 @@ If `static/css/custom.css` exists, this is what will be used. If not, and `.camb
 
 This is done to provide a location for CSS custom to be loaded from without needing to override the Jinja template, and to ensure that said location always exists, even as an empty file, to avoid 404s.
 
+To assist in page-specific styling, Cambium applies a unique `id` to the `html` tag on each page.
+
 ## Using the development server
 
+Running `cambium --dev` starts Cambium in development server mode. In this mode, Cambium opens an http server in the background, allowing you to view your site in a browser (by default the URL is [http://localhost:8000](http://localhost:8000)), and watches your files for changes, re-building the site on each change.
+
+The port used for the web server, as well as the frequency Cambium checks for file changes are both configurable.
+
+Changes to the configuration file are _not_ applied, and in fact if the configuration file changes, Cambium will exit the dev server to make this clear.
+
 ## Advanced customization with Jinja
+
+Cambium uses Jinja templates to organize the rendering of Markdown content into HTML. If you aren't happy with using a pre-built theme, you can override Jinja templates by creating your own in `.cambium/theme/templates`.
+
+We recommend copying an existing template and making modifications rather than starting entirely from scratch. When modifying, be careful to retain elements such as the development server block in `base.html.jinja`.

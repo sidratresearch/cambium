@@ -32,7 +32,7 @@ MINIMAL_CLI_CONFIG = {
     ],
 )
 def test_bad_config_file(tmp_path: Path, filename: str, contents: str) -> None:
-
+    """Test config file parsing."""
     config_file = tmp_path / filename
     config_file.write_text(contents)
     config_dict = config.translate_yaml_configuration(config_file)
@@ -40,6 +40,7 @@ def test_bad_config_file(tmp_path: Path, filename: str, contents: str) -> None:
 
 
 def test_merge_config(tmp_path: Path) -> None:
+    """Tests regarding CLI configuration precedence."""
     yaml_config = {"root_directory": "./unused"}
     cli_config = {"root_directory": str(tmp_path), "build_directory": None}
 
