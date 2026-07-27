@@ -149,8 +149,7 @@ class WorkingConfiguration:
         # Creating Path object for build directory - will always be absolute
         self.build_dir = Path(self.input_config.build_directory)
         if not self.build_dir.is_absolute():
-            resolved_root = self.root_dir.resolve()
-            self.build_dir = resolved_root / self.build_dir
+            self.build_dir = (self.root_dir / self.build_dir).resolve()
         assert (
             self.root_dir.resolve() != self.build_dir
         ), f"Root and build directories cannot be the same"
