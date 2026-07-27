@@ -132,6 +132,6 @@ def get_watched_files(tree: TreeSpan) -> str:
     ]:
         if other_dir.exists():
             _, static_paths = walk_directory_tree(other_dir, None)
-            paths = paths + static_paths
+            paths = paths + [other_dir / p for p in static_paths]
 
     return str({path: path.stat().st_mtime for path in sorted(paths)})
