@@ -42,7 +42,7 @@ dependencies = [
 ]
 urls.Homepage = "https://github.com/sidratresearch/cambium"
 urls.Issues = "https://github.com/sidratresearch/cambium/issues"
-scripts.cambium = "cambium.cli:app"
+scripts.cambium = "cambium.cli.cli:app"
 
 [dependency-groups]
 dev = [
