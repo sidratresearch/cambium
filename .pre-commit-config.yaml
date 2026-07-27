@@ -29,3 +29,14 @@ repos:
     rev: "v2.21.2"
     hooks:
       - id: pyproject-fmt
+
+  # run tests
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: pytest
+        types: [python]
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
