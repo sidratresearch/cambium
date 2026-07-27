@@ -151,6 +151,9 @@ class WorkingConfiguration:
         if not self.build_dir.is_absolute():
             resolved_root = self.root_dir.resolve()
             self.build_dir = resolved_root / self.build_dir
+        assert (
+            self.root_dir.resolve() != self.build_dir
+        ), f"Root and build directories cannot be the same"
 
         # Populating Ignore Lists
         self.populate_ignore_lists()
