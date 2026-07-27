@@ -17,7 +17,9 @@ from ..tree import TreeSpan, walk_directory_tree
 logger = logging.getLogger(__name__)
 
 
-def run_dev_server(tree: TreeSpan, build: Callable[[TreeSpan], None]) -> None:
+def run_dev_server(
+    tree: TreeSpan, build: Callable[[TreeSpan], None], config_path: Path | None
+) -> None:
     """Run Cambium in development server mode.
 
     Sets up a list of files to watch, and re-runs Cambium whenever any of
@@ -49,7 +51,13 @@ def run_dev_server(tree: TreeSpan, build: Callable[[TreeSpan], None]) -> None:
                 check_server_process(server_process)
                 logger.debug("Checking for file changes.")
                 last_checked = current_time
-                files_changed, watched_files = check_file_changes(watched_files, tree)
+                files_changed, watched_files, config_changed = check_file_changes(
+                    watched_files, tree, config_path
+                )
+                if config_changed:
+                    logger.warning("Config file changed, closing dev server")
+                    raise typer.Exit()
+
                 if files_changed:
                     tree.config.tmp_dir_obj.cleanup()  # clean up old tree
                     tree = TreeSpan(config.current_config)  # make new tree
@@ -107,13 +115,25 @@ def check_server_process(server_process: multiprocessing.Process) -> None:
 # --------------------------------------------------------------------#
 
 
-def check_file_changes(watched_files: str, tree: TreeSpan) -> tuple[bool, str]:
+def check_file_changes(
+    watched_files: str, tree: TreeSpan, config_path: Path | None
+) -> tuple[bool, str, bool]:
     """Check if any files have changed, compared to `watched_files`."""
     new_file_status = get_watched_files(tree)
 
-    files_changed = watched_files != new_file_status
+    files_changed = str(watched_files) != str(new_file_status)
 
-    return files_changed, new_file_status
+    config_path = (
+        config_path
+        if config_path is not None
+        else tree.root_directory / config.config_default_path
+    )
+    config_previous = watched_files.get(config_path, None)
+    config_current = new_file_status.get(config_path, None)
+
+    config_changed = config_previous != config_current
+
+    return files_changed, new_file_status, config_changed
 
 
 def get_watched_files(tree: TreeSpan) -> str:
@@ -134,4 +154,4 @@ def get_watched_files(tree: TreeSpan) -> str:
             _, static_paths = walk_directory_tree(other_dir, None)
             paths = paths + [other_dir / p for p in static_paths]
 
-    return str({path: path.stat().st_mtime for path in sorted(paths)})
+    return {path: path.stat().st_mtime for path in sorted(paths)}

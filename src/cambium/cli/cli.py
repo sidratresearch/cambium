@@ -141,7 +141,7 @@ def main(
         return
 
     if dev_server:
-        run_dev_server(treespan, build)
+        run_dev_server(treespan, build, config_path)
         return
 
     build(treespan)

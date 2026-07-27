@@ -18,6 +18,8 @@ from .stage import populating_stage_dict
 # So by default, only warnings and errors are shown
 logger = logging.getLogger(__name__)
 
+config_default_path = Path(".cambium/config.yaml")
+"""Default configuration path (relative to cwd/root)."""
 
 builtin_paths_to_ignore: list[str] = [
     "/.cambium",
@@ -281,8 +283,6 @@ def read_input_configuration(
         If a config file was found, return a dictionary of config values, otherwise,
         returns an empty dictionary
     """
-    config_default_path = Path(".cambium/config.yaml")
-
     # Attempting to read CLI provided config
     if cli_path_loc is not None:
         cli_path = Path(cli_path_loc)
