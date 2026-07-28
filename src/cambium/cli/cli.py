@@ -32,7 +32,8 @@ def main(
         bool,
         typer.Option(
             "--dry-run",
-            help="Don't process or write output, only determine and output the file structure",
+            help="""Don't process or write output, only determine and output
+            the file structure""",
         ),
     ] = False,
     config_path: Annotated[
@@ -42,6 +43,10 @@ def main(
             "-c",
             help="Location of Configuration File",
             rich_help_panel="Configuration",
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
         ),
     ] = None,
     build_directory: Annotated[
