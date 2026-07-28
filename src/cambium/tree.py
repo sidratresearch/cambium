@@ -281,6 +281,7 @@ class TreeSpan:
         return uuids[0]
 
     def leaf_final_paths(self) -> list[Path]:
+        """Up-to-date listing of the final paths for all leaves."""
         return [self.leaves["final_path"][uuid] for uuid in self.leaves["uuids"]]
 
     # ----------------------------------------------------------------#

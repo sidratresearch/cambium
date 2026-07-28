@@ -27,7 +27,7 @@ _Tree hooks should be as lightweight as possible_. Tree hooks may rely on eachot
 ### Managing Paths
 
 If stage edits the path of a leaf, it likely needs to do that twice: once in the `tree_hook` to set `final_path`, and once in another hook when the action is being taken, and data is written to an updated `latest_path`.
-While a stage can safely assume that the absolute path provided by `TreeSpan.abs_write_path(leaf_uuid)` always contains the most recent copy of the data, assumptions _cannot_ safely be made regarding the actual path returned because other stages may have modified `latest_path`.
+While a stage can safely assume that the absolute path provided by `TreeSpan.abs_write_path(leaf_uuid)` always contains the most recent copy of the data, assumptions _cannot_ safely be made regarding what the actual path returned will be, because other stages may have modified `latest_path`.
 
 So, when setting `latest_path` in a pre/post/transform hook, a stage needs to apply the change to the current `latest_path`, _not_ to `initial_path` since other changes may have happened causing `latest_path` to not look like `initial_path`.
 
