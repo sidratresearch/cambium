@@ -11,6 +11,7 @@ MINIMAL_CLI_CONFIG = {
     "dev_server": False,
     "dev_server_port": 8000,
     "dev_server_interval": 0.5,
+    "dev_server_directory": ".cambium-dev/",
 }
 """Default parameters for CLI configuration"""
 

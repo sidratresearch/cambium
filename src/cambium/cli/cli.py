@@ -41,7 +41,7 @@ def main(
         typer.Option(
             "--config",
             "-c",
-            help="Location of Configuration File",
+            help="Location of configuration file",
             rich_help_panel="Configuration",
             exists=True,
             file_okay=True,
@@ -93,6 +93,14 @@ def main(
             rich_help_panel="Development Server",
         ),
     ] = 0.5,
+    dev_directory: Annotated[
+        str,
+        typer.Option(
+            "--dev-directory",
+            help="Location to build development-mode site into",
+            rich_help_panel="Development Server",
+        ),
+    ] = ".cambium-dev/",
     # subcommands
     version_option: Annotated[
         bool,
@@ -126,6 +134,7 @@ def main(
         "dev_server": dev_server,
         "dev_server_port": dev_server_port,
         "dev_server_interval": dev_server_interval,
+        "dev_server_directory": dev_directory,
     }
     try:
         setup_config(config_path, cli_config, verbosity_boost)

@@ -4,6 +4,7 @@ import functools
 import http.server
 import logging
 import multiprocessing
+import shutil
 import sys
 import time
 from collections.abc import Callable
@@ -28,8 +29,7 @@ def run_dev_server(
     any templated markdown files.
     """
     logger.info("Running Cambium in dev server mode, use CTRL-c to quit")
-    # TODO: consider tracking static files
-    # TODO: run the dev server off of a different folder (not _build)
+    # TODO: consider tracking changes in static files
 
     server_process = start_http_server(
         tree.config.dev_server_port, tree.build_directory
@@ -64,7 +64,9 @@ def run_dev_server(
                     logger.info("Re-running Cambium")
                     build(tree)
     except KeyboardInterrupt:
-        logger.info("Closing dev server")
+        # TODO: how does this behave for other exceptions?
+        logger.info("Closing dev server and deleting development files")
+        shutil.rmtree(tree.build_directory)
         server_process.terminate()  # prints "Process Process-1" to sys.stderr
 
 

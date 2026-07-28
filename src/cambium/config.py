@@ -50,6 +50,7 @@ class CLIConfiguration(BaseModel):
     dev_server: bool
     dev_server_port: int
     dev_server_interval: float
+    dev_server_directory: str
 
 
 class FileConfiguration(BaseModel):
@@ -149,15 +150,18 @@ class WorkingConfiguration:
         ), f"The specified root directory, {self.root_dir} does not exist"
 
         # Creating Path object for build directory - will always be absolute
-        self.build_dir = Path(self.input_config.build_directory)
-        if not self.build_dir.is_absolute():
-            self.build_dir = (self.root_dir / self.build_dir).resolve()
-        assert (
-            self.root_dir.resolve() != self.build_dir
-        ), f"Root and build directories cannot be the same"
+        # Determine the build directory which will always be ignored (on
+        # build or on dev). This means that the build directory needs to be
+        # valid, in order for the dev serve to run
+        build_to_ignore = self.check_output_directory(self.input_config.build_directory)
+        self.build_dir = build_to_ignore
+        if self.input_config.dev_server:
+            self.build_dir = self.check_output_directory(
+                self.input_config.dev_server_directory
+            )
 
         # Populating Ignore Lists
-        self.populate_ignore_lists()
+        self.populate_ignore_lists(build_to_ignore)
 
         # Populate lists of protected paths
         self.protected_build_paths = sort_user_paths(
@@ -201,7 +205,7 @@ class WorkingConfiguration:
         self.tmp_dir_obj = tempfile.TemporaryDirectory(prefix="cambium_")
         self.tmp_dir = Path(self.tmp_dir_obj.name)
 
-    def populate_ignore_lists(self) -> None:
+    def populate_ignore_lists(self, build_to_ignore: Path) -> None:
         """Combining ignore lists and putting in appropriate dictionary."""
         # Combining Defaults and Input Configuration
         tmp_ignore_set: set[str] = set()
@@ -212,7 +216,7 @@ class WorkingConfiguration:
             # during the walk (which is the relative path)
             # prefix with / to have this get treated as a path ignore not a name ignore
             tmp_ignore_set.add(
-                f"/{self.build_dir.relative_to(self.root_dir.resolve())}"
+                f"/{build_to_ignore.relative_to(self.root_dir.resolve())}"
             )
         except ValueError:
             pass
@@ -239,6 +243,16 @@ class WorkingConfiguration:
         for i, ext_str in enumerate(self.ignore_lists["extensions"]):
             if ext_str.startswith("."):
                 self.ignore_lists["extensions"][i] = ext_str[1:]
+
+    def check_output_directory(self, output_directory: str) -> Path:
+        """Verify that the output directory (build or dev) isn't the same as root."""
+        outdir = Path(output_directory)
+        if not outdir.is_absolute():
+            outdir = (self.root_dir / outdir).resolve()
+        assert (
+            outdir != self.root_dir.resolve()
+        ), "Output directory cannot be the same as the root directory"
+        return outdir
 
 
 def initialize_configuration(

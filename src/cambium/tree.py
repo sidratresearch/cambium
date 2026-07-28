@@ -520,7 +520,6 @@ class TreeSpan:
         - sub directories in root/.cambium
         - directories from the installed cambium package
         """
-        # TODO: check how this returned relative path business handles if build is not a subdir of root, that might break a lot of stuff actually
         if not static_directory.is_absolute():
             logger.error(
                 f"Only use absolute paths when listing static files. Recieved relative path {static_directory}."
