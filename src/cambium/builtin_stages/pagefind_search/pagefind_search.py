@@ -101,6 +101,7 @@ class PagefindSearch(Stage):
             logger.warning("No HTML files found for Pagefind to index.")
             return
 
+        self.abs_pagefind_directory.mkdir(parents=True)
         asyncio.run(self._post_tree_hook(tree, html_leaves))
 
     async def _post_tree_hook(self, tree: TreeSpan, html_leaves: list[str]) -> None:

@@ -256,9 +256,12 @@ class TreeSpan:
         return path
 
     def abs_static_stage_path(self, stage_name: str) -> Path:
-        """Get the absolute path to a stage-specific directory in build/static."""
+        """Get the absolute path to a stage-specific directory in build/static.
+
+        This directory is *not* guaranteed to exist, and should be created
+        *by the requesting stage* at some point after the tree hooks.
+        """
         path = self.build_directory / "static" / "_cambium" / stage_name
-        path.mkdir(parents=True, exist_ok=True)
         return path.absolute()
 
     def get_leaf_from_path(self, path: Path, path_type: Literal["final_path"]) -> str:
