@@ -4,7 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from cambium import cli, config
+from cambium import config
+from cambium.cli import cli
 
 MINIMAL_CLI_CONFIG = {
     "dev_server": False,
