@@ -10,7 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+dist
 downloads/
 eggs/
 .eggs/
@@ -225,4 +225,4 @@ __marimo__/
 
 # Temporary Files and Local Builds
 tmp/
-_build/
+_build
