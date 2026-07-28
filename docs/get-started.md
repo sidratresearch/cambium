@@ -14,6 +14,10 @@ pip install cambium
 
 You can preview your site by running `python -m http.server -d _build` to start a web server from the `_build` directory, and visiting the link that Python outputs. If you see a blank page, that may mean that Cambium has created an empty `index.html` file in `_build`. If Cambium finds a pre-existing `index.md`, `readme.md` or `README.md`, it will use that as the homepage, but otherwise it will create a blank one. You can always list out the files in the build directory to see what HTML pages have been created and visit them directly.
 
+## Licensing
+
+The Cambium source is provided under a permissive MIT License. However, Cambium bundles additional files and content distributed under other licenses and copyrights. For example, the default theme uses fonts and icons licensed under the SIL Open Font License and Font Awesome Pro Commercial License. Where this is the case, these licenses and attendant copyright information are packaged alongside the relevant assets.
+
 ## How Cambium works
 
 - there are stages
