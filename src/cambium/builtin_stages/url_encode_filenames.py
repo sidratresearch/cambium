@@ -45,7 +45,7 @@ class URLEncodeFilenames(Stage):
             if tree.leaves["initial_path"][leaf_uuid].suffix not in (".md", ".html"):
                 continue
 
-            tree.leaves["hooks"][leaf_uuid]["pre_hooks"].append(self.__class__.__name__)
+            self._register_hook(leaf_uuid, tree, "pre_hooks")
 
     def _url_encode_path(self, path: Path) -> Path:
         return Path(slugify(str(path), **slugify_options))

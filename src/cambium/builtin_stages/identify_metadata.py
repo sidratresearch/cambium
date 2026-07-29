@@ -54,7 +54,7 @@ class IdentifyMetadata(Stage):
         ):
             return
 
-        tree.leaves["hooks"][leaf_uuid]["pre_hooks"].append(self.__class__.__name__)
+        self._register_hook(leaf_uuid, tree, "pre_hooks")
 
     def _extract_metadata(self, leaf_uuid: str, tree: TreeSpan) -> None:
         metadata_obj = tree.leaves["metadata"][leaf_uuid]

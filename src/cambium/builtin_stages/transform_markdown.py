@@ -45,8 +45,8 @@ class TransformMarkdown(Stage):
             return
 
         tree.update_leaf_path(leaf_uuid, "final", self._update_path)
-        tree.leaves["hooks"][leaf_uuid]["pre_hooks"].append(TransformMarkdown.__name__)
-        tree.leaves["hooks"][leaf_uuid]["transforms"].append(TransformMarkdown.__name__)
+        self._register_hook(leaf_uuid, tree, "pre_hooks")
+        self._register_hook(leaf_uuid, tree, "transforms")
         self.changed_links.append(tree.leaves["initial_path"][leaf_uuid])
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:

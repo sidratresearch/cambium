@@ -62,7 +62,7 @@ class TemplateMarkdown(Stage):
         if tree.leaves["initial_path"][leaf_uuid].suffix.lower() != ".md":
             return
 
-        tree.leaves["hooks"][leaf_uuid]["post_hooks"].append(self.__class__.__name__)
+        self._register_hook(leaf_uuid, tree, "post_hooks")
 
     def _populate_jinja_template_paths(self, tree: TreeSpan) -> None:
         for tmp_theme_path in tree.config.ordered_theme_directories:

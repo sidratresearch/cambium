@@ -56,8 +56,8 @@ class PagefindSearch(Stage):
 
         for uuid in tree.leaves["uuids"]:
             if tree.leaves["final_path"][uuid].suffix == ".html":
-                tree.leaves["hooks"][uuid]["pre_hooks"].append(self.__class__.__name__)
-                tree.leaves["hooks"][uuid]["post_hooks"].append(self.__class__.__name__)
+                self._register_hook(uuid, tree, "pre_hooks")
+                self._register_hook(uuid, tree, "post_hooks")
 
         self.abs_pagefind_directory = tree.abs_static_stage_path(
             self.__class__.__name__

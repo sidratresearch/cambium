@@ -56,9 +56,7 @@ class CheckLinks(Stage):
     def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
         final_path = tree.leaves["final_path"][leaf_uuid]
         if final_path.suffix in (".md", ".html"):
-            tree.leaves["hooks"][leaf_uuid]["post_hooks"].append(
-                self.__class__.__name__
-            )
+            self._register_hook(leaf_uuid, tree, "post_hooks")
 
     def post_hook_initialize(self, tree: TreeSpan) -> None:
         """Traverse all HTML files to compile lists of source/destination links.

@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ValidationError
 
@@ -42,6 +42,15 @@ class Stage:
         """Other stages that must also be present, unordered"""
 
     # Private Utility Functions
+
+    def _register_hook(
+        self,
+        leaf_uuid: str,
+        tree: TreeSpan,
+        hook_type: Literal["pre_hooks", "post_hooks", "transforms"],
+    ) -> None:
+        """Add this stage to the list of hooks for a given leaf."""
+        tree.leaves["hooks"][leaf_uuid][hook_type].append(self.__class__.__name__)
 
     def _set_leaf_metadata(
         self, metadata_name: str, metadata_value: Any, leaf_uuid: str, tree: TreeSpan
