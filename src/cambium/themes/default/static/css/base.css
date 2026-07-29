@@ -29,6 +29,10 @@ body {
   flex-direction: column;
 }
 
+main {
+  flex: 1;
+}
+
 h1 {
   font-weight: 300;
   color: var(--default-accent-color);
@@ -102,15 +106,11 @@ img {
 
 /* Containers */
 
-div.container {
+.container {
   max-width: min(1200px, 100vw) !important;
   padding: 1.5em 2em 1.5em;
   width: 100%;
   margin: auto;
-}
-
-div.main {
-  flex: 1;
 }
 
 .cambium-img-holder {
@@ -131,50 +131,50 @@ div.main {
 
 header {
   background-color: #444444;
-  color: #f9f9f9;
-  font-weight: 700;
-  font-size: 1rem;
   margin-bottom: 0.25rem;
+}
 
-  div.header-bar {
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
+div.header-bar {
+  /* Used in both header and div.menu-panel */
+  font-weight: 700;
+  color: #f9f9f9;
+  font-size: 1rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  a {
+    text-decoration: none;
+    color: #f9f9f9;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+
+  > div {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    a {
-      text-decoration: none;
-      color: #f9f9f9;
-      margin-top: auto;
-      margin-bottom: auto;
-    }
+  }
 
-    div.header-left,
-    div.header-centre,
-    div.header-right {
-      display: flex;
-    }
+  div.header-left {
+    flex: 0 1 15%;
+    justify-content: start;
 
-    div.header-left {
-      flex: 0 1 15%;
-      justify-content: start;
-
-      .site-title {
-        text-transform: uppercase;
-        font-size: 1.2rem;
-      }
+    .site-title {
+      text-transform: uppercase;
+      font-size: 1.2rem;
     }
+  }
 
-    div.header-centre {
-      flex: 1 0 auto;
-      justify-content: center;
-      text-align: center;
-    }
+  div.header-centre {
+    flex: 1 0 auto;
+    justify-content: center;
+    text-align: center;
+  }
 
-    div.header-right {
-      flex: 0 1 15%;
-      justify-content: end;
-    }
+  div.header-right {
+    flex: 0 1 15%;
+    justify-content: end;
   }
 }
 
@@ -220,50 +220,11 @@ div.menu-panel {
   right: 0;
   left: 0;
   top: 0;
-  padding: 0;
-  margin: 0;
 
   background-color: #444444;
   color: #f9f9f9;
 
   transition: all 0.25s;
-
-  div.menu-top-bar {
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-
-    a {
-      text-decoration: none;
-      color: #f9f9f9;
-      margin-top: auto;
-      margin-bottom: auto;
-    }
-
-    div.header-left,
-    div.header-centre,
-    div.header-right {
-      display: flex;
-    }
-
-    div.header-left {
-      flex: 0 1 15%;
-      justify-content: start;
-    }
-
-    div.header-centre {
-      flex: 1 0 auto;
-      justify-content: center;
-      text-align: center;
-    }
-
-    div.header-right {
-      flex: 0 1 15%;
-      justify-content: end;
-    }
-  }
 
   button.menu-button {
     color: #f9f9f9;
@@ -272,11 +233,10 @@ div.menu-panel {
     color: #f9f9f9;
   }
 
-  .menu-items {
-    .container {
-      padding-top: 0;
-      padding-bottom: 0;
-    }
+  nav {
+    min-height: 15vh;
+    padding-top: 0;
+    padding-bottom: 0;
 
     ul {
       display: flex;
@@ -290,26 +250,23 @@ div.menu-panel {
         padding-right: 0.75rem;
         padding-top: 0.75rem;
         padding-bottom: 0.75rem;
+        &:first-child {
+          padding-left: 0;
+        }
+        &:last-child {
+          padding-right: 0;
+        }
 
         a {
           text-decoration: none;
           font-size: 1rem;
           color: white;
           transform: all 0.25s;
+          &:hover {
+            color: var(--default-accent-color);
+            text-decoration: underline;
+          }
         }
-
-        a:hover {
-          text-decoration: underline;
-          color: var(--gjw-mid-blue);
-        }
-      }
-
-      li:first-child {
-        padding-left: 0;
-      }
-
-      li:last-child {
-        padding-right: 0;
       }
     }
   }
@@ -321,14 +278,9 @@ table {
   margin-left: auto;
   margin-right: auto;
   position: relative;
-  /* border-collapse: collapse; */
-  /* border-spacing: 0.75rem 0.2rem; */
 
   th {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-    padding-bottom: 0.5rem;
-    padding-top: 0.5rem;
+    padding: 0.5rem;
     max-width: 20rem;
     vertical-align: bottom;
     border-bottom: 1px solid #bbb;
@@ -339,24 +291,20 @@ table {
     position: sticky;
     top: 0;
     background-color: #f9f9f9;
-  }
 
-  th.ascending::after {
-    content: " \25BE";
-  }
-
-  th.descending::after {
-    content: " \25B4";
+    &.ascending::after {
+      content: " \25BE";
+    }
+    &.descending::after {
+      content: " \25B4";
+    }
   }
 
   td {
     text-align: center;
     font-size: 0.9rem;
     line-height: 1.05;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+    padding: 0.5rem;
     max-width: 20rem;
     vertical-align: top;
 
@@ -406,7 +354,7 @@ table {
     height: 100vh;
     max-height: unset;
 
-    .menu-items {
+    nav {
       ul {
         flex-direction: column;
 
@@ -415,15 +363,14 @@ table {
           border-bottom: solid 1pt var(--dark-grey);
           padding-left: 1.5rem;
           padding-right: 1.5rem;
-        }
 
-        li:first-child {
-          padding-left: 0.75rem;
-        }
-
-        li:last-child {
-          padding-right: 0.75rem;
-          border-bottom: none;
+          &:first-child {
+            padding-left: 0.75rem;
+          }
+          &:last-child {
+            padding-right: 0.75rem;
+            border-bottom: none;
+          }
         }
       }
     }
@@ -432,7 +379,7 @@ table {
 
 /* Utility Styling */
 
-div.hidden {
+.hidden {
   visibility: hidden;
   opacity: 0;
 }

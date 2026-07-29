@@ -2,7 +2,12 @@
 
 <div class="menu-panel hidden" id="menu-panel">
   <div class="menu-top-bar header-bar container">
-    <div class="header-left"></div>
+    <!-- Re-create the header, but with a different button -->
+    <div class="header-left">
+      <a href="{{ relative_path_modifier }}index.html" class="header-link site-title">
+        {{ site_name }}
+      </a>
+    </div>
     <div class="header-centre">
       {% if metadata.stage_metadata.PagefindSearch is defined %}
         {% include metadata.stage_metadata.PagefindSearch.searchbar_component %}
@@ -23,7 +28,5 @@
       </button>
     </div>
   </div>
-  <nav class="menu-items">
-    <div class="container">{{ menu }}</div>
-  </nav>
+  <nav class="menu-items container">{{ menu }}</nav>
 </div>

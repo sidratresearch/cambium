@@ -1,3 +1,6 @@
+{# Cambium Theme: Default #}
+
+
 {% set title %}
   {# set the tab title based on whether or not the specific page has a title #}
   {% if metadata.title %}
@@ -31,13 +34,11 @@
   <body>
     {% include 'header.html.jinja' %}
 
-    <div class="container main">
-      {% if metadata.table_of_contents is defined %}
-        <nav>{{ metadata.table_of_contents }}</nav>
-      {% endif %}
+    {% if metadata.table_of_contents is defined %}
+      <nav class="container">{{ metadata.table_of_contents }}</nav>
+    {% endif %}
 
-      <main>{{ main_content }}</main>
-    </div>
+    <main class="container">{{ main_content }}</main>
 
     {% include 'footer.html.jinja' %}
   </body>
