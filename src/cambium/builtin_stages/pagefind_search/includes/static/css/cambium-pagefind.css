@@ -15,3 +15,10 @@
 :root {
   --pf-font: var(--default-font);
 }
+
+/* Overriding Pagefind Styles */
+
+pagefind-modal-trigger {
+  display: inline-flex;
+  align-items: center;
+}

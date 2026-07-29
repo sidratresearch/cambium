@@ -11,6 +11,13 @@
   --default-hover-color: #660000;
 }
 
+/* Utility Styling */
+
+.hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
 /* Base Elements */
 
 html {
@@ -375,18 +382,4 @@ table {
       }
     }
   }
-}
-
-/* Utility Styling */
-
-.hidden {
-  visibility: hidden;
-  opacity: 0;
-}
-
-/* Overriding Pagefind Styles */
-
-pagefind-modal-trigger {
-  display: inline-flex;
-  align-items: center;
 }
