@@ -32,8 +32,8 @@
     {% include 'header.html.jinja' %}
 
     <div class="container main">
-      {% if table_of_contents is defined %}
-        <nav>{{ table_of_contents }}</nav>
+      {% if metadata.table_of_contents is defined %}
+        <nav>{{ metadata.table_of_contents }}</nav>
       {% endif %}
 
       <main>{{ main_content }}</main>
