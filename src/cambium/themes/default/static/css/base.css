@@ -147,8 +147,7 @@ div.header-bar {
   font-weight: 700;
   color: var(--default-bg-color);
   font-size: 1rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
+  padding: 0.75rem 2rem;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -233,19 +232,19 @@ div.menu-panel {
 
   transition: all 0.25s;
 
-  button.menu-button {
-    color: var--default-bg-color;
-  }
+  button.menu-button,
   a {
     color: var(--default-bg-color);
   }
 
   nav {
-    min-height: 15vh;
+    padding: 1.5rem 2rem 1.5rem;
     padding-top: 0;
     padding-bottom: 0;
+    min-height: 15vh; /* Expect this to get overriden, but use to show the menu location since with a new repo the menu is empty */
 
     ul {
+      width: 100%;
       display: flex;
       list-style-type: none;
       padding: 0;
@@ -267,7 +266,6 @@ div.menu-panel {
         a {
           text-decoration: none;
           font-size: 1rem;
-          color: var(--default-bg-color);
           transform: all 0.25s;
           &:hover {
             color: var(--default-accent-color);
