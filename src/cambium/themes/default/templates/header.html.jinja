@@ -1,5 +1,10 @@
 {# Cambium Theme: Default #}
 
+{% set has_menu_content = menu is defined and menu|length>0 %}
+{#  define whether or not there is content in the menu panel
+      assumes that all menu content comes from {{menu}}, which comes from
+      .cambium/jinja_variables/menu.md #}
+
 <header>
   <div class="header-bar">
     <div class="header-left">
@@ -12,7 +17,13 @@
         {% include metadata.stage_metadata.PagefindSearch.searchbar_component %}
       {% endif %}
     </div>
-    <div class="header-right">{% include 'menu-button.html.jinja' %}</div>
+    <div class="header-right">
+      {% if has_menu_content %}
+        {% include 'menu-button.html.jinja' %}
+      {% endif %}
+    </div>
   </div>
 </header>
-{% include 'menu-panel.html.jinja' %}
+{% if has_menu_content %}
+  {% include 'menu-panel.html.jinja' %}
+{% endif %}
