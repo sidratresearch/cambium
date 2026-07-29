@@ -34,11 +34,13 @@
   <body>
     {% include 'header.html.jinja' %}
 
-    {% if metadata.table_of_contents is defined %}
-      <nav class="container">{{ metadata.table_of_contents }}</nav>
-    {% endif %}
+    <div class="container">
+      {% if metadata.table_of_contents is defined %}
+        <nav>{{ metadata.table_of_contents }}</nav>
+      {% endif %}
 
-    <main class="container">{{ main_content }}</main>
+      <main>{{ main_content }}</main>
+    </div>
 
     {% include 'footer.html.jinja' %}
   </body>

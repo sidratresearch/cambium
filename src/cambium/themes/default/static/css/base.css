@@ -117,7 +117,6 @@ img {
 .container {
   max-width: min(1200px, 100vw) !important;
   padding: 1.5rem 2rem 1.5rem;
-  width: 100%;
   margin: auto;
 }
 
