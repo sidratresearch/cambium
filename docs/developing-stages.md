@@ -39,6 +39,8 @@ For example:
 4. The pre-hook for `URLEncodePaths` moves the file from `latest_path="cats or dogs.md"` (accessing the temporary directory copy with `TreeSpan.abs_write_path(leaf_uuid)`) to `cats-or-dogs.md`, and updates `latest_path`.
 5. The transform hook for `TransformMarkdown` reads the contents of `latest_path` (`/tmp_dir/cats-or-dogs.md`), updates `latest_path` to have the correct extension, and writes to the new latest path.
 
+Note that some stages create new leaves, which aren't linked to any specific location on the filesystem. Because of this, the `initial_path` of a leaf is _not_ actually guaranteed to exist.
+
 To make path management slightly easier, we have the following `TreeSpan` functions:
 
 - `TreeSpan.add_leaf()`: create a new leaf, requires the initial path, but can optionally accept the latest and final paths as keyword arguments if they are different from the initial. This function will validate the paths.

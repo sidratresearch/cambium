@@ -66,13 +66,13 @@ class IdentifyMetadata(Stage):
         )
 
         # set basic metadata items from `stat`
-        stat_data = (
-            tree.root_directory / tree.leaves["initial_path"][leaf_uuid]
-        ).stat()
-        metadata_obj.initial_filesize = stat_data.st_size
-        metadata_obj.modification_time = datetime.datetime.fromtimestamp(
-            stat_data.st_mtime, tz=datetime.UTC
-        ).isoformat()
+        initial_path = tree.root_directory / tree.leaves["initial_path"][leaf_uuid]
+        if initial_path.exists():
+            stat_data = initial_path.stat()
+            metadata_obj.initial_filesize = stat_data.st_size
+            metadata_obj.modification_time = datetime.datetime.fromtimestamp(
+                stat_data.st_mtime, tz=datetime.UTC
+            ).isoformat()
 
         input_path: Path = tree.abs_leaf_path(leaf_uuid)
         input_extension: str = input_path.suffix
