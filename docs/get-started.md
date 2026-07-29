@@ -55,3 +55,5 @@ Changes to the configuration file are _not_ applied, and in fact if the configur
 Cambium uses Jinja templates to organize the rendering of Markdown content into HTML. If you aren't happy with using a pre-built theme, you can override Jinja templates by creating your own in `.cambium/theme/templates`.
 
 We recommend copying an existing template and making modifications rather than starting entirely from scratch. When modifying, be careful to retain elements such as the development server block in `base.html.jinja`.
+
+The Jinja templates can also read in content from files located in `.cambium/jinja_variables`. Files in that directory will have their contents available as Jinja environment variables. In the `default` theme, if a file named `menu` exists in that directory, that will trigger the rendering of a site menu in the header, containing the contents of the `menu`. Markdown files will be parsed into HTML, so it is often convenient to create `menu.md`.
