@@ -127,6 +127,9 @@ def main(
         config.dump_default_config()
         return
 
+    if not no_ascii:
+        make_ascii_art()
+
     # Common setup tasks
     cli_config = {
         "build_directory": build_directory,
@@ -140,9 +143,6 @@ def main(
         setup_config(config_path, cli_config, verbosity_boost)
     except AssertionError as e:
         raise typer.BadParameter(str(e))
-
-    if not no_ascii:
-        make_ascii_art()
 
     treespan = TreeSpan(config.current_config)
 
