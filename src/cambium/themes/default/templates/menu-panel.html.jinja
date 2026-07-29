@@ -1,19 +1,29 @@
-<div class="menu-panel" id="menu-panel">
-  <div class="menu-top-bar">
-    <pagefind-modal-trigger></pagefind-modal-trigger>
-    <pagefind-modal></pagefind-modal>
-    <button href="#" class="menu-button" id="menu-button-close">
-      <svg
-        class="menu-icon menu-icon-cross"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 640 640"
-      >
-        <!--!Font Awesome Pro v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2026 Fonticons, Inc.-->
-        <path
-          d="M510.1 109.2C513 105.8 512.6 100.8 509.2 97.9C505.8 95 500.8 95.4 497.9 98.8L320 307.7L142.1 98.8C139.2 95.4 134.2 95 130.8 97.9C127.4 100.8 127 105.8 129.9 109.2L309.5 320L129.9 530.8C127 534.2 127.4 539.2 130.8 542.1C134.2 545 139.2 544.6 142.1 541.2L320 332.3L497.9 541.2C500.8 544.6 505.8 545 509.2 542.1C512.6 539.2 513 534.2 510.1 530.8L330.5 320L510.1 109.2z"
-        />
-      </svg>
-    </button>
+{# Cambium Theme: Default #}
+
+<div class="menu-panel hidden" id="menu-panel">
+  <div class="menu-top-bar header-bar container">
+    <div class="header-left"></div>
+    <div class="header-centre">
+      {% if metadata.stage_metadata.PagefindSearch is defined %}
+        {% include metadata.stage_metadata.PagefindSearch.searchbar_component %}
+      {% endif %}
+    </div>
+    <div class="header-right">
+      <button class="menu-button" id="menu-button-close">
+        <svg
+          class="menu-icon menu-icon-cross"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 640 640"
+        >
+          <!--!Font Awesome Pro v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2026 Fonticons, Inc.-->
+          <path
+            d="M508.2 122.3C513.9 115.6 513.1 105.5 506.3 99.8C499.5 94.1 489.5 94.9 483.7 101.7L320 295.2L156.2 101.7C150.5 95 140.4 94.1 133.7 99.8C127 105.5 126.1 115.6 131.8 122.3L299 320L131.8 517.7C126.1 524.4 126.9 534.5 133.7 540.3C140.5 546.1 150.5 545.2 156.2 538.4L320 344.8L483.8 538.3C489.5 545 499.6 545.9 506.4 540.2C513.2 534.5 514 524.4 508.3 517.6L341 320L508.2 122.3z"
+          />
+        </svg>
+      </button>
+    </div>
   </div>
-  <nav>{{ menu }}</nav>
+  <nav class="menu-items">
+    <div class="container">{{ menu }}</div>
+  </nav>
 </div>
