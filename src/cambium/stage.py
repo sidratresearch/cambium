@@ -12,7 +12,7 @@ In general if you're adding a new stage
 - overwrite __init__ if you:
     - have a stage config (also write a model class),
     - need to set required stages, or
-    - need to store data in instance variables
+    - need to store data in instance variables (prior to the tree_hook)
 - overwrite tree_hook()
 - overwrite any of pre_hook(), transform(), post_hook()
 - overwrite the initialize and finalize functions for each hook as needed
