@@ -8,9 +8,9 @@ from . import (
     templating_markdown,
     transform_markdown,
     url_encode_filenames,
+    write_reports,
 )
 from .pagefind_search import pagefind_search
-from .write_reports import write_reports
 
 __all__ = [
     "check_links",

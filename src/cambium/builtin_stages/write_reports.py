@@ -12,8 +12,8 @@ resulting report will remain Markdown.
 import logging
 from pathlib import Path
 
-from ...stage import Stage
-from ...tree import TreeSpan
+from ..stage import Stage
+from ..tree import TreeSpan
 
 logger = logging.getLogger(__name__)
 
