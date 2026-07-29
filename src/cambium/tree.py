@@ -452,9 +452,10 @@ class TreeSpan:
 
         leaf_bytes, static_bytes = 0, 0
         for uuid in self.leaves["uuids"]:
-            leaf_bytes += (
-                (self.root_directory / self.leaves["initial_path"][uuid]).stat().st_size
-            )
+            initial_path = self.root_directory / self.leaves["initial_path"][uuid]
+            if not initial_path.exists():
+                continue
+            leaf_bytes += initial_path.stat().st_size
         for static_directory in [
             self.root_directory / "static",
             *self.config.ordered_theme_directories,
