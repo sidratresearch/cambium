@@ -76,6 +76,7 @@ class TreeSpan:
             self.root_directory, self.config.ignore_lists
         )
         self.directories_in_build = directories_in_build
+
         for path in leaf_paths:
             self.add_leaf(path)
 
@@ -126,8 +127,6 @@ class TreeSpan:
             ]
             all_files += files_list
             all_directories += directories_list
-
-        all_directories.append(Path("static/_cambium"))
 
         self.filestructure_in_build = make_nested_filetree(all_directories, all_files)
 
@@ -262,6 +261,7 @@ class TreeSpan:
         *by the requesting stage* at some point after the tree hooks.
         """
         path = self.build_directory / "static" / "_cambium" / stage_name
+
         return path.absolute()
 
     def get_leaf_from_path(self, path: Path, path_type: Literal["final_path"]) -> str:
@@ -587,16 +587,22 @@ def nested_dict_set(
 def make_nested_filetree(
     directories: list[Path], files: list[Path]
 ) -> defaultdict[str, Any]:
-    """Create a nested tree structure from a list of files and directories."""
+    """Create a nested tree structure from a list of files and directories.
+
+    Explicitly filters out anything in static/_cambium - stages can add leaves
+    into that directory which show up in `files`, but not in `directories`.
+    """
     node = lambda: defaultdict(node)
     tree = node()
+
+    directories = [d for d in directories if not str(d).startswith("static/_cambium/")]
+    files = [f for f in files if not str(f).startswith("static/_cambium")]
 
     for d in sorted(directories):
         keys = [p + "/" for p in d.parts]
         nested_dict_set(tree, keys, node(), node())
 
     for f in sorted(files):
-        keys = f.parts
         keys = [p + "/" for p in f.parts[:-1]] + [f.name]
         nested_dict_set(tree, keys, None, {})
 
