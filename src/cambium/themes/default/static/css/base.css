@@ -134,6 +134,11 @@ img {
   max-width: 95%;
 }
 
+div.main-content {
+  margin-top: 0;
+  width: max(60vw, 600px);
+}
+
 /* Header and Footer */
 
 header {
@@ -332,6 +337,10 @@ table {
 @media (max-width: 600px) {
   :root {
     --default-font-size: 14pt;
+  }
+
+  div.main-content {
+    width: 100%;
   }
 
   h1 {

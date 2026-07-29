@@ -34,7 +34,7 @@
   <body>
     {% include 'header.html.jinja' %}
 
-    <div class="container">
+    <div class="main-content container">
       {% if metadata.table_of_contents is defined and metadata.table_of_contents|length > 0 %}
         <nav>{{ metadata.table_of_contents }}</nav>
       {% endif %}
