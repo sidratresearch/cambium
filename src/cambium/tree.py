@@ -595,8 +595,10 @@ def make_nested_filetree(
     node = lambda: defaultdict(node)
     tree = node()
 
-    directories = [d for d in directories if not str(d).startswith("static/_cambium/")]
-    files = [f for f in files if not str(f).startswith("static/_cambium")]
+    check_string = str(Path("static/_cambium"))
+    skip = lambda path: str(path).startswith(check_string)
+    directories = [d for d in directories if not skip(d)]
+    files = [f for f in files if not skip(f)]
 
     for d in sorted(directories):
         keys = [p + "/" for p in d.parts]
