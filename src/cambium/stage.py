@@ -219,4 +219,5 @@ def populating_stage_dict(
                     f"Stage `{name}` requires stage `{required_stage}` which is not requested in config"
                 )
 
-    return stage_dict
+    # re-order the dictionary to match the user-provided list
+    return {name: stage_dict[name] for name in stage_list}
