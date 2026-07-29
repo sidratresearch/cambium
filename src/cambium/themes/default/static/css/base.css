@@ -116,7 +116,7 @@ img {
 
 .container {
   max-width: min(1200px, 100vw) !important;
-  padding: 1.5em 2em 1.5em;
+  padding: 1.5rem 2rem 1.5rem;
   width: 100%;
   margin: auto;
 }
@@ -159,7 +159,6 @@ div.header-bar {
     margin-top: auto;
     margin-bottom: auto;
   }
-
   > div {
     display: flex;
   }
@@ -317,7 +316,7 @@ table {
     vertical-align: top;
 
     & > div.cambium-img-holder {
-      min-width: 15em;
+      min-width: 15rem;
       margin: 0;
     }
   }
