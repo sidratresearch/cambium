@@ -9,6 +9,7 @@
   --default-font-size: 14pt;
   --default-accent-color: #cc0000;
   --default-hover-color: #660000;
+  --default-header-color: #444444;
 }
 
 /* Utility Styling */
@@ -137,14 +138,14 @@ img {
 /* Header and Footer */
 
 header {
-  background-color: #444444;
+  background-color: var(--default-header-color);
   margin-bottom: 0.25rem;
 }
 
 div.header-bar {
   /* Used in both header and div.menu-panel */
   font-weight: 700;
-  color: #f9f9f9;
+  color: var(--default-bg-color);
   font-size: 1rem;
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
@@ -154,7 +155,7 @@ div.header-bar {
 
   a {
     text-decoration: none;
-    color: #f9f9f9;
+    color: var(--default-bg-color);
     margin-top: auto;
     margin-bottom: auto;
   }
@@ -228,16 +229,16 @@ div.menu-panel {
   left: 0;
   top: 0;
 
-  background-color: #444444;
-  color: #f9f9f9;
+  background-color: var(--default-header-color);
+  color: var(--default-bg-color);
 
   transition: all 0.25s;
 
   button.menu-button {
-    color: #f9f9f9;
+    color: var--default-bg-color;
   }
   a {
-    color: #f9f9f9;
+    color: var(--default-bg-color);
   }
 
   nav {
@@ -267,7 +268,7 @@ div.menu-panel {
         a {
           text-decoration: none;
           font-size: 1rem;
-          color: white;
+          color: var(--default-bg-color);
           transform: all 0.25s;
           &:hover {
             color: var(--default-accent-color);
@@ -294,10 +295,10 @@ table {
     font-weight: 700;
     font-size: 0.9rem;
     line-height: 1.1;
-    color: #660000;
+    color: var(--default-hover-color);
     position: sticky;
     top: 0;
-    background-color: #f9f9f9;
+    background-color: var(--default-bg-color);
 
     &.ascending::after {
       content: " \25BE";
