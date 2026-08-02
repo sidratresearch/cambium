@@ -1,4 +1,12 @@
-# Cambium, A Light Touch Markdown Static Site Generator
+<p align="center">
+<a href="https://github.com/sidratresearch/cambium">
+<img src="docs/assets/cambiumlogo.png" width="200" height="200">
+</a>
+</p>
+
+<h1 align="center">Cambium</h1>
+<p align="center">A Light Touch Markdown Static Site Generator</p>
+<br />
 
 ![Static Badge](https://img.shields.io/badge/status-pre--alpha-orange)
 ![PyPI - Version](https://img.shields.io/pypi/v/cambium)
