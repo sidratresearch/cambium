@@ -53,3 +53,15 @@ cambium
 ```
 
 This will create a `_build` directory, containing the output HTML. The contents of this folder can be uploaded to any web server or displayed locally.
+
+## Creators
+
+<a href="https://www.sidratresearch.com/"> 
+    <img src="docs/assets/sidratlogo.svg" width="150" height="150">
+</a>
+
+Cambium is a project of [Sidrat Research](https://www.sidratresearch.com).
+
+## Copyright and License
+
+Code and documentation copyright 2026 [Sidrat Research](https://www.sidratresearch.com). Code released under the [MIT License](LICENSE).
