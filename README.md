@@ -1,6 +1,6 @@
 <p align="center">
 <a href="https://github.com/sidratresearch/cambium">
-<img src="docs/assets/cambiumlogo.png" width="200" height="200">
+<img src="https://raw.githubusercontent.com/sidratresearch/cambium/main/docs/assets/cambiumlogo.png" width="200" height="200">
 </a>
 </p>
 
@@ -57,7 +57,7 @@ This will create a `_build` directory, containing the output HTML. The contents 
 ## Creators
 
 <a href="https://www.sidratresearch.com/"> 
-    <img src="docs/assets/sidratlogo.svg" width="150" height="150">
+    <img src="https://raw.githubusercontent.com/sidratresearch/cambium/main/docs/assets/sidratlogo.svg" width="150" height="150">
 </a>
 
 Cambium is a project of [Sidrat Research](https://www.sidratresearch.com).
