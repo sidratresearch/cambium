@@ -1,7 +1,7 @@
 <p align="center">
-<a href="https://github.com/sidratresearch/cambium">
-<img src="https://raw.githubusercontent.com/sidratresearch/cambium/main/docs/assets/cambiumlogo.png" width="200" height="200">
-</a>
+    <a href="https://github.com/sidratresearch/cambium">
+        <img src="https://raw.githubusercontent.com/sidratresearch/cambium/main/docs/assets/cambiumlogo.png" width="200" height="200">
+    </a>
 </p>
 
 <h1 align="center">Cambium</h1>
@@ -56,7 +56,7 @@ This will create a `_build` directory, containing the output HTML. The contents 
 
 ## Creators
 
-<a href="https://www.sidratresearch.com/"> 
+<a href="https://www.sidratresearch.com/">
     <img src="https://raw.githubusercontent.com/sidratresearch/cambium/main/docs/assets/sidratlogo.svg" width="150" height="150">
 </a>
 
