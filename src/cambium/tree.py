@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
 
 import os
 import shutil
-from collections import defaultdict, deque
+from collections import Counter, defaultdict, deque
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal, TypedDict
@@ -107,7 +107,7 @@ class TreeSpan:
                 errormsg = f"Error running tree hook for stage {stage}. "
                 logger.error(errormsg + f"Error message: {e}")
                 raise e
-            self._check_leaf_collisions()
+            self._check_leaf_collisions("final")
 
     def _build_final_tree(self) -> None:
         """Generate a nested human-readable file structure for the entire output dir."""
@@ -178,7 +178,7 @@ class TreeSpan:
             raise RuntimeError
 
     # ----------------------------------------------------------------#
-    #                     stage helper functions                     #
+    #                     stage helper functions                      #
     # ----------------------------------------------------------------#
 
     def add_leaf(
@@ -214,6 +214,9 @@ class TreeSpan:
             "post_hooks": [],
         }
         self.leaves["metadata"][uuid] = LeafMetadata()
+
+        self._check_leaf_collisions("initial")
+
         return uuid
 
     def apply_to_leaves(self, function: Callable[[str, TreeSpan], None]) -> None:
@@ -240,8 +243,7 @@ class TreeSpan:
         updated = updater(self.leaves[f"{path_type}_path"][leaf_uuid])
         self._validate_leaf_path(updated)
         self.leaves[f"{path_type}_path"][leaf_uuid] = updated
-        if path_type == "final":
-            self._check_leaf_collisions()
+        self._check_leaf_collisions(path_type)
 
     def abs_leaf_path(self, leaf_uuid: str) -> Path:
         """Get the absolute path to a safe writeable location for a leaf.
@@ -424,15 +426,21 @@ class TreeSpan:
     #                    other internal functions                    #
     # ----------------------------------------------------------------#
 
-    def _check_leaf_collisions(self) -> None:
-        """Check for collisions in the final paths of leaves."""
+    def _check_leaf_collisions(
+        self, path_type: Literal["initial", "latest", "final"]
+    ) -> None:
+        """Check for collisions in the paths of leaves."""
         # cast to string because it's possible to assign to the dict as a string
         # instead of a path, and Path("blah") != "blah"
-        final_paths = [
-            str(self.leaves["final_path"][uuid]) for uuid in self.leaves["uuids"]
+        paths = [
+            str(self.leaves[f"{path_type}_path"][uuid]) for uuid in self.leaves["uuids"]
         ]
-        if len(final_paths) > len(set(final_paths)):
-            raise ValueError("Collision in leaf output paths")
+        if len(paths) > len(set(paths)):
+            counts = Counter(paths)
+            multiples = [p for p, c in counts.items() if c > 1]
+            raise ValueError(
+                f"Collision in leaf {path_type} paths - the following appear multiple times: {multiples}"
+            )
 
     def _validate_leaf_path(self, path: Any) -> None:
         """Ensure `path` can be assigned to a leaf initial/latest/final path."""

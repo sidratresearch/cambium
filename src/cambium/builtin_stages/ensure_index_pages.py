@@ -83,7 +83,8 @@ class EnsureIndexPages(Stage):
 
     def _create_index_leaf(self, directory: Path, tree: TreeSpan) -> None:
         """Add a blank index.html file."""
-        source_path = Path(".cambium/AddPlaceholderIndex/index.html")
+        # TODO: this path might change
+        source_path = Path(f".cambium/AddPlaceholderIndex/{directory}/index.html")
         uuid = tree.add_leaf(
             directory, latest_path=source_path, final_path=directory / "index.html"
         )
@@ -103,11 +104,12 @@ class EnsureIndexPages(Stage):
         final = tree.leaves["final_path"][leaf_uuid]
         logger.info(f"Changing output path of {initial} to {final}")
 
+        # TODO: this path might change
         redirect_latest_path = original_initial.with_name(
             f"{self.__class__.__name__}-{original_initial.name}"
         )
         redirect = tree.add_leaf(
-            original_initial,
+            redirect_latest_path,
             latest_path=redirect_latest_path,
             final_path=original_final,
         )

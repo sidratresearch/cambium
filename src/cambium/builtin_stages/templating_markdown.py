@@ -72,7 +72,9 @@ class TemplateMarkdown(Stage):
         if len(self.jinja_template_paths) == 0:
             raise RuntimeError("No theme template libraries were found.")
 
-        logger.debug(f"Found Jinja templates {self.jinja_template_paths}")
+        logger.debug(
+            f"Found Jinja templates {[str(p) for p in self.jinja_template_paths]}"
+        )
 
     def _read_jinja_globals(self, tree: TreeSpan) -> dict[str, str]:
         search_path = tree.root_directory / ".cambium/jinja_variables"
