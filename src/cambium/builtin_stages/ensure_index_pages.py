@@ -20,17 +20,22 @@ class EnsureIndexPagesConfig(StageConfig):
 
 
 class EnsureIndexPages(Stage):
+    # happens-after template markdown
+    # or change initial path of redirect to not end with .md
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.requires = []
-        # TODO: doesn't technically *require* TransformMarkdown, but if both are enabled, this should be after
         self.config = EnsureIndexPagesConfig.model_validate(config_dict)
 
+        # casefold the config items if on Windows
         if sys.platform == "win32":
             casefolded = [f.casefold() for f in self.config.useable_as_index]
             casefolded = list(set(casefolded))
             if len(casefolded) < len(self.config.useable_as_index):
                 self.config.useable_as_index = casefolded
+
+        # set up mapping of redirects {uuid of redirect.html : uuid of destination.html}
+        self.redirects = {}
 
     def tree_hook(self, tree: TreeSpan) -> None:
         self.directories_added = []
@@ -85,14 +90,41 @@ class EnsureIndexPages(Stage):
         tree.abs_leaf_path(uuid).write_text("")
 
     def _path_updater(self, path: Path) -> Path:
-        return path.with_name("index.html")
+        return path.with_name("index" + path.suffix)
 
     def _use_as_index(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """Move an existing leaf to have final path index.html."""
+        original_initial = tree.leaves["initial_path"][leaf_uuid]
+        original_final = tree.leaves["final_path"][leaf_uuid]
+
         tree.update_leaf_path(leaf_uuid, "final", self._path_updater)
+
         initial = tree.leaves["initial_path"][leaf_uuid]
         final = tree.leaves["final_path"][leaf_uuid]
         logger.info(f"Changing output path of {initial} to {final}")
+
+        redirect_latest_path = original_initial.with_name(
+            f"{self.__class__.__name__}-{original_initial.name}"
+        )
+        redirect = tree.add_leaf(
+            original_initial,
+            latest_path=redirect_latest_path,
+            final_path=original_final,
+        )
+        self._register_hook(redirect, tree, "pre_hooks")
+        # debug because it's a near-clone of the above info line
+        logger.debug(
+            f"Creating redirect page at {original_final} (pointing to {final})"
+        )
+
+        self.redirects[redirect] = leaf_uuid
+
+    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
+        destination_leaf = self.redirects[leaf_uuid]
+        destination_url = tree.leaves["final_path"][destination_leaf]
+        tree.abs_leaf_path(leaf_uuid).write_text(
+            f'<meta http-equiv="refresh" content="0;url={destination_url}"/>'
+        )
 
     def _warn_extra_index_options(
         self, directory: Path, extra_uuids: list[str], tree: TreeSpan

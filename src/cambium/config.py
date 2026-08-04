@@ -86,8 +86,8 @@ class FileConfiguration(BaseModel):
         "WriteReports",
         "IdentifyMetadata",
         "TransformMarkdown",
-        "EnsureIndexPages",
         "TemplateMarkdown",
+        "EnsureIndexPages",
         # "URLEncodeFilenames", # remove from default until relative paths are handled
         "PagefindSearch",
         "CheckLinks",
