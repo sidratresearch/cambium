@@ -35,6 +35,12 @@ class LeafMetadata(BaseModel):
     page_id: Optional[str] = None
     """String used as an HTML ID unique to this page"""
 
+    links_to: list[str] = []
+    """UUIDs of leaves linked to in the text of this page"""
+
+    linked_from: list[str] = []
+    """UUIDs of any leaves which link to this one"""
+
     # in addition to the "loose" default metadata items we provide, include a "stage"
     # or "extra" attribute here that maps stage name to a dict of that stage's custom
     # metadata items

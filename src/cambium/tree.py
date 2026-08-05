@@ -266,7 +266,9 @@ class TreeSpan:
 
         return path.absolute()
 
-    def get_leaf_from_path(self, path: Path, path_type: Literal["final_path"]) -> str:
+    def get_leaf_from_path(
+        self, path: Path, path_type: Literal["initial_path", "final_path"]
+    ) -> str:
         """Fetch the leaf UUID associated with a certain path."""
         self._validate_leaf_path(path)
         uuids = [u for u in self.leaves["uuids"] if self.leaves[path_type][u] == path]

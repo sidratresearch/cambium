@@ -62,8 +62,14 @@ class _Report:
 class WriteReports(Stage):
     def __init__(self, _: dict[str, Any]) -> None:
         self.requires = []
+        # TODO: if link changing happens in transform hook, this shouldn't be needed
         self.runs_before = ["TransformMarkdown"]
-        self.runs_after = []
+
+        # At some point in the future we may use the metadata in generated reports
+        # At the moment, linking directly to final paths breaks the
+        # destination->leaf matching in IdentifyMetadata. And we should link
+        # to final destination in case TransformMarkdown is not running
+        self.runs_after = ["IdentifyMetadata"]
 
     def tree_hook(self, tree: TreeSpan) -> None:
         self.abs_report_directory = tree.abs_static_stage_path(self.__class__.__name__)

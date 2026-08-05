@@ -1,17 +1,20 @@
 """Cambium stage to store metadata of leaves."""
 
 import datetime
+import urllib
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
 from marko import Markdown
 from marko.block import BlankLine, Heading, HTMLBlock
+from marko.element import Element
+from marko.inline import Link
 from slugify import slugify
 
 from ..stage import Stage
 from ..tree import TreeSpan
-from .utils import get_raw_content
+from .utils import get_raw_content, is_external_link, resolve_internal_link
 
 
 # HTML Parser
@@ -124,3 +127,69 @@ def extract_md_metadata(input_path: Path, leaf_uuid: str, tree: TreeSpan) -> Non
             break
         elif not (is_comment(element) or isinstance(element, BlankLine)):
             break
+
+    # extract links
+    parent_directory = tree.leaves["final_path"][leaf_uuid].parent
+    linked_leaves = fetch_all_links(doc, parent_directory, tree)
+    linked_leaves = list(set(linked_leaves))
+    tree.leaves["metadata"][leaf_uuid].links_to = linked_leaves
+    for uuid in linked_leaves:
+        tree.leaves["metadata"][uuid].linked_from.append(leaf_uuid)
+
+
+def fetch_all_links(
+    element: Element, file_parent_directory: Path, tree: TreeSpan
+) -> list[str]:
+    """Get the UUIDs for all leaves that this element links to.
+
+    List is not deduplicated.
+    """
+    linked_leaves: list[str] = []
+
+    if isinstance(element, str):
+        return linked_leaves
+
+    if isinstance(element, Link):
+        linked = fetch_linked_leaf(element, file_parent_directory, tree)
+        if linked is not None:
+            linked_leaves.append(linked)
+
+    for child in element.children:
+        linked_leaves += fetch_all_links(child, file_parent_directory, tree)
+
+    return linked_leaves
+
+
+def fetch_linked_leaf(
+    link_element: Link, file_parent_directory: Path, tree: TreeSpan
+) -> str | None:
+    """Return the UUID of the leaf that a markdown link points to.
+
+    Returns none if the link element does not point to a leaf (or points to
+    somewhere in the current document).
+    """
+    if is_external_link(link_element.dest):
+        return
+    if link_element.dest.startswith("#"):
+        return
+
+    # go from link contents to a Path
+    resolved = resolve_internal_link(
+        link_element.dest, file_parent_directory, tree.build_directory
+    )
+    if "#" in resolved.name:
+        resolved = resolved.with_name(resolved.name[: resolved.name.index("#")])
+    resolved = Path(urllib.parse.unquote_plus(str(resolved)))
+
+    # skip links to static files
+    if resolved.parts[0] == "static":
+        return
+
+    # skip links to directories
+    # TODO: if you link to a directory, should we:
+    # fail, warn, warn + return index.html
+    if resolved in tree.directories_in_build:
+        return
+
+    print(f"{file_parent_directory} / {link_element.dest} -> {resolved}")
+    return tree.get_leaf_from_path(resolved, "initial_path")

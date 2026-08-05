@@ -83,8 +83,8 @@ class FileConfiguration(BaseModel):
     ] = "INFO"
 
     stages: Optional[list[str]] = [
-        "WriteReports",
         "IdentifyMetadata",
+        "WriteReports",
         "TransformMarkdown",
         "TemplateMarkdown",
         "EnsureIndexPages",
