@@ -173,7 +173,7 @@ class CheckLinks(Stage):
 
         # check if linking to a directory
         # TODO: if you link to a directory, should the checker:
-        # fail, warn, warn + return index.htm
+        # fail, warn, warn + return index.html
         if dest_full in tree.directories_in_build:
             return
 
