@@ -84,8 +84,8 @@ def fetch_linked_leaf(
 ) -> str | None:
     """Return the UUID of the leaf that a markdown link points to.
 
-    Returns none if the link element does not point to a leaf (or points to
-    somewhere in the current document).
+    Returns None if the link element does not point to a leaf (as identified
+    by initial paths), or points to somewhere in the current document.
     """
     if is_external_link(link_element.dest):
         return
@@ -107,10 +107,15 @@ def fetch_linked_leaf(
     # skip links to directories
     # TODO: if you link to a directory, should we:
     # fail, warn, warn + return index.html
-    if resolved in tree.directories_in_build:
-        return
+    # if resolved in tree.directories_in_build:
+    #     return
+    # breaks link resolution for previews
 
-    return tree.get_leaf_from_path(resolved, "initial_path")
+    try:
+        return tree.get_leaf_from_path(resolved, "initial_path")
+    except RuntimeError:
+        # Previewer stages need to link to the downloadable file by the final path
+        return
 
 
 def get_raw_content(element: Element) -> str:

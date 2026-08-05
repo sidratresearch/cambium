@@ -1,9 +1,10 @@
-"""Built-in Stages Initialization"""
+"""Built-in Stages Initialization."""
 
 from . import (
     check_links,
     ensure_index_pages,
     identify_metadata,
+    preview_csv,
     sitemap,
     templating_markdown,
     transform_markdown,
@@ -17,6 +18,7 @@ __all__ = [
     "ensure_index_pages",
     "identify_metadata",
     "pagefind_search",
+    "preview_csv",
     "sitemap",
     "templating_markdown",
     "transform_markdown",
