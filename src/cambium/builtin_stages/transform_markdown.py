@@ -6,7 +6,6 @@ from typing import Any
 
 from marko import Markdown
 from marko.block import Heading
-from marko.md_renderer import MarkdownRenderer
 
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
@@ -14,7 +13,6 @@ from .utils import (
     add_heading_anchors,
     get_raw_content,
     markdown_to_html,
-    rewrite_md_links,
 )
 
 logger = logging.getLogger(__name__)
@@ -25,7 +23,6 @@ class TransformMarkdownConfig(StageConfig):
 
 
 class TransformMarkdown(Stage):
-    changed_links: list[str] = []
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.config = TransformMarkdownConfig.model_validate(config_dict)
@@ -49,25 +46,9 @@ class TransformMarkdown(Stage):
         tree.update_leaf_path(leaf_uuid, "final", self._update_path)
         self._register_hook(leaf_uuid, tree, "pre_hooks")
         self._register_hook(leaf_uuid, tree, "transforms")
-        self.changed_links.append(tree.leaves["initial_path"][leaf_uuid])
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        """Rewrite links to markdown files that will get transformed."""
-        self._rewrite_links(leaf_uuid, tree)
         self._extract_table_of_contents(leaf_uuid, tree)
-
-    def _rewrite_links(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        latest_path = tree.abs_leaf_path(leaf_uuid)
-        marko_object = Markdown(renderer=MarkdownRenderer)
-        document = marko_object.parse(latest_path.read_text())
-
-        document = rewrite_md_links(
-            document,
-            tree.leaves["initial_path"][leaf_uuid].parent,
-            self.changed_links,
-            tree.build_directory,
-        )
-        latest_path.write_text(marko_object.render(document))
 
     def _extract_table_of_contents(self, leaf_uuid: str, tree: TreeSpan) -> None:
         raw_data = tree.abs_leaf_path(leaf_uuid).read_text()

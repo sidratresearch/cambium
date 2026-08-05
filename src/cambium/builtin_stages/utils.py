@@ -145,43 +145,6 @@ def fetch_linked_leaf(
     return tree.get_leaf_from_path(resolved, "initial_path")
 
 
-def rewrite_md_links(
-    element: Element,
-    parent_directory: Path,
-    links_to_update: list[Path],
-    build_directory: Path,
-) -> Element:
-    """Change links to markdown files point to their transformed HTML versions."""
-    if isinstance(element, str):
-        return element
-
-    if isinstance(element, Link):
-        if is_external_link(element.dest):
-            return Element
-
-        if element.dest.startswith("#"):
-            return Element
-
-        resolved = resolve_internal_link(
-            element.dest, parent_directory, build_directory
-        )
-        if "#" in resolved.name:
-            resolved = resolved.with_name(resolved.name[: resolved.name.index("#")])
-
-        if resolved in links_to_update:
-            # TODO: handle .MD etc
-            # TODO: change this to use TransformMarkdown._update_path
-            element.dest = element.dest.replace(".md", ".html")
-
-        return element
-
-    for child in element.children:
-        child = rewrite_md_links(
-            child, parent_directory, links_to_update, build_directory
-        )
-    return element
-
-
 def get_raw_content(element: Element) -> str:
     """Get the pure text content of an element."""
     content = ""
