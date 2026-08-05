@@ -7,6 +7,8 @@ import pytest
 from cambium import config
 from cambium.cli import cli
 
+# TODO: move this elsewhere and actually reference it in the cli args?
+# that ensures the test values stay in sync with the actual defaults
 MINIMAL_CLI_CONFIG = {
     "dev_server": False,
     "dev_server_port": 8000,
@@ -14,6 +16,12 @@ MINIMAL_CLI_CONFIG = {
     "dev_server_directory": ".cambium-dev/",
 }
 """Default parameters for CLI configuration"""
+
+
+def test_default_config() -> None:
+    """Ensure that the default configuration is valid."""
+    yaml_config = config.FileConfiguration().model_dump()
+    config.initialize_configuration(yaml_config, MINIMAL_CLI_CONFIG)
 
 
 @pytest.mark.parametrize(
