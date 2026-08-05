@@ -15,6 +15,8 @@ from marko.html_renderer import HTMLRenderer
 from marko.inline import Image, InlineHTML, Link, RawText
 from slugify import slugify
 
+from ..tree import TreeSpan
+
 logger = logging.getLogger(__name__)
 
 
@@ -107,6 +109,40 @@ def resolve_internal_link(
         raise ValueError(
             f"Error resolving internal link {link}, perhaps this file is outside the root directory?"
         )
+
+
+def fetch_linked_leaf(
+    link_element: Link, file_parent_directory: Path, tree: TreeSpan
+) -> str | None:
+    """Return the UUID of the leaf that a markdown link points to.
+
+    Returns none if the link element does not point to a leaf (or points to
+    somewhere in the current document).
+    """
+    if is_external_link(link_element.dest):
+        return
+    if link_element.dest.startswith("#"):
+        return
+
+    # go from link contents to a Path
+    resolved = resolve_internal_link(
+        link_element.dest, file_parent_directory, tree.build_directory
+    )
+    if "#" in resolved.name:
+        resolved = resolved.with_name(resolved.name[: resolved.name.index("#")])
+    resolved = Path(urllib.parse.unquote_plus(str(resolved)))
+
+    # skip links to static files
+    if resolved.parts[0] == "static":
+        return
+
+    # skip links to directories
+    # TODO: if you link to a directory, should we:
+    # fail, warn, warn + return index.html
+    if resolved in tree.directories_in_build:
+        return
+
+    return tree.get_leaf_from_path(resolved, "initial_path")
 
 
 def rewrite_md_links(

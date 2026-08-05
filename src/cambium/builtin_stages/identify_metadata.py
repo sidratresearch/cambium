@@ -14,7 +14,10 @@ from slugify import slugify
 
 from ..stage import Stage
 from ..tree import TreeSpan
-from .utils import get_raw_content, is_external_link, resolve_internal_link
+from .utils import (
+    fetch_linked_leaf,
+    get_raw_content,
+)
 
 
 # HTML Parser
@@ -158,38 +161,3 @@ def fetch_all_links(
         linked_leaves += fetch_all_links(child, file_parent_directory, tree)
 
     return linked_leaves
-
-
-def fetch_linked_leaf(
-    link_element: Link, file_parent_directory: Path, tree: TreeSpan
-) -> str | None:
-    """Return the UUID of the leaf that a markdown link points to.
-
-    Returns none if the link element does not point to a leaf (or points to
-    somewhere in the current document).
-    """
-    if is_external_link(link_element.dest):
-        return
-    if link_element.dest.startswith("#"):
-        return
-
-    # go from link contents to a Path
-    resolved = resolve_internal_link(
-        link_element.dest, file_parent_directory, tree.build_directory
-    )
-    if "#" in resolved.name:
-        resolved = resolved.with_name(resolved.name[: resolved.name.index("#")])
-    resolved = Path(urllib.parse.unquote_plus(str(resolved)))
-
-    # skip links to static files
-    if resolved.parts[0] == "static":
-        return
-
-    # skip links to directories
-    # TODO: if you link to a directory, should we:
-    # fail, warn, warn + return index.html
-    if resolved in tree.directories_in_build:
-        return
-
-    print(f"{file_parent_directory} / {link_element.dest} -> {resolved}")
-    return tree.get_leaf_from_path(resolved, "initial_path")
