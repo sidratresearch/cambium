@@ -20,12 +20,13 @@ class EnsureIndexPagesConfig(StageConfig):
 
 
 class EnsureIndexPages(Stage):
-    # happens-after template markdown
-    # or change initial path of redirect to not end with .md
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
-        self.requires = []
         self.config = EnsureIndexPagesConfig.model_validate(config_dict)
+        self.requires = []
+        # ensure the .md inital paths for redirect pages don't get templated
+        self.runs_after = ["TemplateMarkdown"]
+        self.runs_before = []
 
         # casefold the config items if on Windows
         if sys.platform == "win32":

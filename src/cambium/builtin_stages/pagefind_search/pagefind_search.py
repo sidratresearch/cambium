@@ -43,6 +43,8 @@ class PagefindSearch(Stage):
 
         self.pagefind_config = pagefind_config
         self.requires = ["TemplateMarkdown"]  # to have somewhere to put the search box
+        self.runs_after = []
+        self.runs_before = []
         self.pagefind_directory = "static/pagefind"
 
         self.context_function = None

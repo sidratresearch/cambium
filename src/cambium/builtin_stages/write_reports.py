@@ -11,6 +11,7 @@ resulting report will remain Markdown.
 
 import logging
 from pathlib import Path
+from typing import Any
 
 from ..stage import Stage
 from ..tree import TreeSpan
@@ -59,6 +60,11 @@ class _Report:
 
 
 class WriteReports(Stage):
+    def __init__(self, _: dict[str, Any]) -> None:
+        self.requires = []
+        self.runs_before = ["TransformMarkdown"]
+        self.runs_after = []
+
     def tree_hook(self, tree: TreeSpan) -> None:
         self.abs_report_directory = tree.abs_static_stage_path(self.__class__.__name__)
 

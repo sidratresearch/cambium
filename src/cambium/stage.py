@@ -11,7 +11,7 @@ When adding a new built-in stage, add it to builtin_stages/__init__.py
 In general if you're adding a new stage
 - overwrite __init__ if you:
     - have a stage config (also write a model class),
-    - need to set required stages, or
+    - need to set required stages/runs_before/runs_after, or
     - need to store data in instance variables (prior to the tree_hook)
 - overwrite tree_hook()
 - overwrite any of pre_hook(), transform(), post_hook()
@@ -40,6 +40,14 @@ class Stage:
 
         self.requires: list[str] = []
         """Other stages that must also be present, unordered"""
+
+        self.runs_after: list[str] = []
+        """Names of any stages which, if present, should come *earlier* in
+        the list than this one"""
+
+        self.runs_before: list[str] = []
+        """Names of any stages which, if present, should come *later* in
+        the list than this one"""
 
     # Private Utility Functions
 
@@ -181,7 +189,14 @@ def populating_stage_dict(
     stage_config: dict[str, dict[str, Any]],
     logger: logging.Logger,
 ) -> dict[str, Stage]:
-    """Importing Built-in Stages and compiling all Stages available to Cambium."""
+    """Importing Built-in Stages and compiling all Stages available to Cambium.
+
+    Raises AssertionError if requested stages are missing, and ValidationError
+    if the stage configuration is incorrect.
+    """
+    # TODO: AssertionErrors raised here and below raise a typer.BadParameter, which prints "Invalid value"
+    # Should consider doing some custom errors or something?
+
     from . import builtin_stages  # noqa: F401
 
     stage_dict: dict[str, Stage] = {}
@@ -199,6 +214,7 @@ def populating_stage_dict(
                 else:
                     initialized_stage = tmp_stage({})
             except ValidationError as e:
+                # TODO: see what traceback looks like here
                 logger.error(
                     f"Error validating configuration for stage `{tmp_stage.__name__}`"
                 )
@@ -208,16 +224,42 @@ def populating_stage_dict(
 
     # error if any stages requested in the config are missing
     for requested in stage_list:
-        if requested not in stage_dict:
-            raise ValueError(f"Requested stage `{requested}` was not found.")
-
-    # ensure that any stages with dependencies are satisfied
-    for i, (name, instance) in enumerate(stage_dict.items()):
-        for required_stage in instance.requires:
-            if required_stage not in stage_dict:
-                raise ValueError(
-                    f"Stage `{name}` requires stage `{required_stage}` which is not requested in config"
-                )
+        assert requested in stage_dict, f"Requested stage `{requested}` was not found."
 
     # re-order the dictionary to match the user-provided list
-    return {name: stage_dict[name] for name in stage_list}
+    stage_dict = {name: stage_dict[name] for name in stage_list}
+
+    verify_stage_dict(stage_dict)
+
+    return stage_dict
+
+
+def verify_stage_dict(stage_dict: dict[str, Stage]) -> None:
+    """Verify stage dependencies and ordering.
+
+    Raises AssertionError if there are issues.
+    """
+    # ensure that any stages with dependencies are satisfied
+    for name, instance in stage_dict.items():
+        for required_stage in instance.requires:
+            assert (
+                required_stage in stage_dict
+            ), f"Stage `{name}` requires stage `{required_stage}` which is not in config"
+
+    # ensure ordering requirements are met
+    stage_order = list(stage_dict.keys())
+    for i, (name, instance) in enumerate(stage_dict.items()):
+
+        for before in instance.runs_after:
+            if before in stage_order:
+                before_index = stage_order.index(before)
+                assert (
+                    before_index < i
+                ), f"Stage {name} needs to be after {before} in the stage list"
+
+        for after in instance.runs_before:
+            if after in stage_order:
+                after_index = stage_order.index(after)
+                assert (
+                    after_index > i
+                ), f"{name} needs to be before {after} in the stage list"

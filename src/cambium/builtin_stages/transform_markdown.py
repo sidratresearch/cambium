@@ -30,6 +30,8 @@ class TransformMarkdown(Stage):
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.config = TransformMarkdownConfig.model_validate(config_dict)
         self.requires = []
+        self.runs_before = []
+        self.runs_after = ["IdentifyMetadata"]
 
     def tree_hook(self, tree: TreeSpan) -> None:
         """Update final path and list of transforms for markdown leaves."""

@@ -49,6 +49,8 @@ class CheckLinks(Stage):
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.config = CheckLinksConfig.model_validate(config_dict)
         self.requires = []
+        self.runs_after = []
+        self.runs_before = []
 
     def tree_hook(self, tree: TreeSpan) -> None:
         tree.apply_to_leaves(self._tree_hook_for_leaf)

@@ -29,8 +29,8 @@ class AddSitemap(Stage):
 
         # stuff required by Stage
         self.requires = []
-        self.context_function = None
-        self.context_parameters = {}
+        self.runs_before = []
+        self.runs_after = []
 
     def tree_hook(self, tree: TreeSpan) -> None:
         # always attempt to add a sitemap
