@@ -1,6 +1,7 @@
 """Utility functions for builtin stages."""
 
 import logging
+import os
 import urllib
 from collections import Counter
 from pathlib import Path
@@ -190,7 +191,38 @@ def add_heading_anchors(document: Document, heading_id_prefix: str) -> Document:
     return document
 
 
-def markdown_to_html(markdown: str, heading_id_prefix: str | None) -> str:
+def update_link_dests(element: Element, file: Path, tree: TreeSpan) -> Element:
+    """Look for links in `element`, and ensure they point to the correct final path."""
+    if isinstance(element, str):
+        return element
+
+    if isinstance(element, Link):
+        linked_leaf = fetch_linked_leaf(element, file.parent, tree)
+        if linked_leaf is not None:
+            # would like to use dest_file.relative_to(parent_directory, walk_up=True)
+            # but that's only available in 3.12+
+            new_dest = os.path.relpath(
+                tree.leaves["final_path"][linked_leaf],
+                start=file.parent,
+            )
+            if "#" in element.dest:
+                new_dest += element.dest[element.dest.index("#") :]
+
+            logger.debug(f"Updating link in {file} from {element.dest} to {new_dest}")
+            element.dest = new_dest
+
+    for child in element.children:
+        child = update_link_dests(child, file, tree)
+
+    return element
+
+
+def markdown_to_html(
+    markdown: str,
+    tree: TreeSpan,
+    file: Path | None = None,
+    heading_id_prefix: str | None = None,
+) -> str:
     """Main function of the TransformMarkdown stage."""
     # WARNING: The Markdown class is not thread-safe.
     # Create a new instance for each thread.
@@ -201,5 +233,8 @@ def markdown_to_html(markdown: str, heading_id_prefix: str | None) -> str:
     document = marko_object.parse(markdown)
     if heading_id_prefix is not None:
         document = add_heading_anchors(document, heading_id_prefix)
+
+    if file is not None:
+        document = update_link_dests(document, file, tree)
 
     return marko_object.render(document)

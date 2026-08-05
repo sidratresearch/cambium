@@ -95,7 +95,7 @@ class TemplateMarkdown(Stage):
             variable = path.read_text()
             if path.suffix == ".md":
                 # TODO: should this actually be a part of transform markdown somehow?
-                variable = markdown_to_html(variable, None)
+                variable = markdown_to_html(variable, tree)
             jinja_globals[globals_key] = variable
         return jinja_globals
 

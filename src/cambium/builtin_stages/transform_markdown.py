@@ -70,8 +70,14 @@ class TransformMarkdown(Stage):
         tree.update_leaf_path(leaf_uuid, "latest", self._update_path)
         html_path = tree.abs_leaf_path(leaf_uuid)
 
+        final_path = tree.leaves["final_path"][leaf_uuid]
         markdown = (markdown_path).read_text()
-        html = markdown_to_html(markdown, self.config.heading_id_prefix)
+        html = markdown_to_html(
+            markdown,
+            tree,
+            file=final_path,
+            heading_id_prefix=self.config.heading_id_prefix,
+        )
         html_path.write_text(html)
 
 
