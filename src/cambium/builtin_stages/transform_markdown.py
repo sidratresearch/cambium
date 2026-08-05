@@ -29,7 +29,7 @@ class TransformMarkdown(Stage):
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.config = TransformMarkdownConfig.model_validate(config_dict)
-        self.requires = []
+        self.requires = ["IdentifyMetadata"]
         self.runs_before = []
         self.runs_after = ["IdentifyMetadata"]
 
