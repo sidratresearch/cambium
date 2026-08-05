@@ -3,17 +3,16 @@
 e.g. index-style listings of all pages, lists of pages within a certain
 category or with a certain tag
 
-This stage would like to be run *before* TransformMarkdown, so that the
-generated Markdown reports are then converted to HTML and templated. If
-WriteReports is called after, or in the absence of TransformMarkdown, the
-resulting report will remain Markdown.
+By default these reports are written to _build/_cambium-reports/. The
+directory name is configurable, and if a given report would conflict with
+a pre-existing file, an error would be raised at `TreeSpan.add_leaf()`.
 """
 
 import logging
 from pathlib import Path
 from typing import Any
 
-from ..stage import Stage
+from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
 
 logger = logging.getLogger(__name__)
@@ -27,27 +26,21 @@ logger = logging.getLogger(__name__)
 # TODO: consider the fact that this listing isn't actually complete - it misses the pagefind playground
 
 
+class WriteReportsConfig(StageConfig):
+    report_directory: Path = Path("_cambium-reports/")
+
+
 class _Report:
     """A helper class for WriteReports which aggregates some of the bookkeeping."""
 
     def __init__(self, filename: str, caller: "WriteReports", tree: TreeSpan) -> None:
-        self.path_in_build = (caller.abs_report_directory / filename).relative_to(
-            tree.build_directory
-        )
+        self.path_in_build = caller.config.report_directory / filename
 
         # NOTE: the number of segments in initial path and final path have to match
         # Because we set relative_path_modifier based on final path, but
         # TransformMarkdown will validate links based on initial_path
-        initial_path = Path(".cambium/_cambium") / caller.__class__.__name__ / filename
-
-        # NOTE: we are creating a leaf whose final path is in build/static
-        # there's nothing *inherently* wrong with this, but it is sort of non-standard
-        # in that user files in root/static *don't* get built into leaves
-        # the difference is that we don't actually want this file to be
-        # static, we *want* it to be touched by other stages
-        self.leaf_uuid = tree.add_leaf(
-            initial_path, latest_path=self.path_in_build, final_path=self.path_in_build
-        )
+        # Something to think about if we update the path later...
+        self.leaf_uuid = tree.add_leaf(self.path_in_build)
 
         parent_folder = self.path_in_build.parent
         self.relative_path_modifier = "../" * len(parent_folder.parts)
@@ -56,14 +49,14 @@ class _Report:
 
     def write(self, text: str, tree: TreeSpan) -> None:
         tree.abs_leaf_path(self.leaf_uuid).write_text(text)
-        logger.debug(f"Wrote report {self.path_in_build}")
+        logger.info(f"Wrote report {self.path_in_build}")
 
 
 class WriteReports(Stage):
-    def __init__(self, _: dict[str, Any]) -> None:
+    def __init__(self, config_dict: dict[str, Any]) -> None:
+        self.config = WriteReportsConfig.model_validate(config_dict)
         self.requires = []
-        # TODO: if link changing happens in transform hook, this shouldn't be needed
-        self.runs_before = ["TransformMarkdown"]
+        self.runs_before = []
 
         # At some point in the future we may use the metadata in generated reports
         # At the moment, linking directly to final paths breaks the
@@ -72,14 +65,9 @@ class WriteReports(Stage):
         self.runs_after = ["IdentifyMetadata"]
 
     def tree_hook(self, tree: TreeSpan) -> None:
-        self.abs_report_directory = tree.abs_static_stage_path(self.__class__.__name__)
-
         self.html_pages_index = _Report("html_pages.md", self, tree)
 
     def pre_hook_initialize(self, tree: TreeSpan) -> None:
-        if not self.abs_report_directory.exists():
-            self.abs_report_directory.mkdir(parents=True)
-
         # Generate the report for listing all HTML pages
 
         html_leaves = []
