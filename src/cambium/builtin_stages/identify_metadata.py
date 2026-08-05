@@ -16,12 +16,14 @@ from .utils import get_raw_content
 
 # HTML Parser
 class TitleParser(HTMLParser):
+    """Parser to extract the <title> tag."""
+
     def __init__(self) -> None:
         super().__init__()
         self.in_title = False
         self.title = None
 
-    def handle_starttag(self, tag: str, attrs) -> None:
+    def handle_starttag(self, tag: str, _) -> None:
         if tag.lower() == "title":
             self.in_title = True
 
@@ -46,7 +48,15 @@ class IdentifyMetadata(Stage):
         tree.apply_to_leaves(self._tree_hook_for_leaf)
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        self._extract_metadata(leaf_uuid=leaf_uuid, tree=tree)
+        extract_generic_metadata(leaf_uuid, tree)
+
+        input_path: Path = tree.abs_leaf_path(leaf_uuid)
+        input_extension: str = input_path.suffix
+
+        if input_extension in (".md"):
+            extract_md_metadata(input_path, leaf_uuid, tree)
+        elif input_extension in (".html", ".htm"):
+            extract_html_metadata(input_path, leaf_uuid, tree)
 
     # Utility Functions
 
@@ -62,63 +72,55 @@ class IdentifyMetadata(Stage):
 
         self._register_hook(leaf_uuid, tree, "pre_hooks")
 
-    def _extract_metadata(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        metadata_obj = tree.leaves["metadata"][leaf_uuid]
 
-        # set a `page_id`
-        # TODO: should `cambium-page-` be a stage option or moved into the jinja?
-        metadata_obj.page_id = "cambium-page-" + slugify(
-            str(tree.leaves["final_path"][leaf_uuid].with_suffix(""))
-        )
+def extract_generic_metadata(leaf_uuid: str, tree: TreeSpan) -> None:
+    """Set leaf metadata for anything that applies to all leaves."""
+    metadata_obj = tree.leaves["metadata"][leaf_uuid]
 
-        # set basic metadata items from `stat`
-        initial_path = tree.root_directory / tree.leaves["initial_path"][leaf_uuid]
-        if initial_path.exists():
-            stat_data = initial_path.stat()
-            metadata_obj.initial_filesize = stat_data.st_size
-            metadata_obj.modification_time = datetime.datetime.fromtimestamp(
-                stat_data.st_mtime, tz=datetime.UTC
-            ).isoformat()
+    # set a `page_id`
+    # TODO: should `cambium-page-` be a stage option or moved into the jinja?
+    metadata_obj.page_id = "cambium-page-" + slugify(
+        str(tree.leaves["final_path"][leaf_uuid].with_suffix(""))
+    )
 
-        input_path: Path = tree.abs_leaf_path(leaf_uuid)
-        input_extension: str = input_path.suffix
+    # set basic metadata items from `stat`
+    initial_path = tree.root_directory / tree.leaves["initial_path"][leaf_uuid]
+    if initial_path.exists():
+        stat_data = initial_path.stat()
+        metadata_obj.initial_filesize = stat_data.st_size
+        metadata_obj.modification_time = datetime.datetime.fromtimestamp(
+            stat_data.st_mtime, tz=datetime.UTC
+        ).isoformat()
 
-        if input_extension in (".md"):
-            self._get_metadata_from_md(input_path, leaf_uuid, tree)
-        elif input_extension in (".html", ".htm"):
-            self._get_metadata_from_html(input_path, leaf_uuid, tree)
 
-    def _get_metadata_from_html(
-        self, input_path: Path, leaf_uuid: str, tree: TreeSpan
-    ) -> None:
-        raw_data = input_path.read_text()
+def extract_html_metadata(input_path: Path, leaf_uuid: str, tree: TreeSpan) -> None:
+    """Set leaf metadata that can be extracted from HTML files."""
+    raw_data = input_path.read_text()
 
-        html_parser = TitleParser()
-        html_parser.feed(raw_data)
+    html_parser = TitleParser()
+    html_parser.feed(raw_data)
 
-        if html_parser.title is not None:
-            tree.leaves["metadata"][leaf_uuid].title = html_parser.title
+    if html_parser.title is not None:
+        tree.leaves["metadata"][leaf_uuid].title = html_parser.title
 
-    def _get_metadata_from_md(
-        self, input_path: Path, leaf_uuid: str, tree: TreeSpan
-    ) -> None:
 
-        raw_data = input_path.read_text()
-        md = Markdown()
-        doc = md.parse(raw_data)
+def extract_md_metadata(input_path: Path, leaf_uuid: str, tree: TreeSpan) -> None:
+    """Set leaf metadata that can be extracted from markdown files."""
+    raw_data = input_path.read_text()
+    md = Markdown()
+    doc = md.parse(raw_data)
 
-        if len(doc.children) == 0:
-            return
+    if len(doc.children) == 0:
+        return
 
-        # extract title
-        # skip over html comments and blank lines
-        isComment = (
-            lambda element: isinstance(element, HTMLBlock)
-            and len(element.children) == 0
-        )
-        for element in doc.children:
-            if isinstance(element, Heading) and (element.level == 1):
-                tree.leaves["metadata"][leaf_uuid].title = get_raw_content(element)
-                break
-            elif not (isComment(element) or isinstance(element, BlankLine)):
-                break
+    # extract title
+    # skip over html comments and blank lines
+    is_comment = (
+        lambda element: isinstance(element, HTMLBlock) and len(element.children) == 0
+    )
+    for element in doc.children:
+        if isinstance(element, Heading) and (element.level == 1):
+            tree.leaves["metadata"][leaf_uuid].title = get_raw_content(element)
+            break
+        elif not (is_comment(element) or isinstance(element, BlankLine)):
+            break
