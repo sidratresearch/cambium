@@ -58,8 +58,15 @@ class TemplateMarkdown(Stage):
     # Utility Functions
 
     def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        """Adds TemplatingMarkdown to markdown files not in static."""
-        if tree.leaves["initial_path"][leaf_uuid].suffix.lower() != ".md":
+        """Adds TemplatingMarkdown to markdown files not in static.
+
+        We can't filter on final path since markdown files (yes template)
+        and html files (no template) both have .html
+
+        We can't filter on initial path since preview pages start with
+        non-markdown suffixes.
+        """
+        if tree.leaves["latest_path"][leaf_uuid].suffix.lower() != ".md":
             return
 
         self._register_hook(leaf_uuid, tree, "post_hooks")

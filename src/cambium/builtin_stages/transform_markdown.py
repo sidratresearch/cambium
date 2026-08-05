@@ -39,8 +39,13 @@ class TransformMarkdown(Stage):
         return path.with_suffix(".html")
 
     def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        """Update final path and list of transforms for a single leaf, if applicable."""
-        if tree.leaves["initial_path"][leaf_uuid].suffix.lower() != ".md":
+        """Update final path and list of transforms for a single leaf, if applicable.
+
+        Filter on final path suffix to:
+        - catch preview leaves that started as csv and end as md
+        - skip anything that starts as md but some other stage has control over
+        """
+        if tree.leaves["final_path"][leaf_uuid].suffix.lower() != ".md":
             return
 
         tree.update_leaf_path(leaf_uuid, "final", self._update_path)

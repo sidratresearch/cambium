@@ -56,20 +56,18 @@ class IdentifyMetadata(Stage):
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         extract_generic_metadata(leaf_uuid, tree)
 
-        input_path: Path = tree.abs_leaf_path(leaf_uuid)
-        input_extension: str = input_path.suffix
+        readable_path: Path = tree.abs_leaf_path(leaf_uuid)
+        readable_extension: str = readable_path.suffix
 
-        if input_extension in (".md"):
-            extract_md_metadata(input_path, leaf_uuid, tree)
-        elif input_extension in (".html", ".htm"):
-            extract_html_metadata(input_path, leaf_uuid, tree)
+        if readable_extension in (".md"):
+            extract_md_metadata(readable_path, leaf_uuid, tree)
+        elif readable_extension in (".html", ".htm"):
+            extract_html_metadata(readable_path, leaf_uuid, tree)
 
     # Utility Functions
 
     def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        # this tree hook operates on initial paths
-        # because those are the files that are read for the actual scraping
-        if tree.leaves["initial_path"][leaf_uuid].suffix.lower() not in (
+        if tree.leaves["final_path"][leaf_uuid].suffix.lower() not in (
             ".md",
             ".html",
             ".htm",
