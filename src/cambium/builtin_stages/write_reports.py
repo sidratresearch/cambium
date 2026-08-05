@@ -81,14 +81,29 @@ class WriteReports(Stage):
             self.abs_report_directory.mkdir(parents=True)
 
         # Generate the report for listing all HTML pages
-        html_pages = []
-        for final_path in tree.leaf_final_paths():
-            if final_path.suffix in (".html", ".htm"):
-                html_pages.append(final_path)
-        html_pages.sort()
+
+        html_leaves = []
+        for leaf_uuid in tree.leaves["uuids"]:
+            final_path = tree.leaves["final_path"][leaf_uuid]
+            if final_path.suffix in (".html", ".html"):
+                html_leaves.append(leaf_uuid)
+
+        # HACK? If TransformMarkdown is active we need to put down initial
+        # paths so that link change attempts have parseable links
+        # If it's not active, we need to point to the final location
+        if "TransformMarkdown" in tree.config.stages:
+            html_links = [
+                tree.leaves["initial_path"][leaf_uuid] for leaf_uuid in html_leaves
+            ]
+        else:
+            html_links = [
+                tree.leaves["final_path"][leaf_uuid] for leaf_uuid in html_leaves
+            ]
+
+        html_links.sort()
         links = ["# Listing of HTML Pages"] + [
             f"- [{e}]({self.html_pages_index.relative_path_modifier}{e})"
-            for e in html_pages
+            for e in html_links
         ]
         self.html_pages_index.write("\n".join(links), tree)
 
