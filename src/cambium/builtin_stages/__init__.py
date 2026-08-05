@@ -4,7 +4,6 @@ from . import (
     check_links,
     ensure_index_pages,
     identify_metadata,
-    preview_csv,
     sitemap,
     templating_markdown,
     transform_markdown,
@@ -12,6 +11,7 @@ from . import (
     write_reports,
 )
 from .pagefind_search import pagefind_search
+from .preview_csv import preview_csv
 
 __all__ = [
     "check_links",
