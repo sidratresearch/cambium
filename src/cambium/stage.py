@@ -184,7 +184,7 @@ class Stage:
         pass
 
 
-def populating_stage_dict(
+def populate_stage_dict(
     stage_list: list[str],
     stage_config: dict[str, dict[str, Any]],
     logger: logging.Logger,
