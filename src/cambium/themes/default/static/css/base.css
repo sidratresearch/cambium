@@ -208,11 +208,11 @@ button.menu-button {
   background-color: unset;
   border: none;
 
-  &:hover svg.menu-icon {
+  &:hover svg {
     fill: var(--default-accent-color);
   }
 
-  svg.menu-icon {
+  svg {
     width: 2rem;
     height: 2rem;
     fill: var(--default-bg-color);
