@@ -187,7 +187,15 @@ class TreeSpan:
         final_path: Path | None = None,
         latest_path: Path | None = None,
     ) -> str:
-        """Add a new leaf to the tree."""
+        """Add a new leaf to the tree.
+
+        Note that if you're doing this while iterating through
+        tree.leaves["uuids"] you will likely encounter "RuntimeError: deque
+        mutated during iteration". If you *don't* want to iterate over
+        the new leaves, you can freeze the deque before iteration by doing
+        `for leaf_uuid in list(tree.leaves["uuids"])`. If you *do* want to
+        include the new leaves, use a while loop instead.
+        """
         if len(self.leaves["uuids"]) == self.leaves["uuids"].maxlen:
             raise ValueError("self.leaves will drop items")
 
@@ -217,6 +225,8 @@ class TreeSpan:
 
         self._check_leaf_collisions("initial")
 
+        self._update_directories_in_build(final_path.parent)
+
         return uuid
 
     def apply_to_leaves(self, function: Callable[[str, TreeSpan], None]) -> None:
@@ -231,7 +241,7 @@ class TreeSpan:
     def update_leaf_path(
         self,
         leaf_uuid: str,
-        path_type: Literal["latest"] | Literal["final"],
+        path_type: Literal["latest", "final"],
         updater: Callable[[Path], Path],
     ) -> None:
         """Update the latest or final path of a leaf in a functional manner.
@@ -244,6 +254,9 @@ class TreeSpan:
         self._validate_leaf_path(updated)
         self.leaves[f"{path_type}_path"][leaf_uuid] = updated
         self._check_leaf_collisions(path_type)
+
+        if path_type == "final":
+            self._update_directories_in_build(updated.parent)
 
     def abs_leaf_path(self, leaf_uuid: str) -> Path:
         """Get the absolute path to a safe writeable location for a leaf.
@@ -450,6 +463,14 @@ class TreeSpan:
             raise ValueError("Use the Path object to work with leaf paths")
         if path.is_absolute():
             raise ValueError("Use relative paths for leaves")
+
+    def _update_directories_in_build(self, directory: Path) -> None:
+        if directory.is_absolute():
+            return
+
+        while directory not in self.directories_in_build and directory != Path():
+            self.directories_in_build.append(directory)
+            directory = directory.parent
 
     def _check_disk_space(self) -> None:
         """Check that there is enough free space for both the temp and build dirs."""
