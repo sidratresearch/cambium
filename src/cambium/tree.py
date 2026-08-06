@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
 import re
 import typing
@@ -425,8 +426,12 @@ class TreeSpan:
         self._copy_static_files_no_overwrite(self.root_directory)
         for directory in self.config.ordered_theme_directories:  # theme files
             self._copy_static_files_no_overwrite(directory)
-        for directory in self.config.stage_theme_directories["static"]:  # stage themes
-            self._copy_static_files_no_overwrite(directory.parent)
+        for stage_name, stage_instance in self.config.stage_dict.items():
+            stage_module = Path(inspect.getfile(stage_instance.__class__))
+            stage_static_directory = stage_module.parent / "includes"
+            if (stage_static_directory / "static").exists():
+                logger.debug(f"Copying static files from {stage_name}")
+                self._copy_static_files_no_overwrite(stage_static_directory, stage_name)
 
         # populate "required" static files
         required_static = ["css/custom.css"]
@@ -543,7 +548,7 @@ class TreeSpan:
         (self.build_directory / "static").mkdir()
 
     def _get_static_paths(
-        self, static_directory: Path
+        self, static_directory: Path, stage_name: str | None = None
     ) -> tuple[list[Path], list[tuple[Path, Path]]]:
         """Get a list of files to be copied into build/static.
 
@@ -560,35 +565,38 @@ class TreeSpan:
         if not static_directory.exists():
             return [], []
 
+        final_parent = self.build_directory / "static"
+        if stage_name is not None:
+            final_parent = self.abs_static_stage_path(stage_name)
         static_files, static_subdirectories = [], []
         for current_root, directories, files in os.walk(static_directory):
             for file in files:
                 path_from_root = Path(current_root) / file
                 path_from_static = path_from_root.relative_to(static_directory)
-                final_path = self.build_directory / "static" / path_from_static
+                final_path = final_parent / path_from_static
 
                 initial_path = static_directory / path_from_static
                 static_files.append((initial_path, final_path))
 
             for directory in directories:
                 directory_full = static_directory / current_root / directory
-                directory_build = (
-                    self.build_directory
-                    / "static"
-                    / directory_full.relative_to(static_directory)
+                directory_build = final_parent / directory_full.relative_to(
+                    static_directory
                 )
                 static_subdirectories.append(directory_build)
 
         return static_subdirectories, static_files
 
-    def _copy_static_files_no_overwrite(self, parent_directory: Path) -> None:
+    def _copy_static_files_no_overwrite(
+        self, parent_directory: Path, stage_name: str | None = None
+    ) -> None:
         """Copy files into _build/static, but don't overwrite existing files."""
         logger.debug(
             f"Copying files from `{parent_directory/'static'}` to output. "
             f"Existing files in {self.build_directory/'static'} will not be overwritten."
         )
         directories, files = self._get_static_paths(
-            (parent_directory / "static").absolute()
+            (parent_directory / "static").absolute(), stage_name=stage_name
         )
         for directory in directories:
             directory.mkdir(exist_ok=True, parents=True)
