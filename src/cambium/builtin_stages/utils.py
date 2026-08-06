@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 import urllib
 from collections import Counter
 from pathlib import Path
@@ -214,3 +215,17 @@ def markdown_to_html(
         document = update_link_dests(document, file, tree)
 
     return marko_object.render(document)
+
+
+def path_matches_patterns(path: Path, patterns: dict[str, list[str]]) -> bool:
+    """Check if a path matches any item in `patterns`.
+
+    Where `patterns` is formatted as the output from `config.sort_user_paths`.
+    """
+    if f"/{path}" in patterns["paths"]:
+        return True
+
+    if path.name in patterns["names"]:
+        return True
+
+    return any(re.match(regex, str(path)) for regex in patterns["globs"])

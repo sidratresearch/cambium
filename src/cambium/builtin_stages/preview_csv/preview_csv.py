@@ -6,19 +6,31 @@ from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
+from pydantic import PositiveInt
 
-from ...stage import Stage
+from ...config import sort_user_paths
+from ...stage import Stage, StageConfig
 from ...tree import TreeSpan
-from ..utils import WrappedBlocksMixin
+from ..utils import WrappedBlocksMixin, path_matches_patterns
 
 logger = logging.getLogger(__name__)
+
+
+class PreviewCSVConfig(StageConfig):
+    enable_paths: list[str] = ["*.csv"]
+    disable_paths: list[str] = []
+    max_preview_rows: PositiveInt | None = None
 
 
 class PreviewCSV(Stage):
     def _csv_path_updater(self, csv_path: Path) -> Path:
         return csv_path / "index.md"
 
-    def __init__(self, _: dict[str, Any]) -> None:
+    def __init__(self, config_dict: dict[str, Any]) -> None:
+        self.config = PreviewCSVConfig.model_validate(config_dict)
+        self.enable_patterns = sort_user_paths(self.config.enable_paths)
+        self.disable_patterns = sort_user_paths(self.config.disable_paths)
+
         self.requires = []
         self.runs_before = ["TransformMarkdown", "IdentifyMetadata"]
         self.runs_after = []
@@ -32,9 +44,10 @@ class PreviewCSV(Stage):
         # we don't want to re-visit the added leaves anyway
         for leaf_uuid in list(tree.leaves["uuids"]):
             initial_path = tree.leaves["initial_path"][leaf_uuid]
-            if initial_path.suffix == ".csv":
-                # HACK: technically we should only be doing all this for
-                # CSV files *that are linked to by markdown documents*
+
+            if path_matches_patterns(
+                initial_path, self.enable_patterns
+            ) and not path_matches_patterns(initial_path, self.disable_patterns):
                 self._tree_hook_for_csv(leaf_uuid, initial_path, tree)
 
     def _tree_hook_for_csv(
@@ -67,7 +80,12 @@ class PreviewCSV(Stage):
             self._pre_hook_csv(leaf_uuid, tree)
 
     def _pre_hook_md(self, md_uuid: str, tree: TreeSpan) -> None:
-        preview_content = get_md_content(md_uuid, self.md_to_csv[md_uuid], tree)
+        preview_content = get_md_content(
+            md_uuid,
+            self.md_to_csv[md_uuid],
+            tree,
+            {"max_preview_rows": self.config.max_preview_rows},
+        )
         tree.abs_leaf_path(md_uuid).write_text(preview_content)
 
     def _pre_hook_csv(self, csv_uuid: str, tree: TreeSpan) -> None:
@@ -76,7 +94,9 @@ class PreviewCSV(Stage):
         tree.abs_leaf_path(csv_uuid).write_text(csv_content)
 
 
-def get_md_content(md_uuid: str, csv_uuid: str, tree: TreeSpan) -> str:
+def get_md_content(
+    md_uuid: str, csv_uuid: str, tree: TreeSpan, jinja_variables: dict[str, Any]
+) -> str:
     """Get the content for the Markdown preview page.
 
     This is done by using the native `csv` module, and rendering into an
@@ -89,7 +109,8 @@ def get_md_content(md_uuid: str, csv_uuid: str, tree: TreeSpan) -> str:
     download_filename = tree.leaves["initial_path"][csv_uuid].name
 
     csv_data = []
-    with tree.leaves["initial_path"][md_uuid].open() as csvfile:
+    csv_path = tree.leaves["initial_path"][md_uuid]
+    with csv_path.open() as csvfile:
         dialect = csv.Sniffer().sniff(csvfile.read(1024))
         csvfile.seek(0)
         reader = csv.reader(csvfile, dialect=dialect)
@@ -111,4 +132,6 @@ def get_md_content(md_uuid: str, csv_uuid: str, tree: TreeSpan) -> str:
         download_filename=download_filename,
         csv_data=csv_data,
         cambium_wrap=WrappedBlocksMixin.wrap_anything,
+        csv_filesize=csv_path.stat().st_size,
+        **jinja_variables,
     )
