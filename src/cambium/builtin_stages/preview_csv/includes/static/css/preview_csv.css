@@ -1,7 +1,12 @@
 table.cambium-preview-csv {
-  caption a {
-    svg {
-      width: 1rem;
+  caption div {
+    display: flex;
+    justify-content: space-between;
+    a {
+      display: inline-flex;
+      svg {
+        width: 1rem;
+      }
     }
   }
 }
