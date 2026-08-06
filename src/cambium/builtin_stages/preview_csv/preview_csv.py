@@ -1,11 +1,15 @@
 """Cambium stage to create preview pages for CSV data."""
 
+import csv
 import logging
 from pathlib import Path
 from typing import Any
 
-from ..stage import Stage
-from ..tree import TreeSpan
+from jinja2 import Environment, FileSystemLoader
+
+from ...stage import Stage
+from ...tree import TreeSpan
+from ..utils import WrappedBlocksMixin
 
 logger = logging.getLogger(__name__)
 
@@ -63,29 +67,48 @@ class PreviewCSV(Stage):
             self._pre_hook_csv(leaf_uuid, tree)
 
     def _pre_hook_md(self, md_uuid: str, tree: TreeSpan) -> None:
-        csv_path = tree.leaves["initial_path"][self.md_to_csv[md_uuid]]
-        data = self._get_csv_contents(tree, md_uuid=md_uuid)
-
-        preview_content = f"[{csv_path.name}](./{csv_path.name})"
-        preview_content += f"\n<table>{data}</table>"
-        # Can't have a "go back" link since this file could be linked in multiple places
-
+        preview_content = get_md_content(md_uuid, self.md_to_csv[md_uuid], tree)
         tree.abs_leaf_path(md_uuid).write_text(preview_content)
 
     def _pre_hook_csv(self, csv_uuid: str, tree: TreeSpan) -> None:
-        csv_content = self._get_csv_contents(tree, csv_uuid=csv_uuid)
+        md_uuid = self.csv_to_md[csv_uuid]
+        csv_content = tree.leaves["initial_path"][md_uuid].read_text()
         tree.abs_leaf_path(csv_uuid).write_text(csv_content)
 
-    def _get_csv_contents(
-        self, tree: TreeSpan, csv_uuid: str | None = None, md_uuid: str | None = None
-    ) -> str:
-        """Retrieve the comma-separated-content as a string.
 
-        Note: there is currently no way for a stage to manipulate the content
-        before it gets read in here, (e.g., round or sort the data), because
-        we're reading from "initial_path" (i.e., from the root directory).
-        """
-        # the data is actually stored in md_uuid
-        if md_uuid is None:
-            md_uuid = self.csv_to_md[csv_uuid]
-        return tree.leaves["initial_path"][md_uuid].read_text()
+def get_md_content(md_uuid: str, csv_uuid: str, tree: TreeSpan) -> str:
+    """Get the content for the Markdown preview page.
+
+    This is done by using the native `csv` module, and rendering into an
+    HTML table with Jinja, but this could be overriden.
+
+    Note: there is currently no way for a stage to manipulate the csv
+    content before it gets read in here, (e.g., round or sort the data),
+    because we're reading from "initial_path" (i.e., from the root directory).
+    """
+    download_filename = tree.leaves["initial_path"][csv_uuid].name
+
+    csv_data = []
+    with tree.leaves["initial_path"][md_uuid].open() as csvfile:
+        dialect = csv.Sniffer().sniff(csvfile.read(1024))
+        csvfile.seek(0)
+        reader = csv.reader(csvfile, dialect=dialect)
+        for row in reader:
+            csv_data.append(row)
+
+    stage_templates = Path(__file__).parent / "includes/templates"
+    template_dirs = [*tree.config.ordered_theme_directories, stage_templates]
+    jinja_environment = Environment(
+        loader=FileSystemLoader(template_dirs),
+        lstrip_blocks=True,
+        trim_blocks=True,  # stops Jinja lines from being replaced with newlines
+        # if not enabled, Marko doesn't recognize the table as being a single HTMLBlock
+    )
+
+    template = jinja_environment.get_template("preview-csv.md.jinja")
+
+    return template.render(
+        download_filename=download_filename,
+        csv_data=csv_data,
+        cambium_wrap=WrappedBlocksMixin.wrap_anything,
+    )
