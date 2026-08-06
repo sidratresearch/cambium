@@ -11,7 +11,7 @@ from .. import __version__
 from ..metadata import LeafMetadata
 from ..stage import Stage
 from ..tree import TreeSpan
-from .utils import markdown_to_html
+from .utils import get_relative_path_modifier, markdown_to_html
 
 logger = logging.getLogger(__name__)
 
@@ -118,9 +118,7 @@ class TemplateMarkdown(Stage):
 
     def _create_page(self, leaf_uuid: str, tree: TreeSpan) -> None:
         input_path = tree.abs_leaf_path(leaf_uuid)
-        number_of_parents: int = len(
-            input_path.parent.relative_to(tree.config.tmp_dir.absolute()).parents
-        )
+
         template_name = "base.html.jinja"
         logger.debug(
             f"Applying Jinja template {template_name} to {tree.leaves['latest_path'][leaf_uuid]}"
@@ -133,7 +131,9 @@ class TemplateMarkdown(Stage):
             # general Cambium utility items
             cambium_version=__version__,
             site_name=tree.config.site_name,
-            relative_path_modifier="../" * number_of_parents,
+            relative_path_modifier=get_relative_path_modifier(
+                tree.leaves["final_path"][leaf_uuid]
+            ),
             metadata=tree.leaves["metadata"][leaf_uuid],
             initial_path=tree.leaves["initial_path"][leaf_uuid],
             dev_server=tree.config.dev_server,

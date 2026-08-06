@@ -14,6 +14,7 @@ from typing import Any
 
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
+from .utils import get_relative_path_modifier
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +43,7 @@ class _Report:
         # Something to think about if we update the path later...
         self.leaf_uuid = tree.add_leaf(self.path_in_build)
 
-        parent_folder = self.path_in_build.parent
-        self.relative_path_modifier = "../" * len(parent_folder.parts)
+        self.relative_path_modifier = get_relative_path_modifier(self.path_in_build)
 
         caller._register_hook(self.leaf_uuid, tree, "pre_hooks")
 

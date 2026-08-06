@@ -229,3 +229,8 @@ def path_matches_patterns(path: Path, patterns: dict[str, list[str]]) -> bool:
         return True
 
     return any(re.match(regex, str(path)) for regex in patterns["globs"])
+
+
+def get_relative_path_modifier(final_path: Path) -> str:
+    """String to prepend to a path to get from the path up to build."""
+    return "../" * len(final_path.parent.parents)
