@@ -104,7 +104,7 @@ class FileConfiguration(BaseModel):
     site_name: Optional[str] = "Cambium Site"
     "The Name of the Cambium Site"
 
-    theme: Optional[str] = "default"
+    theme: Optional[str] = "root"
     """Builtin Theme to Use"""
 
 
