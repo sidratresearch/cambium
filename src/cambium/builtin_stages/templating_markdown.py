@@ -111,6 +111,8 @@ class TemplateMarkdown(Stage):
         self._populate_jinja_template_paths(tree)
         self.jinja_env = Environment(
             loader=FileSystemLoader(self.jinja_template_paths),
+            trim_blocks=True,
+            lstrip_blocks=True,
         )
         self.jinja_env.globals = self._read_jinja_globals(tree)
 
