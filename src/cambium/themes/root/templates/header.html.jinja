@@ -4,26 +4,16 @@
 {#  define whether or not there is content in the menu panel
       assumes that all menu content comes from {{menu}}, which comes from
       .cambium/jinja_variables/menu.md #}
+{% set menu_button_action = "open" %}
 
 <header>
   <div class="header-bar">
-    <div class="header-left">
-      <a href="{{ relative_path_modifier }}index.html" class="header-link site-title">
-        {{ site_name }}
-      </a>
-    </div>
-    <div class="header-centre">
-      {% if metadata.stage_metadata.PagefindSearch is defined %}
-        {% include metadata.stage_metadata.PagefindSearch.searchbar_component %}
-      {% endif %}
-    </div>
-    <div class="header-right">
-      {% if has_menu_content %}
-        {% include 'menu-button.html.jinja' %}
-      {% endif %}
-    </div>
+    {% include "header-left.html.jinja" %}
+    {% include "header-centre.html.jinja" %}
+    {% include "header-right.html.jinja" %}
   </div>
 </header>
 {% if has_menu_content %}
+  {% set menu_button_action = "close" %}
   {% include 'menu-panel.html.jinja' %}
 {% endif %}

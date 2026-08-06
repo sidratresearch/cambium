@@ -1,9 +1,9 @@
 {# Cambium Theme: Root #}
 
 <footer>
-  <div class="container footer-bar">
-    <div class="footer-left">{{ site_name }} {{ build_time_utc.year }}</div>
-    <div class="footer-centre"></div>
-    <div class="footer-right"></div>
+  <div class="container">
+    {% include "footer-left.html.jinja" %}
+    {% include "footer-centre.html.jinja" %}
+    {% include "footer-right.html.jinja" %}
   </div>
 </footer>
