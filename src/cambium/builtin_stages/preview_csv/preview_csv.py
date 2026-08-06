@@ -11,7 +11,11 @@ from pydantic import PositiveInt
 from ...config import sort_user_paths
 from ...stage import Stage, StageConfig
 from ...tree import TreeSpan
-from ..utils import WrappedBlocksMixin, path_matches_patterns
+from ..utils import (
+    WrappedBlocksMixin,
+    get_relative_path_modifier,
+    path_matches_patterns,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +43,16 @@ class PreviewCSV(Stage):
         self.csv_to_md = {}
         self.md_to_csv = {}
 
+        self.css_file = "css/preview_csv.css"
+        # path from includes/static to the CSS file we want to import on preview pages
+
     def tree_hook(self, tree: TreeSpan) -> None:
+        # get what the actual path of the CSS file will be in the build directory
+        static_dir = tree.abs_static_stage_path(self.__class__.__name__).relative_to(
+            tree.build_directory
+        )
+        self.css_link = static_dir / self.css_file
+
         # cast the deque to a list so that we can add new leaves to the end
         # we don't want to re-visit the added leaves anyway
         for leaf_uuid in list(tree.leaves["uuids"]):
@@ -84,7 +97,13 @@ class PreviewCSV(Stage):
             md_uuid,
             self.md_to_csv[md_uuid],
             tree,
-            {"max_preview_rows": self.config.max_preview_rows},
+            {
+                "max_preview_rows": self.config.max_preview_rows,
+                "css_link": self.css_link,
+                "relative_path_modifier": get_relative_path_modifier(
+                    tree.leaves["final_path"][md_uuid]
+                ),
+            },
         )
         tree.abs_leaf_path(md_uuid).write_text(preview_content)
 

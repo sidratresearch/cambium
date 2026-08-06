@@ -8,7 +8,7 @@
 
 {# Generate the <table> #}
 {% set csv_table %}
-  <table>
+  <table class="cambium-preview-csv">
     <caption>
       <a href="./{{ download_filename }}">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
@@ -50,5 +50,6 @@
 
 {# Actual content that gets rendered #}
 
+<link rel="stylesheet" href="{{ relative_path_modifier }}{{ css_link }}" />
 {# cambium_wrap adds the div.cambium-table-holder #}
 {{ cambium_wrap(csv_table, "table") }}
