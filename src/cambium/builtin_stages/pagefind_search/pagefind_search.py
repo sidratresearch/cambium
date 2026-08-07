@@ -51,41 +51,17 @@ class PagefindSearch(Stage):
 
     def tree_hook(self, tree: TreeSpan) -> None:
         templates_dir = Path(__file__).parent / "includes/templates"
-        static_dir = Path(__file__).parent / "includes/static"
-        tree.config.stage_theme_directories["static"].append(static_dir)
-        tree.config.stage_theme_directories["templates"].append(templates_dir)
+        tree.config.ordered_template_directories.append(templates_dir)
 
         for uuid in tree.leaves["uuids"]:
             if tree.leaves["final_path"][uuid].suffix == ".html":
-                self._register_hook(uuid, tree, "pre_hooks")
                 self._register_hook(uuid, tree, "post_hooks")
+                self._set_leaf_metadata("show_searchbar_on_page", True, uuid, tree)
                 self._set_css_include(self.css_path, uuid, tree)
                 self._set_js_include(self.js_path, uuid, tree)
 
         self.abs_pagefind_directory = tree.abs_static_stage_path(
             self.__class__.__name__
-        )
-
-    def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        self._set_leaf_metadata("show_searchbar_on_page", True, leaf_uuid, tree)
-        # TODO: set some guard/warning against stages accidentally reusing template names
-        self._set_leaf_metadata(
-            "searchbar_component",
-            "pagefindsearch-search-component.html.jinja",
-            leaf_uuid,
-            tree,
-        )
-        self._set_leaf_metadata(
-            "head_links",
-            "pagefindsearch-head.html.jinja",
-            leaf_uuid,
-            tree,
-        )
-        self._set_leaf_metadata(
-            "pagefind_directory",
-            self.abs_pagefind_directory.relative_to(tree.build_directory.absolute()),
-            leaf_uuid,
-            tree,
         )
 
     def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:

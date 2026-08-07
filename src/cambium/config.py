@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
 import re
 import tempfile
@@ -104,7 +105,7 @@ class FileConfiguration(BaseModel):
     site_name: Optional[str] = "Cambium Site"
     "The Name of the Cambium Site"
 
-    theme: Optional[str] = "root"
+    theme: Optional[str] = "maple"
     """Builtin Theme to Use"""
 
 
@@ -177,14 +178,32 @@ class WorkingConfiguration:
         )
 
         # Save lists of theme directories
-        cambium_themes_folder = Path(__file__).parent / "themes"
-        self.ordered_theme_directories = [
-            self.root_dir / ".cambium/theme",
-            cambium_themes_folder / self.input_config.theme,
+        # TODO: add existence checks on all these directories
+        builtin_themes_folder = Path(__file__).parent / "themes"
+        self.ordered_template_directories = [
+            self.root_dir / ".cambium/theme/templates",
+            # TODO: look for non-builtin template folders
+            builtin_themes_folder / self.input_config.theme / "templates",
+            builtin_themes_folder / "root/templates",
         ]
+
+        self.theme_static_directories = {
+            builtin_themes_folder / "root" / "static": Path("static/"),
+            builtin_themes_folder / self.input_config.theme / "static": Path("static/"),
+        }
         if self.input_config.dev_server:
-            self.ordered_theme_directories.append(cambium_themes_folder / "dev-server")
-        self.stage_theme_directories = {"static": [], "templates": []}
+            self.theme_static_directories[
+                builtin_themes_folder / "dev-server" / "static"
+            ] = Path("static/")
+        self.user_static_directories = {
+            self.root_dir / ".cambium/theme/static": Path("static/"),
+            self.root_dir / "static": Path("static/"),
+        }
+        self.stage_static_directories = {
+            Path(inspect.getfile(stage_instance.__class__)).parent
+            / "includes/static": Path(f"static/_cambium/{stage_name}")
+            for stage_name, stage_instance in self.stage_dict.items()
+        }
 
         # Exposing Simple Parameters (that require no additional processing)
         self.max_leaves = self.input_config.max_leaves

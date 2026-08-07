@@ -16,8 +16,7 @@ StageMetadata = defaultdict(lambda: None)
 class LeafMetadata(BaseModel):
     """Leaf Metadata Object.
 
-    Contains all Page Metadata for each Leaf
-
+    Contains metadata for a leaf
     """
 
     title: Optional[str] = None

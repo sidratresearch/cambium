@@ -117,10 +117,11 @@ class TreeSpan:
         all_directories = self.directories_in_build.copy()
 
         for parent_directory in [
-            self.root_directory,
-            *self.config.ordered_theme_directories,
+            *self.config.theme_static_directories.values(),
+            *self.config.user_static_directories.values(),
+            *self.config.stage_static_directories.values(),
         ]:
-            static_directory = (parent_directory / "static").absolute()
+            static_directory = (parent_directory).absolute()
             directories, files = self._get_static_paths(static_directory)
             files_list = [f[1].relative_to(self.build_directory) for f in files]
             directories_list = [
@@ -423,15 +424,21 @@ class TreeSpan:
             shutil.copy(from_path, to_path)
 
         # copy static files over
-        self._copy_static_files_no_overwrite(self.root_directory)
-        for directory in self.config.ordered_theme_directories:  # theme files
-            self._copy_static_files_no_overwrite(directory)
+        for source_dir, dest_dir in self.config.stage_static_directories.items():
+            pass
+            # copy files
+
         for stage_name, stage_instance in self.config.stage_dict.items():
             stage_module = Path(inspect.getfile(stage_instance.__class__))
             stage_static_directory = stage_module.parent / "includes"
             if (stage_static_directory / "static").exists():
                 logger.debug(f"Copying static files from {stage_name}")
-                self._copy_static_files_no_overwrite(stage_static_directory, stage_name)
+                self._copy_static_files(stage_static_directory, stage_name)
+        for static_dir in list(self.config.theme_static_directories.keys())[::-1]:
+            self._copy_static_files(static_dir.parent)
+        self._copy_static_files(self.root_directory)
+        for static_dir in list(self.config.user_static_directories.keys())[::-1]:
+            self._copy_static_files(static_dir.parent)
 
         # populate "required" static files
         required_static = ["css/custom.css"]
@@ -494,7 +501,7 @@ class TreeSpan:
             leaf_bytes += initial_path.stat().st_size
         for static_directory in [
             self.root_directory / "static",
-            *self.config.ordered_theme_directories,
+            *self.config.ordered_template_directories,
         ]:
             for static_file in static_directory.glob("**/*"):
                 static_bytes += static_file.stat().st_size
@@ -587,13 +594,13 @@ class TreeSpan:
 
         return static_subdirectories, static_files
 
-    def _copy_static_files_no_overwrite(
+    def _copy_static_files(
         self, parent_directory: Path, stage_name: str | None = None
     ) -> None:
-        """Copy files into _build/static, but don't overwrite existing files."""
+        """Copy files into _build/static, and overwrite existing files."""
         logger.debug(
             f"Copying files from `{parent_directory/'static'}` to output. "
-            f"Existing files in {self.build_directory/'static'} will not be overwritten."
+            f"Existing files in {self.build_directory/'static'} will be overwritten."
         )
         directories, files = self._get_static_paths(
             (parent_directory / "static").absolute(), stage_name=stage_name
@@ -602,11 +609,6 @@ class TreeSpan:
             directory.mkdir(exist_ok=True, parents=True)
 
         for initial_path, final_path in files:
-
-            if final_path.exists():
-                logger.debug(f"Skipping {initial_path} because {final_path} exists")
-                continue
-
             logger.debug(f"Copying static file {initial_path} to {final_path}")
             shutil.copy(initial_path, final_path)
 

@@ -28,8 +28,6 @@ class CambiumJinjaVariables(BaseModel, extra="forbid"):
 
 
 class TemplateMarkdown(Stage):
-    jinja_template_paths: list[Path] = []
-
     # Primary Hook Functions
 
     def tree_hook(self, tree: TreeSpan) -> None:
@@ -41,14 +39,6 @@ class TemplateMarkdown(Stage):
         tree.apply_to_leaves(self._tree_hook_for_leaf)
 
     def post_hook_initialize(self, tree: TreeSpan) -> None:
-        # load in templates registered by other stages
-        for stage_templates in tree.config.stage_theme_directories["templates"]:
-            if stage_templates.exists():
-                self.jinja_template_paths.append(stage_templates)
-            else:
-                logger.warning(f"""{stage_templates} was registered as a stage template
-                    path, but doesn't exist.""")
-
         # Initialize Jinja Environment
         self._initialize_jinja(tree)
 
@@ -70,18 +60,6 @@ class TemplateMarkdown(Stage):
             return
 
         self._register_hook(leaf_uuid, tree, "post_hooks")
-
-    def _populate_jinja_template_paths(self, tree: TreeSpan) -> None:
-        for tmp_theme_path in tree.config.ordered_theme_directories:
-            if (tmp_theme_path / "templates").exists():
-                self.jinja_template_paths.append(tmp_theme_path / "templates")
-
-        if len(self.jinja_template_paths) == 0:
-            raise RuntimeError("No theme template libraries were found.")
-
-        logger.debug(
-            f"Found Jinja templates {[str(p) for p in self.jinja_template_paths]}"
-        )
 
     def _read_jinja_globals(self, tree: TreeSpan) -> dict[str, str]:
         search_path = tree.root_directory / ".cambium/jinja_variables"
@@ -108,9 +86,11 @@ class TemplateMarkdown(Stage):
 
     def _initialize_jinja(self, tree: TreeSpan) -> None:
         """Initializing Jinja Templating Environment."""
-        self._populate_jinja_template_paths(tree)
+        logger.debug(
+            f"Using Jinja template directories {[str(p) for p in tree.config.ordered_template_directories]}"
+        )
         self.jinja_env = Environment(
-            loader=FileSystemLoader(self.jinja_template_paths),
+            loader=FileSystemLoader(tree.config.ordered_template_directories),
             trim_blocks=True,
             lstrip_blocks=True,
         )

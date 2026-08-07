@@ -137,7 +137,7 @@ def get_md_content(
             csv_data.append(row)
 
     stage_templates = Path(__file__).parent / "includes/templates"
-    template_dirs = [*tree.config.ordered_theme_directories, stage_templates]
+    template_dirs = [*tree.config.ordered_template_directories, stage_templates]
     jinja_environment = Environment(
         loader=FileSystemLoader(template_dirs),
         lstrip_blocks=True,
