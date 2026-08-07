@@ -57,7 +57,6 @@ class TreeSpan:
 
         self.root_directory = self.config.root_dir
         self.build_directory = self.config.build_dir
-        self.directories_in_build = []
 
         # TODO: there's not currently anything stopping a stage from setting a leaf path to something that isn't a Path, then when another stage tries to acces .suffix, it breaks
         # maybe using a pydantic model would help?
@@ -116,19 +115,17 @@ class TreeSpan:
         all_files = self.leaf_final_paths()
         all_directories = self.directories_in_build.copy()
 
-        for parent_directory in [
-            *self.config.theme_static_directories.values(),
-            *self.config.user_static_directories.values(),
-            *self.config.stage_static_directories.values(),
+        for static_source_dir, static_dest_dir in [
+            *self.config.static_directories["stage"],
+            *self.config.static_directories["user"],
+            *self.config.static_directories["theme"],
         ]:
-            static_directory = (parent_directory).absolute()
-            directories, files = self._get_static_paths(static_directory)
-            files_list = [f[1].relative_to(self.build_directory) for f in files]
-            directories_list = [
-                d.relative_to(self.build_directory) for d in directories
-            ]
-            all_files += files_list
-            all_directories += directories_list
+            static_directory = (static_source_dir).absolute()
+            directories, files = self._get_static_paths(
+                static_directory, static_dest_dir
+            )
+            all_files += [f[1] for f in files]
+            all_directories += directories
 
         self.filestructure_in_build = make_nested_filetree(all_directories, all_files)
 
@@ -424,21 +421,9 @@ class TreeSpan:
             shutil.copy(from_path, to_path)
 
         # copy static files over
-        for source_dir, dest_dir in self.config.stage_static_directories.items():
-            pass
-            # copy files
-
-        for stage_name, stage_instance in self.config.stage_dict.items():
-            stage_module = Path(inspect.getfile(stage_instance.__class__))
-            stage_static_directory = stage_module.parent / "includes"
-            if (stage_static_directory / "static").exists():
-                logger.debug(f"Copying static files from {stage_name}")
-                self._copy_static_files(stage_static_directory, stage_name)
-        for static_dir in list(self.config.theme_static_directories.keys())[::-1]:
-            self._copy_static_files(static_dir.parent)
-        self._copy_static_files(self.root_directory)
-        for static_dir in list(self.config.user_static_directories.keys())[::-1]:
-            self._copy_static_files(static_dir.parent)
+        for static_type in ["stage", "theme", "user"]:
+            for source_dir, dest_dir in self.config.static_directories[static_type]:
+                self._copy_static_files(source_dir, dest_dir)
 
         # populate "required" static files
         required_static = ["css/custom.css"]
@@ -555,7 +540,7 @@ class TreeSpan:
         (self.build_directory / "static").mkdir()
 
     def _get_static_paths(
-        self, static_directory: Path, stage_name: str | None = None
+        self, search_directory: Path, output_directory: Path
     ) -> tuple[list[Path], list[tuple[Path, Path]]]:
         """Get a list of files to be copied into build/static.
 
@@ -564,47 +549,42 @@ class TreeSpan:
         - sub directories in root/.cambium
         - directories from the installed cambium package
         """
-        if not static_directory.is_absolute():
+        if not search_directory.is_absolute():
             logger.error(
-                f"Only use absolute paths when listing static files. Recieved relative path {static_directory}."
+                f"Only use absolute paths when listing static files. Recieved relative path {search_directory}."
             )
             raise RuntimeError
-        if not static_directory.exists():
-            return [], []
 
-        final_parent = self.build_directory / "static"
-        if stage_name is not None:
-            final_parent = self.abs_static_stage_path(stage_name)
         static_files, static_subdirectories = [], []
-        for current_root, directories, files in os.walk(static_directory):
+
+        for current_root, directories, files in os.walk(search_directory):
             for file in files:
                 path_from_root = Path(current_root) / file
-                path_from_static = path_from_root.relative_to(static_directory)
-                final_path = final_parent / path_from_static
+                path_from_static = path_from_root.relative_to(search_directory)
 
-                initial_path = static_directory / path_from_static
-                static_files.append((initial_path, final_path))
+                initial_path = search_directory / path_from_static
+                static_files.append((initial_path, output_directory / path_from_static))
 
             for directory in directories:
-                directory_full = static_directory / current_root / directory
-                directory_build = final_parent / directory_full.relative_to(
-                    static_directory
-                )
-                static_subdirectories.append(directory_build)
+                directory_full = search_directory / current_root / directory
+                directory_build = directory_full.relative_to(search_directory)
+                static_subdirectories.append(output_directory / directory_build)
 
         return static_subdirectories, static_files
 
-    def _copy_static_files(
-        self, parent_directory: Path, stage_name: str | None = None
-    ) -> None:
+    def _copy_static_files(self, source_dir: Path, dest_dir: Path) -> None:
         """Copy files into _build/static, and overwrite existing files."""
         logger.debug(
-            f"Copying files from `{parent_directory/'static'}` to output. "
-            f"Existing files in {self.build_directory/'static'} will be overwritten."
+            f"Copying files from `{source_dir}` to output. "
+            f"Existing files in {dest_dir} will be overwritten."
         )
-        directories, files = self._get_static_paths(
-            (parent_directory / "static").absolute(), stage_name=stage_name
-        )
+        dest_dir = self.build_directory / dest_dir
+        source_dir, dest_dir = source_dir.absolute(), dest_dir.absolute()
+        if not dest_dir.exists():
+            dest_dir.mkdir()
+
+        directories, files = self._get_static_paths(source_dir, dest_dir)
+
         for directory in directories:
             directory.mkdir(exist_ok=True, parents=True)
 

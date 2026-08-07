@@ -7,7 +7,7 @@ import logging
 import re
 import tempfile
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Generic, Literal, Optional, TypedDict, TypeVar
 
 import yaml
 from pydantic import BaseModel
@@ -37,6 +37,15 @@ current_config: Optional[WorkingConfiguration] = None
 
 root_directory_type = Optional[str]
 build_directory_type = Optional[str]
+
+
+OrderedDirectoriesEntry = TypeVar("OrderedDirectoriesEntry")
+
+
+class OrderedDirectories(TypedDict, Generic[OrderedDirectoriesEntry]):
+    user: OrderedDirectoriesEntry
+    theme: OrderedDirectoriesEntry
+    stage: OrderedDirectoriesEntry
 
 
 class CLIConfiguration(BaseModel):
@@ -187,23 +196,10 @@ class WorkingConfiguration:
             builtin_themes_folder / "root/templates",
         ]
 
-        self.theme_static_directories = {
-            builtin_themes_folder / "root" / "static": Path("static/"),
-            builtin_themes_folder / self.input_config.theme / "static": Path("static/"),
-        }
-        if self.input_config.dev_server:
-            self.theme_static_directories[
-                builtin_themes_folder / "dev-server" / "static"
-            ] = Path("static/")
-        self.user_static_directories = {
-            self.root_dir / ".cambium/theme/static": Path("static/"),
-            self.root_dir / "static": Path("static/"),
-        }
-        self.stage_static_directories = {
-            Path(inspect.getfile(stage_instance.__class__)).parent
-            / "includes/static": Path(f"static/_cambium/{stage_name}")
-            for stage_name, stage_instance in self.stage_dict.items()
-        }
+        selected_theme_directory = builtin_themes_folder / self.input_config.theme
+        self.populate_static_directories(
+            builtin_themes_folder, selected_theme_directory
+        )
 
         # Exposing Simple Parameters (that require no additional processing)
         self.max_leaves = self.input_config.max_leaves
@@ -274,6 +270,52 @@ class WorkingConfiguration:
             outdir != self.root_dir.resolve()
         ), "Output directory cannot be the same as the root directory"
         return outdir
+
+    def populate_static_directories(
+        self, builtin_themes_directory: Path, selected_theme_directory: Path
+    ) -> None:
+        """Set up a dictionary mapping source to output dirs for various static dirs."""
+        # these *are* ordered (lowest to highest priority)
+        self.static_directories: OrderedDirectories[list[tuple[Path, Path]]] = {
+            "theme": [],
+            "user": [],
+            "stage": [],
+        }
+        """Mapping source to output for static directories to copy"""
+
+        dest = Path("static")
+
+        # Set theme-based static dirs
+        self.static_directories["theme"].append(
+            (builtin_themes_directory / "root" / "static", dest)
+        )
+
+        theme_static_dir = selected_theme_directory / "static"
+        if theme_static_dir.exists():
+            self.static_directories["theme"].append((theme_static_dir, dest))
+
+        if self.input_config.dev_server:
+            dev_static_dir = builtin_themes_directory / "dev-server" / "static"
+            self.static_directories["theme"].append((dev_static_dir, dest))
+
+        # Set user-provided static dirs
+        root_static = self.root_dir / "static"
+        if root_static.exists():
+            self.static_directories["user"].append((root_static, dest))
+
+        cambium_static = self.root_dir / ".cambium/theme/static"
+        if cambium_static.exists():
+            self.static_directories["user"].append((cambium_static, dest))
+
+        # Set theme-provided static dirs
+        for stage_name, stage_instance in self.stage_dict.items():
+            stage_dir = Path(inspect.getfile(stage_instance.__class__)).parent
+            stage_static_dir = stage_dir / "includes" / "static"
+            if stage_static_dir.exists():
+                stage_output_dir = Path(f"static/_cambium/{stage_name}")
+                self.static_directories["stage"].append(
+                    (stage_static_dir, stage_output_dir)
+                )
 
 
 def initialize_configuration(
