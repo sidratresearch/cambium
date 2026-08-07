@@ -87,10 +87,10 @@ class TemplateMarkdown(Stage):
     def _initialize_jinja(self, tree: TreeSpan) -> None:
         """Initializing Jinja Templating Environment."""
         logger.debug(
-            f"Using Jinja template directories {[str(p) for p in tree.config.ordered_template_directories]}"
+            f"Using Jinja template directories {[str(p) for p in tree.config.template_directories]}"
         )
         self.jinja_env = Environment(
-            loader=FileSystemLoader(tree.config.ordered_template_directories),
+            loader=FileSystemLoader(tree.config.template_directories),
             trim_blocks=True,
             lstrip_blocks=True,
         )

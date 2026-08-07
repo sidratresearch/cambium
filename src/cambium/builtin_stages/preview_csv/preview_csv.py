@@ -136,10 +136,8 @@ def get_md_content(
         for row in reader:
             csv_data.append(row)
 
-    stage_templates = Path(__file__).parent / "includes/templates"
-    template_dirs = [*tree.config.ordered_template_directories, stage_templates]
     jinja_environment = Environment(
-        loader=FileSystemLoader(template_dirs),
+        loader=FileSystemLoader(tree.config.template_directories),
         lstrip_blocks=True,
         trim_blocks=True,  # stops Jinja lines from being replaced with newlines
         # if not enabled, Marko doesn't recognize the table as being a single HTMLBlock

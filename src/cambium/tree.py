@@ -484,12 +484,10 @@ class TreeSpan:
             if not initial_path.exists():
                 continue
             leaf_bytes += initial_path.stat().st_size
-        for static_directory in [
-            self.root_directory / "static",
-            *self.config.ordered_template_directories,
-        ]:
-            for static_file in static_directory.glob("**/*"):
-                static_bytes += static_file.stat().st_size
+        for static_in_out_dirs in self.config.static_directories.values():
+            for static_directory, _ in static_in_out_dirs:
+                for static_file in static_directory.glob("**/*"):
+                    static_bytes += static_file.stat().st_size
 
         safety_factor = 1.5  # require this much extra space for theme, md->HTML, etc.
 

@@ -184,18 +184,13 @@ class WorkingConfiguration:
         )
 
         # Save lists of theme directories
-        # TODO: add existence checks on all these directories
-        builtin_themes_folder = Path(__file__).parent / "themes"
-        self.ordered_template_directories = [
-            self.root_dir / ".cambium/theme/templates",
-            # TODO: look for non-builtin template folders
-            builtin_themes_folder / self.input_config.theme / "templates",
-            builtin_themes_folder / "root/templates",
-        ]
-
-        selected_theme_directory = builtin_themes_folder / self.input_config.theme
+        builtin_themes_directory = Path(__file__).parent / "themes"
+        selected_theme_directory = builtin_themes_directory / self.input_config.theme
         self.populate_static_directories(
-            builtin_themes_folder, selected_theme_directory
+            builtin_themes_directory, selected_theme_directory
+        )
+        self.populate_template_directories(
+            builtin_themes_directory, selected_theme_directory
         )
 
         # Exposing Simple Parameters (that require no additional processing)
@@ -267,6 +262,36 @@ class WorkingConfiguration:
             outdir != self.root_dir.resolve()
         ), "Output directory cannot be the same as the root directory"
         return outdir
+
+    def populate_template_directories(
+        self, builtin_themes_directory: Path, selected_theme_directory: Path
+    ) -> None:
+        """Populate a list of directories in which to search for Jinja templates.
+
+        Auto-discovers `<stage>/includes/templates`, but if other directories
+        should be used, stages could append specific directories to the end of
+        `WorkingConfiguration.template_directories`.
+        """
+        self.template_directories = []
+        """Ordered list of directories in which to search for Jinja templates"""
+
+        user_templates = self.root_dir / ".cambium/theme/templates"
+        if user_templates.exists():
+            self.template_directories.append(user_templates)
+
+        selected_theme = selected_theme_directory / "templates"
+        if selected_theme.exists():
+            self.template_directories.append(selected_theme)
+
+        self.template_directories.append(
+            builtin_themes_directory / "root" / "templates"
+        )
+
+        for stage_name, stage_instance in self.stage_dict.items():
+            stage_dir = Path(inspect.getfile(stage_instance.__class__)).parent
+            stage_templates_dir = stage_dir / "includes" / "templates"
+            if stage_templates_dir.exists():
+                self.template_directories.append(stage_templates_dir)
 
     def populate_static_directories(
         self, builtin_themes_directory: Path, selected_theme_directory: Path

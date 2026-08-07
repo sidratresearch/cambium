@@ -50,8 +50,6 @@ class PagefindSearch(Stage):
         self.js_path = Path("pagefind-component-ui.js")
 
     def tree_hook(self, tree: TreeSpan) -> None:
-        templates_dir = Path(__file__).parent / "includes/templates"
-        tree.config.ordered_template_directories.append(templates_dir)
 
         for uuid in tree.leaves["uuids"]:
             if tree.leaves["final_path"][uuid].suffix == ".html":
