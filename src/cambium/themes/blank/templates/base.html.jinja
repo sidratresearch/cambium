@@ -1,0 +1,24 @@
+{# Cambium Theme: Blank #}
+
+
+{% set title %}
+  {# set the tab title based on whether or not the specific page has a title #}
+  {% if metadata.title %}
+    {{ metadata.title }}
+    - {{ site_name }}
+  {% else %}
+    {{ site_name }}
+  {% endif %}
+{% endset %}
+
+<!DOCTYPE html>
+<html lang="en" id="{{ metadata.page_id }}">
+  {% include "head.html.jinja" %}
+
+  <body>
+    <main>{{ main_content }}</main>
+
+    {# JS Imports re-uses the template from `root` #}
+    {% include "js-imports.html.jinja" %}
+  </body>
+</html>

@@ -1,0 +1,33 @@
+{# Cambium Theme: Blank #}
+
+{#
+  Overwrite this template with `.cambium/theme/templates/head.html.jinja`
+  to inject additional content into the <head> tag
+
+  e.g., to set the favicon to the file `static/assets/favicon.png` add
+
+  <link rel="icon" type="image/png" href="{{ relative_path_modifier }}/static/assets/favicon.png" />
+#}
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="generator" content="Cambium v{{ cambium_version }}" />
+  <title>{{ title }}</title>
+
+  {# Grabbable with JS #}
+  <meta name="cambium-data" value="" data-initial-path="{{ initial_path }}" />
+
+  {# Stage CSS Files #}
+  {% for  stage_metadata in metadata.stage_metadata.values() %}
+    {% if stage_metadata.cambium_css is not none %}
+      <link href="{{ relative_path_modifier }}{{ stage_metadata.cambium_css }}" rel="stylesheet" />
+    {% endif %}
+  {% endfor %}
+
+  {# Theme CSS #}
+  <link rel="stylesheet" href="{{ relative_path_modifier }}static/css/base.css" />
+
+  {# User CSS #}
+  <link rel="stylesheet" href="{{ relative_path_modifier }}static/css/custom.css" />
+</head>
