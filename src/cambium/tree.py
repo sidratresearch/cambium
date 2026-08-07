@@ -426,7 +426,8 @@ class TreeSpan:
                 self._copy_static_files(source_dir, dest_dir)
 
         # populate "required" static files
-        required_static = ["css/custom.css"]
+        # TODO: enforce that these can only come from user, not theme
+        required_static = ["css/custom.css", "js/custom.js"]
         for path in [
             self.build_directory / "static" / file for file in required_static
         ]:
