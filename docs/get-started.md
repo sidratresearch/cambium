@@ -36,9 +36,9 @@ mkdir .cambium && cambium --dump-default-config >.cambium/config.yaml
 
 On top of the default style, Cambium loads `_build/static/css/custom.css`.
 
-If `static/css/custom.css` exists, this is what will be used. If not, and `.cambium/theme/static/css/custom.css` exists, it will be used instead (following the usual rules of priority ordering of static files). If neither of these exist, an empty file will be created.
+If `.cambium/theme/static/css/custom.css` exists, this is what will be used. If not, and `static/css/custom.css` exists, it will be used instead (following the usual rules of priority ordering of static files). If neither of these exist, an empty file will be created.
 
-This is done to provide a location for CSS custom to be loaded from without needing to override the Jinja template, and to ensure that said location always exists, even as an empty file, to avoid 404s.
+This is done to provide a location for CSS custom to be loaded from without needing to override the Jinja template, and to ensure that said location always exists, even as an empty file, to avoid 404s. This all also applies to `_build/static/js/custom.js`.
 
 To assist in page-specific styling, Cambium applies a unique `id` to the `html` tag on each page.
 
@@ -57,3 +57,8 @@ Cambium uses Jinja templates to organize the rendering of Markdown content into 
 We recommend copying an existing template and making modifications rather than starting entirely from scratch. When modifying, be careful to retain elements such as the development server block in `base.html.jinja`.
 
 The Jinja templates can also read in content from files located in `.cambium/jinja_variables`. Files in that directory will have their contents available as Jinja environment variables. In the `default` theme, if a file named `menu` exists in that directory, that will trigger the rendering of a site menu in the header, containing the contents of the `menu`. Markdown files will be parsed into HTML, so it is often convenient to create `menu.md`.
+
+## Pre-built Themes
+
+Cambium comes with the pre-made _maple_ theme. If you would like to use another built-in theme, just change the `theme` entry in your configuration file. Currently only _maple_ and _root_ are available.
+Themes can provide static files (CSS, JS, other assets) as well as Jinja templates. Any files not provided will be pulled from the "fallback" `root` theme. Any theme assets can of course be overridden by placing your own files within one of the static folders (see [Custom Styling](#custom-styling)).
