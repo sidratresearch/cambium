@@ -47,6 +47,7 @@ class PagefindSearch(Stage):
         self.runs_before = []
 
         self.css_path = Path("cambium-pagefind.css")
+        self.js_path = Path("pagefind-component-ui.js")
 
     def tree_hook(self, tree: TreeSpan) -> None:
         templates_dir = Path(__file__).parent / "includes/templates"
@@ -59,6 +60,7 @@ class PagefindSearch(Stage):
                 self._register_hook(uuid, tree, "pre_hooks")
                 self._register_hook(uuid, tree, "post_hooks")
                 self._set_css_include(self.css_path, uuid, tree)
+                self._set_js_include(self.js_path, uuid, tree)
 
         self.abs_pagefind_directory = tree.abs_static_stage_path(
             self.__class__.__name__

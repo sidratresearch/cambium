@@ -72,6 +72,17 @@ class Stage:
             "cambium_css"
         ] = path_from_build
 
+    def _set_js_include(self, path: Path, leaf_uuid: str, tree: TreeSpan) -> None:
+        """Set a path to a JS file which will be imported as a module.
+
+        The path should be given relative to the stage's `static` directory.
+        """
+        stage_name = self.__class__.__name__
+        path_from_build = f"static/_cambium/{stage_name}" / path
+        tree.leaves["metadata"][leaf_uuid].stage_metadata[stage_name][
+            "cambium_js"
+        ] = path_from_build
+
     def _set_leaf_metadata(
         self, metadata_name: str, metadata_value: Any, leaf_uuid: str, tree: TreeSpan
     ) -> None:

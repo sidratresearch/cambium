@@ -1,0 +1,21 @@
+{# Basic Cambium-provided functionality #}
+<script src="{{ relative_path_modifier }}static/js/base.js" type="module"></script>
+
+{# Development server banner and reload #}
+{% if dev_server %}
+  <script
+    src="{{ relative_path_modifier }}static/js/dev-server-reload/dev-server-reload.js"
+    type="module"
+    data-debug
+  ></script>
+{% endif %}
+
+{# Stage JS Files #}
+{% for  stage_metadata in metadata.stage_metadata.values() %}
+  {% if stage_metadata.cambium_js is not none %}
+    <script
+      src="{{ relative_path_modifier }}{{ stage_metadata.cambium_js }}"
+      type="module"
+    ></script>
+  {% endif %}
+{% endfor %}
