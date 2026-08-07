@@ -3,11 +3,6 @@
   {# The pagefind.js file is in the same directory as the actually imported pagefind-ui.js, not in /pagefind or similar #}
   <pagefind-config bundle-path="./"></pagefind-config>
 
-  <link
-    href="{{ relative_path_modifier }}{{ metadata.stage_metadata.PagefindSearch.pagefind_directory }}/pagefind-component-ui.css"
-    rel="stylesheet"
-  />
-  <link href="{{ relative_path_modifier }}static/css/cambium-pagefind.css" rel="stylesheet" />
   <script
     src="{{ relative_path_modifier }}{{ metadata.stage_metadata.PagefindSearch.pagefind_directory }}/pagefind-component-ui.js"
     type="module"

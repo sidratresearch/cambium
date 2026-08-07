@@ -18,8 +18,20 @@
   {# Grabbable with JS #}
   <meta name="cambium-data" value="" data-initial-path="{{ initial_path }}" />
 
-  {# Stage #}
+  {# Stage CSS Files #}
+  {% for  stage_metadata in metadata.stage_metadata.values() %}
+    {% if stage_metadata.cambium_css is not none %}
+      <link href="{{ relative_path_modifier }}{{ stage_metadata.cambium_css }}" rel="stylesheet" />
+    {% endif %}
+  {% endfor %}
+
   {% if metadata.stage_metadata.PagefindSearch is defined %}
     {% include metadata.stage_metadata.PagefindSearch.head_links %}
   {% endif %}
+
+  {# Theme CSS #}
+  <link rel="stylesheet" href="{{ relative_path_modifier }}static/css/base.css" />
+
+  {# User CSS #}
+  <link rel="stylesheet" href="{{ relative_path_modifier }}static/css/custom.css" />
 </head>

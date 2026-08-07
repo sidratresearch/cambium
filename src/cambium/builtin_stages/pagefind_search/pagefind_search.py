@@ -45,10 +45,8 @@ class PagefindSearch(Stage):
         self.requires = ["TemplateMarkdown"]  # to have somewhere to put the search box
         self.runs_after = []
         self.runs_before = []
-        self.pagefind_directory = "static/pagefind"
 
-        self.context_function = None
-        self.context_parameters = {}
+        self.css_path = Path("cambium-pagefind.css")
 
     def tree_hook(self, tree: TreeSpan) -> None:
         templates_dir = Path(__file__).parent / "includes/templates"
@@ -60,6 +58,7 @@ class PagefindSearch(Stage):
             if tree.leaves["final_path"][uuid].suffix == ".html":
                 self._register_hook(uuid, tree, "pre_hooks")
                 self._register_hook(uuid, tree, "post_hooks")
+                self._set_css_include(self.css_path, uuid, tree)
 
         self.abs_pagefind_directory = tree.abs_static_stage_path(
             self.__class__.__name__

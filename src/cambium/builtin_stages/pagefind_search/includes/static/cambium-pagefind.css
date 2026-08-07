@@ -1,16 +1,11 @@
 /*------------------------------------------------------------------*/
 /* Styles provided by the PagefindSearch Cambium Stage
  *
- * This file will get built to static/css/cambium-pagefind.css
+ * This file will get built to static/_cambium/PagefindSearch/cambium-pagefind.css
  * This should not be confused with the stylesheets provided by the Pagefind binary itself, which are built to static/_cambium/PagefindSearch/pagefind-*.css
- * The styles in this file can be overridden with any of the following files:
- * - static/css/cambium-pagefind.css
- * - .cambium/theme/static/css/cambium-pagefind.css
- * - static/css/custom.css
- * - .cambium/theme/static/css/custom.css
- * - static/css/base.css
- * - .cambium/theme/static/css/base.css
 /*------------------------------------------------------------------*/
+
+@import url("pagefind-component-ui.css");
 
 :root {
   --pf-font: var(--default-font);
