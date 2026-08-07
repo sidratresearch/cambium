@@ -13,21 +13,7 @@
 
 <!DOCTYPE html>
 <html lang="en" id="{{ metadata.page_id }}">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="generator" content="Cambium v{{ cambium_version }}" />
-    <title>{{ title }}</title>
-
-    <!-- Grabbable with JS -->
-    <meta name="cambium-data" value="" data-initial-path="{{ initial_path }}" />
-
-    {% include 'head.html.jinja' %}
-
-    {% if metadata.stage_metadata.PagefindSearch is defined %}
-      {% include metadata.stage_metadata.PagefindSearch.head_links %}
-    {% endif %}
-  </head>
+  {% include "head.html.jinja" %}
   <link rel="stylesheet" href="{{ relative_path_modifier }}static/css/base.css" />
   <link rel="stylesheet" href="{{ relative_path_modifier }}static/css/custom.css" />
 

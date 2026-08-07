@@ -1,6 +1,25 @@
 {# Cambium Theme: Root #}
 
-<!-- Overwrite this template with `.cambium/theme/templates/head.html.jinja` to inject content into the <head> tag -->
+{#
+  Overwrite this template with `.cambium/theme/templates/head.html.jinja`
+  to inject additional content into the <head> tag
 
-<!-- e.g., to set the favicon to the file `static/assets/favicon.png`: -->
-<!-- <link rel="icon" type="image/png" href="{{ relative_path_modifier }}/static/assets/favicon.png" /> -->
+  e.g., to set the favicon to the file `static/assets/favicon.png` add
+
+  <link rel="icon" type="image/png" href="{{ relative_path_modifier }}/static/assets/favicon.png" />
+#}
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="generator" content="Cambium v{{ cambium_version }}" />
+  <title>{{ title }}</title>
+
+  {# Grabbable with JS #}
+  <meta name="cambium-data" value="" data-initial-path="{{ initial_path }}" />
+
+  {# Stage #}
+  {% if metadata.stage_metadata.PagefindSearch is defined %}
+    {% include metadata.stage_metadata.PagefindSearch.head_links %}
+  {% endif %}
+</head>
