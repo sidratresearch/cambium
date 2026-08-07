@@ -7,7 +7,7 @@ import logging
 import re
 import tempfile
 from pathlib import Path
-from typing import Any, Generic, Literal, Optional, TypedDict, TypeVar
+from typing import Any, Literal, Optional, TypedDict
 
 import yaml
 from pydantic import BaseModel
@@ -39,13 +39,10 @@ root_directory_type = Optional[str]
 build_directory_type = Optional[str]
 
 
-OrderedDirectoriesEntry = TypeVar("OrderedDirectoriesEntry")
-
-
-class OrderedDirectories(TypedDict, Generic[OrderedDirectoriesEntry]):
-    user: OrderedDirectoriesEntry
-    theme: OrderedDirectoriesEntry
-    stage: OrderedDirectoriesEntry
+class OrderedStaticDirectories(TypedDict):
+    user: list[tuple[Path, Path]]
+    theme: list[tuple[Path, Path]]
+    stage: list[tuple[Path, Path]]
 
 
 class CLIConfiguration(BaseModel):
@@ -276,7 +273,7 @@ class WorkingConfiguration:
     ) -> None:
         """Set up a dictionary mapping source to output dirs for various static dirs."""
         # these *are* ordered (lowest to highest priority)
-        self.static_directories: OrderedDirectories[list[tuple[Path, Path]]] = {
+        self.static_directories: OrderedStaticDirectories[list[tuple[Path, Path]]] = {
             "theme": [],
             "user": [],
             "stage": [],
