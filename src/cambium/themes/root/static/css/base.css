@@ -3,13 +3,13 @@
 @import url(../fonts/source-sans-3VF.css);
 
 :root {
-  --default-font: "Source Sans 3 VF", sans-serif;
-  --default-bg-color: #f9f9f9;
-  --default-font-color: #222222;
-  --default-font-size: 14pt;
-  --default-accent-color: #cc0000;
-  --default-hover-color: #660000;
-  --default-header-color: #444444;
+  --root-font: "Source Sans 3 VF", sans-serif;
+  --root-bg-color: #f9f9f9;
+  --root-font-color: #222222;
+  --root-font-size: 14pt;
+  --root-accent-color: #cc0000;
+  --root-hover-color: #660000;
+  --root-header-color: #444444;
 }
 
 /* Utility Styling */
@@ -22,10 +22,10 @@
 /* Base Elements */
 
 html {
-  font-family: var(--default-font);
-  background-color: var(--default-bg-color);
-  color: var(--default-font-color);
-  font-size: var(--default-font-size);
+  font-family: var(--root-font);
+  background-color: var(--root-bg-color);
+  color: var(--root-font-color);
+  font-size: var(--root-font-size);
 }
 
 body {
@@ -43,7 +43,7 @@ main {
 
 h1 {
   font-weight: 300;
-  color: var(--default-accent-color);
+  color: var(--root-accent-color);
   font-size: 3.5rem;
   margin-top: 0rem;
   margin-bottom: 1rem;
@@ -91,10 +91,10 @@ p {
 }
 
 a {
-  color: var(--default-accent-color);
+  color: var(--root-accent-color);
   transition: all 0.25s;
   &:hover {
-    color: var(--default-hover-color);
+    color: var(--root-hover-color);
   }
 }
 
@@ -142,14 +142,14 @@ div.main-content {
 /* Header and Footer */
 
 header {
-  background-color: var(--default-header-color);
+  background-color: var(--root-header-color);
   margin-bottom: 0.25rem;
 }
 
 div.header-bar {
   /* Used in both header and div.menu-panel */
   font-weight: 700;
-  color: var(--default-bg-color);
+  color: var(--root-bg-color);
   font-size: 1rem;
   padding: 0.75rem 2rem;
   display: flex;
@@ -158,7 +158,7 @@ div.header-bar {
 
   a {
     text-decoration: none;
-    color: var(--default-bg-color);
+    color: var(--root-bg-color);
     margin-top: auto;
     margin-bottom: auto;
   }
@@ -209,13 +209,13 @@ button.menu-button {
   border: none;
 
   &:hover svg {
-    fill: var(--default-accent-color);
+    fill: var(--root-accent-color);
   }
 
   svg {
     width: 2rem;
     height: 2rem;
-    fill: var(--default-bg-color);
+    fill: var(--root-bg-color);
     transition: fill 0.25s;
 
     &.menu-icon-inactive {
@@ -231,14 +231,14 @@ div.menu-panel {
   left: 0;
   top: 0;
 
-  background-color: var(--default-header-color);
-  color: var(--default-bg-color);
+  background-color: var(--root-header-color);
+  color: var(--root-bg-color);
 
   transition: all 0.25s;
 
   button.menu-button,
   a {
-    color: var(--default-bg-color);
+    color: var(--root-bg-color);
   }
 
   nav {
@@ -272,7 +272,7 @@ div.menu-panel {
           font-size: 1rem;
           transform: all 0.25s;
           &:hover {
-            color: var(--default-accent-color);
+            color: var(--root-accent-color);
             text-decoration: underline;
           }
         }
@@ -296,10 +296,10 @@ table {
     font-weight: 700;
     font-size: 0.9rem;
     line-height: 1.1;
-    color: var(--default-hover-color);
+    color: var(--root-hover-color);
     position: sticky;
     top: 0;
-    background-color: var(--default-bg-color);
+    background-color: var(--root-bg-color);
 
     &.ascending::after {
       content: " \25BE";
@@ -336,7 +336,7 @@ table {
 
 @media (max-width: 600px) {
   :root {
-    --default-font-size: 14pt;
+    --root-font-size: 14pt;
   }
 
   div.main-content {
