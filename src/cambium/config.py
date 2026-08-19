@@ -8,9 +8,10 @@ import re
 import tempfile
 from pathlib import Path
 from typing import Any, Literal, Optional, TypedDict
+from urllib.parse import urljoin
 
 import yaml
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl, PositiveInt
 
 from . import __version__
 from .stage import populate_stage_dict
@@ -43,6 +44,12 @@ class OrderedStaticDirectories(TypedDict):
     user: list[tuple[Path, Path]]
     theme: list[tuple[Path, Path]]
     stage: list[tuple[Path, Path]]
+
+
+class HostingOptions(TypedDict):
+    domain_name: Optional[HttpUrl]
+    subpath: Optional[str]
+    url: Optional[HttpUrl]
 
 
 class CLIConfiguration(BaseModel):
@@ -105,7 +112,7 @@ class FileConfiguration(BaseModel):
     stage_config: Optional[dict[str, dict[str, Any]]] = {}
     "Configuration for specific stages, passed to the Stage constructor"
 
-    max_leaves: Optional[int] = 10_000
+    max_leaves: Optional[PositiveInt] = 10_000
     "Maximum Number of Leaves"
 
     site_name: Optional[str] = "Cambium Site"
@@ -113,6 +120,14 @@ class FileConfiguration(BaseModel):
 
     theme: Optional[str] = "maple"
     """Builtin Theme to Use"""
+
+    domain_name: Optional[HttpUrl] = None
+    """Domain where the site is to be hosted (e.g. 'buildwithcambium.com')"""
+
+    subpath: Optional[str] = None
+    """Subpath of the domain where the site will be hosted (e.g. 'science'
+    to host at your-domain.com/science)
+    """
 
 
 class MergedConfiguration(FileConfiguration, CLIConfiguration):
@@ -192,6 +207,9 @@ class WorkingConfiguration:
         self.populate_template_directories(
             builtin_themes_directory, selected_theme_directory
         )
+
+        # Hosting options
+        self.populate_hosting_options()
 
         # Exposing Simple Parameters (that require no additional processing)
         self.max_leaves = self.input_config.max_leaves
@@ -337,6 +355,29 @@ class WorkingConfiguration:
                 stage_output_dir = Path(f"static/_cambium/{stage_name}")
                 self.static_directories["stage"].append(
                     (stage_static_dir, stage_output_dir)
+                )
+
+    def populate_hosting_options(self) -> None:
+        """Parse and set the hosting-related options."""
+        self.hosting: HostingOptions = {
+            "domain_name": None,
+            "subpath": None,
+            "url": None,
+        }
+
+        if self.input_config.subpath is not None:
+            subpath = self.input_config.subpath.strip("/")
+            if len(subpath) > 0:
+                self.hosting["subpath"] = subpath
+
+        if self.input_config.domain_name is not None:
+            self.hosting["domain_name"] = self.input_config.domain_name.strip("/")
+
+            if self.hosting["subpath"] is None:
+                self.hosting["url"] = self.hosting["domain_name"]
+            else:
+                self.hosting["url"] = urljoin(
+                    self.hosting["domain_name"], self.hosting["subpath"]
                 )
 
 

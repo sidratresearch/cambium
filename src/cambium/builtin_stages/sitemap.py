@@ -3,11 +3,8 @@
 import logging
 import textwrap
 from pathlib import Path
-from typing import Any
 
-from pydantic import AnyUrl
-
-from ..stage import Stage, StageConfig
+from ..stage import Stage
 from ..tree import TreeSpan
 
 """
@@ -17,23 +14,16 @@ This stage is NOT default because it requires a URL
 logger = logging.getLogger(__name__)
 
 
-class AddSitemapConfig(StageConfig):
-    url: AnyUrl
-
-
 class AddSitemap(Stage):
 
-    def __init__(self, config_dict: dict[str, Any]) -> None:
-        self.config = AddSitemapConfig.model_validate(config_dict)
-        self.entries = []
-
-        # stuff required by Stage
-        self.requires = []
-        self.runs_before = []
-        self.runs_after = []
-
     def tree_hook(self, tree: TreeSpan) -> None:
-        # always attempt to add a sitemap
+        if tree.config.hosting["url"] is None:
+            raise ValueError(
+                "Cannot create a sitemap.xml without a domain name set in the config."
+            )
+        self.url = tree.config.hosting["url"]
+
+        # if this stage is enabled, always attempt to add a sitemap
         # if you want to disable it because you've got your own, edit config
         self._add_sitemap_leaf(tree)
 
@@ -72,7 +62,7 @@ class AddSitemap(Stage):
         sitemap_template = textwrap.dedent(sitemap_template).strip()
 
         xml_entries = [
-            entry_template.format(full_url=f"{self.config.url}/{path}")
+            entry_template.format(full_url=f"{self.url}/{path}")
             for path in self.entries
         ]
 
