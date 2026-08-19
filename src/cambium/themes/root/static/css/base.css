@@ -289,6 +289,20 @@ table {
   margin-right: auto;
   position: relative;
 
+  /* cell alignment from marko-added attributes */
+  th,
+  td {
+    &[align="left"] {
+      text-align: left;
+    }
+    &[align="center"] {
+      text-align: center;
+    }
+    &[align="right"] {
+      text-align: right;
+    }
+  }
+
   th {
     padding: 0.5rem;
     max-width: 20rem;
