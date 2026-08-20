@@ -2,6 +2,8 @@
 
 ## [Unreleased](https://github.com/sidratresearch/cambium/tree/main)
 
+## [0.6.0] - 2026-08-20
+
 ### Changed
 
 - Store inter-page links in LeafMetadata
@@ -57,6 +59,7 @@
 
 ## [0.2] - 2026-05-15
 
+[0.6.0]: https://github.com/sidratresearch/cambium/releases/tag/v0.6.0
 [0.5.10]: https://github.com/sidratresearch/cambium/releases/tag/v0.5.10
 [0.5.9]: https://github.com/sidratresearch/cambium/releases/tag/v0.5.9
 [0.5.8]: https://github.com/sidratresearch/cambium/releases/tag/v0.5.8
