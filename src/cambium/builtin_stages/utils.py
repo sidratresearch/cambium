@@ -27,6 +27,9 @@ class CambiumHTMLRenderer(HTMLRenderer):
 
     def render_heading(self, element: Heading) -> str:
         """Adds anchor links from an `id` attribute."""
+        if not hasattr(element, "id") or element.id is None:
+            return super().render_heading(element)
+
         heading_template = '<h{level} id="{id}">{children}</h{level}>\n'
         return heading_template.format(
             level=element.level, id=element.id, children=self.render_children(element)
