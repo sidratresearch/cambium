@@ -196,7 +196,7 @@ def update_link_dests(element: Element, file: Path, tree: TreeSpan) -> Element:
 
 def markdown_to_html(
     markdown: str,
-    tree: TreeSpan,
+    tree: TreeSpan | None = None,
     file: Path | None = None,
     heading_id_prefix: str | None = None,
 ) -> str:
@@ -208,6 +208,7 @@ def markdown_to_html(
     )
 
     document = marko_object.parse(markdown)
+
     if heading_id_prefix is not None:
         document = add_heading_anchors(document, heading_id_prefix)
 

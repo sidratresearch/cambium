@@ -56,6 +56,7 @@ class TransformMarkdown(Stage):
         self._extract_table_of_contents(leaf_uuid, tree)
 
     def _extract_table_of_contents(self, leaf_uuid: str, tree: TreeSpan) -> None:
+        # TODO: should this be moved into IdentifyMetadata?
         raw_data = tree.abs_leaf_path(leaf_uuid).read_text()
         md = Markdown()
         doc = add_heading_anchors(md.parse(raw_data), self.config.heading_id_prefix)
@@ -79,7 +80,7 @@ class TransformMarkdown(Stage):
         markdown = (markdown_path).read_text()
         html = markdown_to_html(
             markdown,
-            tree,
+            tree=tree,
             file=final_path,
             heading_id_prefix=self.config.heading_id_prefix,
         )
