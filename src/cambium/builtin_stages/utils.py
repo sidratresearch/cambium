@@ -7,14 +7,12 @@ import urllib
 from collections import Counter
 from pathlib import Path
 
-from marko import Markdown, MarkoExtension
-from marko.block import Document, Heading
+from marko import Markdown, MarkoExtension, block, inline
 from marko.element import Element
 from marko.ext.gfm.elements import Table
 from marko.ext.gfm.renderer import GFMRendererMixin
 from marko.helpers import render_dispatch
 from marko.html_renderer import HTMLRenderer
-from marko.inline import Image, InlineHTML, Link, RawText
 from slugify import slugify
 
 from ..tree import TreeSpan
@@ -54,7 +52,7 @@ class WrappedBlocksMixin(GFMRendererMixin):
         return self.wrap_anything(rendered_table, "table")
 
     @render_dispatch(HTMLRenderer)
-    def render_image(self, element: Image) -> str:
+    def render_image(self, element: inline.Image) -> str:
         """Wraps `img` tags in a div."""
         rendered_img = super().render_image(element)
         return self.wrap_anything(rendered_img, "img")
@@ -88,7 +86,7 @@ def resolve_internal_link(
 
 
 def fetch_linked_leaf(
-    link_element: Link, file_parent_directory: Path, tree: TreeSpan
+    link_element: inline.Link, file_parent_directory: Path, tree: TreeSpan
 ) -> str | None:
     """Return the UUID of the leaf that a markdown link points to.
 
@@ -130,9 +128,9 @@ def get_raw_content(element: Element) -> str:
     """Get the pure text content of an element."""
     content = ""
     for child in element.children:
-        if isinstance(child, RawText):
+        if isinstance(child, inline.RawText):
             content += child.children
-        elif isinstance(child, InlineHTML):
+        elif isinstance(child, inline.InlineHTML):
             continue
         elif isinstance(child, str):  # link titles, etc.
             content += child
@@ -141,7 +139,9 @@ def get_raw_content(element: Element) -> str:
     return content
 
 
-def add_heading_anchors(document: Document, heading_id_prefix: str) -> Document:
+def add_heading_anchors(
+    document: block.Document, heading_id_prefix: str
+) -> block.Document:
     """Add GitHub-style slugs as `id` attributes on `Heading` elements.
 
     While Marko has a toc extension, it doesn't handle recurring heading anchors,
@@ -149,7 +149,7 @@ def add_heading_anchors(document: Document, heading_id_prefix: str) -> Document:
     """
     anchor_counter = Counter()
     for child in document.children:
-        if not isinstance(child, Heading):
+        if not isinstance(child, block.Heading):
             continue
 
         content = get_raw_content(child)
@@ -176,7 +176,7 @@ def update_link_dests(element: Element, file: Path, tree: TreeSpan) -> Element:
     if isinstance(element, str):
         return element
 
-    if isinstance(element, Link):
+    if isinstance(element, inline.Link):
         linked_leaf = fetch_linked_leaf(element, file.parent, tree)
         if linked_leaf is not None:
             # would like to use dest_file.relative_to(parent_directory, walk_up=True)
