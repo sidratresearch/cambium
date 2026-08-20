@@ -1,10 +1,12 @@
 """Utility functions for builtin stages."""
 
+import copy
 import logging
 import os
 import re
 import urllib
 from collections import Counter
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from marko import Markdown, MarkoExtension, block, inline
@@ -20,6 +22,55 @@ from ..tree import TreeSpan
 logger = logging.getLogger(__name__)
 
 
+@dataclass()
+class ElementAttributeSet:
+    """Hold parsed contents from curly brackets.
+
+    Using dataclass to make it simple to instantiate with defaults and check
+    equality - mostly for ease of testing.
+    """
+
+    classes: list[str] = field(default_factory=list)
+    id: str | None = None
+    simple_attrs: list[str] = field(default_factory=list)
+    keyval_attrs: list[tuple[str, str]] = field(default_factory=list)
+
+    @classmethod
+    def from_str(cls, string: str) -> "ElementAttributeSet":
+        """Parse the contents of curly braces into an `AttributeSet`."""
+        items = split_respecting_quotes(string, r"\s")
+        ids, result = [], ElementAttributeSet()
+
+        # regex for how a class or id can be named
+        class_or_id_name = r"(\S*)"
+
+        for i in items:
+            if re.fullmatch(r"\." + class_or_id_name, i) is not None:
+                result.classes.append(i[1:])
+                continue
+            if re.fullmatch("#" + class_or_id_name, i) is not None:
+                ids.append(i[1:])
+                continue
+
+            attr_parts = split_respecting_quotes(i, "=")
+            if len(attr_parts) == 1:
+                result.simple_attrs.append(i)
+                continue
+            if len(attr_parts) == 2:
+                result.keyval_attrs.append(tuple(attr_parts))
+                continue
+
+            raise ValueError(f"Don't know what to do with {i}")
+
+        if len(ids) > 1:
+            raise ValueError(f"Can't have multiple IDs, found {ids}")
+
+        if len(ids) == 1:
+            result.id = ids[0]
+
+        return result
+
+
 class CambiumHTMLRenderer(HTMLRenderer):
     """Custom renderer class to support Cambium-specific features."""
 
@@ -32,12 +83,12 @@ class CambiumHTMLRenderer(HTMLRenderer):
         string = ""
         if hasattr(element, "id") and element.id is not None:
             string += f' id="{element.id}"'
-        if hasattr(element, "class_string"):
+        if hasattr(element, "class_string") and len(element.class_string) > 0:
             string += f' class="{element.class_string}"'
-        if hasattr(element, "simple_attrs"):
+        if hasattr(element, "simple_attrs") and len(element.simple_attrs) > 0:
             for attr in element.simple_attrs:
                 string += f" {attr}"
-        if hasattr(element, "keyval_attrs"):
+        if hasattr(element, "keyval_attrs") and len(element.keyval_attrs) > 0:
             for key, value in element.keyval_attrs:
                 string += f" {key}={value}"
 
@@ -65,8 +116,9 @@ class CambiumHTMLRenderer(HTMLRenderer):
         if element.ordered:
             tag = "ol"
             if element.start != 1:
-                # TODO: change from assignment to append
-                element.keyval_attrs = [("start", f'"{element.start}"')]
+                if not hasattr(element, "keyval_attrs"):
+                    element.keyval_attrs = []
+                element.keyval_attrs.append(("start", f'"{element.start}"'))
 
         return self.render_with_closing(element, tag, newline_after_opening=True)
 
@@ -186,6 +238,33 @@ def get_raw_content(element: Element) -> str:
     return content
 
 
+def is_attr_string(string: str) -> bool:
+    """Check if a string should be parsed as a meta attribute string."""
+    return re.fullmatch(r"\{.*\}", string) is not None
+
+
+def parse_comment(comment: str) -> ElementAttributeSet | None:
+    """Parse a comment as either attributes to apply or a macro command."""
+    if not is_attr_string(comment):
+        logger.debug(f"{comment} is not a parseable comment (no brackets)")
+        return
+
+    try:
+        return ElementAttributeSet.from_str(comment[1:-1])
+    except ValueError as e:
+        raise ValueError(f"Error parsing comment {comment}: {e}")
+
+
+def split_respecting_quotes(string: str, split_char: str) -> list[str]:
+    """Split `string` on every `split_char`, unless double quotes are used.
+
+    Double quotes can be escaped with a single backslash.
+    https://stackoverflow.com/a/16710842
+    """
+    pattern = "(?:[^" + split_char + r'"]|"(?:\.|[^"])*")+'
+    return re.findall(pattern, string)
+
+
 def add_heading_anchors(
     document: block.Document, heading_id_prefix: str
 ) -> block.Document:
@@ -216,6 +295,54 @@ def add_heading_anchors(
         child.id = heading_id_prefix + anchor
 
     return document
+
+
+def apply_attribute_comments(document: block.Document) -> block.Document:
+
+    new_document = copy.deepcopy(document)
+    new_document.children = []
+
+    for i in range(len(document.children) - 1):
+        # current_el is an element which might be a parseable comment
+        # next_el is an element which might be modified
+        current_el, next_el = document.children[i], document.children[i + 1]
+
+        # default to retaining the element that might be a meta-comment
+        new_document.children.append(current_el)
+
+        # skip if this isn't a one-line HTML block followed by a non-HTML element
+        if isinstance(next_el, (block.HTMLBlock, block.BlankLine)):
+            continue
+        if (not isinstance(current_el, block.HTMLBlock)) or (
+            len(current_el.body.splitlines()) > 1
+        ):
+            continue
+
+        start, end = "<!--+", "-+->"
+        comment_contents = re.fullmatch(f"{start}(.*?){end}", current_el.body.strip())
+
+        # skip if the current element isn't a comment
+        if comment_contents is None:
+            continue
+
+        attributes = parse_comment(comment_contents.group(1).strip())
+
+        # skip if the comment didn't parse into attributes
+        if attributes is None:
+            continue
+
+        next_el.class_string = " ".join(attributes.classes)
+        next_el.id = attributes.id
+        next_el.simple_attrs = attributes.simple_attrs
+        next_el.keyval_attrs = attributes.keyval_attrs
+
+        # remove the meta-comment element
+        new_document.children.pop()
+
+    # push the final element over to the new document
+    new_document.children.append(document.children[-1])
+
+    return new_document
 
 
 def update_link_dests(element: Element, file: Path, tree: TreeSpan) -> Element:
@@ -258,6 +385,8 @@ def markdown_to_html(
     )
 
     document = marko_object.parse(markdown)
+
+    document = apply_attribute_comments(document)
 
     if heading_id_prefix is not None:
         document = add_heading_anchors(document, heading_id_prefix)
