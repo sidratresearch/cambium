@@ -47,3 +47,12 @@ To make path management slightly easier, we have the following `TreeSpan` functi
     - Note that this function does _not_ instantiate the file at latest path. That must be done by the stage.
 - `TreeSpan.abs_write_path()`: returns an absolute path to the latest path of a leaf. If a stage is writing files, it should do so to the path provided by this function.
 - `TreeSpan.update_path()`: allows updating the latest or final path of a leaf, and validates the new path.
+
+## Interaction with Other Stages
+
+- Existence, use, and ordering of the `IdentifyMetadata` stage
+- `requires` attribute
+- `runs-before` and `runs-after`
+    - If XYZ reads information from, or alters its behaviour based on the presence of ABC, then it is XYZ that should declare `runs-after = ["ABC"]`. ABC is not required (or recommended) to declare anything around XYZ.
+    - If one stage requires another, is is the requiring stage (not the dependency) that should declare `runs-*`
+    - In the case that two stages are mutually requiring, with a necessary order ?
