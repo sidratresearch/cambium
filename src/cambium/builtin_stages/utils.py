@@ -278,6 +278,9 @@ def add_heading_anchors(
         if not isinstance(child, block.Heading):
             continue
 
+        if hasattr(child, "id") and child.id is not None:
+            continue
+
         content = get_raw_content(child)
         default_anchor = slugify(content)
         if len(default_anchor) == 0:
