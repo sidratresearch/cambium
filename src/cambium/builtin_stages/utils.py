@@ -23,15 +23,62 @@ logger = logging.getLogger(__name__)
 class CambiumHTMLRenderer(HTMLRenderer):
     """Custom renderer class to support Cambium-specific features."""
 
-    def render_heading(self, element: Heading) -> str:
-        """Adds anchor links from an `id` attribute."""
-        if not hasattr(element, "id") or element.id is None:
-            return super().render_heading(element)
+    # --------------------------------------------------------------------#
+    #                        Custom functionality                         #
+    # --------------------------------------------------------------------#
 
-        heading_template = '<h{level} id="{id}">{children}</h{level}>\n'
-        return heading_template.format(
-            level=element.level, id=element.id, children=self.render_children(element)
+    def build_attr_string(self, element: Element) -> str:
+        """Build an attribute string (id, classes, etc.) for an HTML tag."""
+        string = ""
+        if hasattr(element, "id") and element.id is not None:
+            string += f' id="{element.id}"'
+        if hasattr(element, "class_string"):
+            string += f' class="{element.class_string}"'
+        if hasattr(element, "simple_attrs"):
+            for attr in element.simple_attrs:
+                string += f" {attr}"
+        if hasattr(element, "keyval_attrs"):
+            for key, value in element.keyval_attrs:
+                string += f" {key}={value}"
+
+        return string
+
+    def render_with_closing(
+        self, element: Element, tag_name: str, newline_after_opening: bool = False
+    ) -> str:
+        """Render an arbitrary non-self-closing HTML tag."""
+        attrs = self.build_attr_string(element)
+        spacing = "\n" if newline_after_opening else ""
+        contents = self.render_children(element)
+
+        return f"<{tag_name}{attrs}>{spacing}{contents}</{tag_name}>\n"
+
+    # --------------------------------------------------------------------#
+    #            Simple overrides to use custom functionality             #
+    # --------------------------------------------------------------------#
+
+    # NOTE: skipping paragraphs, list items, code blocks, and inline elements
+
+    def render_list(self, element: block.List) -> str:
+        """Use custom system for applying attributes to render lists."""
+        tag = "ul"
+        if element.ordered:
+            tag = "ol"
+            if element.start != 1:
+                # TODO: change from assignment to append
+                element.keyval_attrs = [("start", f'"{element.start}"')]
+
+        return self.render_with_closing(element, tag, newline_after_opening=True)
+
+    def render_quote(self, element: block.Quote) -> str:
+        """Use custom system for applying attributes to render headings."""
+        return self.render_with_closing(
+            element, "blockquote", newline_after_opening=True
         )
+
+    def render_heading(self, element: block.Heading) -> str:
+        """Use custom system for applying attributes to render headings."""
+        return self.render_with_closing(element, f"h{element.level}")
 
 
 class WrappedBlocksMixin(GFMRendererMixin):
