@@ -72,6 +72,26 @@ def test_parse_comment(
             '<!-- {title="Hover title" inert data-first-letter="G"} -->\n### Generic attributes',
             '<h3 id="generic-attributes" inert title="Hover title" data-first-letter="G">Generic attributes</h3>\n',
         ),
+        (
+            "[link with class {.bookmark}](https://buildwithcambium.com)",
+            '<p><a class="bookmark" href="https://buildwithcambium.com">link with class</a></p>\n',
+        ),
+        (
+            "[*em link with class* {.bookmark}](https://buildwithcambium.com)",
+            '<p><a class="bookmark" href="https://buildwithcambium.com"><em>em link with class</em></a></p>\n',
+        ),
+        (
+            "[*em link no class {.bookmark}*](https://buildwithcambium.com)",
+            '<p><a href="https://buildwithcambium.com"><em>em link no class {.bookmark}</em></a></p>\n',
+        ),
+        (
+            "[{#link-id}](https://buildwithcambium.com)",
+            '<p><a id="link-id" href="https://buildwithcambium.com"></a></p>\n',
+        ),
+        (
+            "<!-- {#3-list} -->\n3. list starting at 3",
+            '<ol id="3-list" start="3">\n<li>list starting at 3</li>\n</ol>\n',
+        ),
     ],
 )
 def test_markdown_to_html(markdown: str, expected: str) -> None:

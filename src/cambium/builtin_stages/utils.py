@@ -146,6 +146,14 @@ class CambiumHTMLRenderer(HTMLRenderer):
         """Use custom system for applying attributes to render headings."""
         return self.render_with_closing(element, f"h{element.level}") + "\n"
 
+    def render_link(self, element: inline.Link) -> str:
+        """Use custom system for applying attributes to render links."""
+        self.ensure_attributes(element)
+        if element.title:  # TODO: check where a link might get a title from...
+            element.keyval_attrs.append(("title", self.escape_html(element.title)))
+        element.keyval_attrs.append(("href", f'"{self.escape_url(element.dest)}"'))
+        return self.render_with_closing(element, "a")
+
 
 class WrappedBlocksMixin(GFMRendererMixin):
     """Wrap certain block elements in Cambium-specific divs."""
@@ -314,8 +322,48 @@ def add_heading_anchors(
     return document
 
 
-def apply_attribute_comments(document: block.Document) -> block.Document:
+def apply_inline_attributes(element: Element) -> Element:
+    """Parse curly braces in certain element types as HTML attributes."""
+    if isinstance(element, str):
+        return element
 
+    # work with links, where the final element in the title is plain text
+    if (
+        isinstance(element, inline.Link)
+        and len(element.children) > 0
+        and isinstance(element.children[-1], inline.RawText)
+    ):
+        final_text = get_raw_content(element.children[-1])
+
+        title_pattern = "(.*?)"  # non-greedily match everything
+        attributes_pattern = r"(\{.*\})"  # capture including curlies
+        attr_match = re.fullmatch(
+            f"{title_pattern}\\s*{attributes_pattern}", final_text
+        )
+
+        if attr_match is None:
+            return element
+
+        title, attributes = attr_match.group(1), parse_comment(
+            attr_match.group(2).strip()
+        )
+        if attributes is None:
+            return element
+
+        # update the attributes and excise the curly braces from the displayed title
+        attributes.apply_to_element(element)
+        element.children[-1].children = title
+
+        return element
+
+    for child in element.children:
+        child = apply_inline_attributes(child)
+
+    return element
+
+
+def apply_attribute_comments(document: block.Document) -> block.Document:
+    """Parse HTML comments into attributes applied to the next block-level item."""
     new_document = copy.deepcopy(document)
     new_document.children = []
 
@@ -401,6 +449,7 @@ def markdown_to_html(
     document = marko_object.parse(markdown)
 
     document = apply_attribute_comments(document)
+    document = apply_inline_attributes(document)
 
     if heading_id_prefix is not None:
         document = add_heading_anchors(document, heading_id_prefix)
