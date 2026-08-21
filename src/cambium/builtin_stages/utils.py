@@ -126,12 +126,17 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         return string
 
     def render_with_closing(
-        self, element: Element, tag_name: str, newline_after_opening: bool = False
+        self,
+        element: Element,
+        tag_name: str,
+        newline_after_opening: bool = False,
+        contents: str | None = None,
     ) -> str:
         """Render an arbitrary non-self-closing HTML tag."""
         attrs = self.build_attr_string(element)
         spacing = "\n" if newline_after_opening else ""
-        contents = self.render_children(element)
+        if contents is None:
+            contents = self.render_children(element)
 
         return f"<{tag_name}{attrs}>{spacing}{contents}</{tag_name}>"
 
@@ -203,9 +208,19 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         return self.render_self_closing(element, "img")
 
     @render_dispatch(HTMLRenderer)
+    @wrap_as("table")
     def render_table(self, element: gfm.elements.Table) -> str:
-        rendered_table = super().render_table(element)
-        return self.wrap_anything(rendered_table, "table")
+        head, *body = element.children
+        theader = f"<thead>\n{self.render(head)}</thead>"
+        tbody = ""
+        if body:
+            tbody = "\n<tbody>\n{}</tbody>".format(
+                "".join(self.render(row) for row in body)
+            )
+
+        return self.render_with_closing(
+            element, "table", newline_after_opening=True, contents=theader + tbody
+        )
 
 
 CambiumRenderingExtensions = MarkoExtension(renderer_mixins=[CambiumHTMLMixin])

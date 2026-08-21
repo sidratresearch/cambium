@@ -77,6 +77,10 @@ def test_parse_comment(
             "<!-- {#3-list} -->\n3. list starting at 3",
             '<ol id="3-list" start="3">\n<li>list starting at 3</li>\n</ol>\n',
         ),
+        (
+            '<!-- {data-sortable="false"} -->\n| C1  | C2  |\n| --- | --- |\n| A   | B   |\n| C   | D   |',
+            '<div class="cambium-table-holder"><table data-sortable="false">\n<thead>\n<tr>\n<th>C1</th>\n<th>C2</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>A</td>\n<td>B</td>\n</tr>\n<tr>\n<td>C</td>\n<td>D</td>\n</tr>\n</tbody></table></div>',
+        ),
         # inline for links
         (
             "[link with class {.bookmark}](https://buildwithcambium.com)",
