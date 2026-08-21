@@ -13,6 +13,7 @@
 - Add protections for `static/css/custom.css` and `static/js/custom.js`
 - Add `--fail-fast` CLI option
 - Add configuration options for `WriteReports`
+- Added syntax for parsing HTML comments in Markdown as attributes to apply to rendered HTML
 
 ### Fixed
 
@@ -40,8 +41,6 @@
 ### Removed
 
 - Removed Sitemap's stage configuration
-
-### Fixed
 
 ## [0.5.10] - 2026-08-02
 
