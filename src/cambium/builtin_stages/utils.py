@@ -70,6 +70,17 @@ class ElementAttributeSet:
 
         return result
 
+    def apply_to_element(self, element: Element) -> None:
+        """Attach attributes to an element for rendering."""
+        if not hasattr(element, "class_string"):
+            element.class_string = " ".join(self.classes)
+        if not hasattr(element, "id"):
+            element.id = self.id
+        if not hasattr(element, "simple_attrs"):
+            element.simple_attrs = self.simple_attrs
+        if not hasattr(element, "keyval_attrs"):
+            element.keyval_attrs = self.keyval_attrs
+
 
 class CambiumHTMLRenderer(HTMLRenderer):
     """Custom renderer class to support Cambium-specific features."""
@@ -334,10 +345,7 @@ def apply_attribute_comments(document: block.Document) -> block.Document:
         if attributes is None:
             continue
 
-        next_el.class_string = " ".join(attributes.classes)
-        next_el.id = attributes.id
-        next_el.simple_attrs = attributes.simple_attrs
-        next_el.keyval_attrs = attributes.keyval_attrs
+        attributes.apply_to_element(next_el)
 
         # remove the meta-comment element
         new_document.children.pop()
