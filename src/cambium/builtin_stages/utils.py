@@ -113,7 +113,10 @@ class CambiumHTMLRenderer(HTMLRenderer):
         spacing = "\n" if newline_after_opening else ""
         contents = self.render_children(element)
 
-        return f"<{tag_name}{attrs}>{spacing}{contents}</{tag_name}>\n"
+        return f"<{tag_name}{attrs}>{spacing}{contents}</{tag_name}>"
+
+    def ensure_attributes(self, element: Element) -> None:
+        ElementAttributeSet().apply_to_element(element)
 
     # --------------------------------------------------------------------#
     #            Simple overrides to use custom functionality             #
@@ -127,21 +130,21 @@ class CambiumHTMLRenderer(HTMLRenderer):
         if element.ordered:
             tag = "ol"
             if element.start != 1:
-                if not hasattr(element, "keyval_attrs"):
-                    element.keyval_attrs = []
+                self.ensure_attributes(element)
                 element.keyval_attrs.append(("start", f'"{element.start}"'))
 
-        return self.render_with_closing(element, tag, newline_after_opening=True)
+        return self.render_with_closing(element, tag, newline_after_opening=True) + "\n"
 
     def render_quote(self, element: block.Quote) -> str:
         """Use custom system for applying attributes to render headings."""
-        return self.render_with_closing(
-            element, "blockquote", newline_after_opening=True
+        return (
+            self.render_with_closing(element, "blockquote", newline_after_opening=True)
+            + "\n"
         )
 
     def render_heading(self, element: block.Heading) -> str:
         """Use custom system for applying attributes to render headings."""
-        return self.render_with_closing(element, f"h{element.level}")
+        return self.render_with_closing(element, f"h{element.level}") + "\n"
 
 
 class WrappedBlocksMixin(GFMRendererMixin):
