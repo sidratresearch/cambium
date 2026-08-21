@@ -12,7 +12,7 @@ from ...stage import Stage, StageConfig
 from ...tree import TreeSpan
 from ...utils import path_matches_patterns, sort_user_paths
 from ..utils import (
-    WrappedBlocksMixin,
+    CambiumHTMLMixin,
     get_relative_path_modifier,
 )
 
@@ -147,7 +147,7 @@ def get_md_content(
     return template.render(
         download_filename=download_filename,
         csv_data=csv_data,
-        cambium_wrap=WrappedBlocksMixin.wrap_anything,
+        cambium_wrap=CambiumHTMLMixin.wrap_anything,
         csv_filesize=csv_path.stat().st_size,
         **jinja_variables,
     )

@@ -11,8 +11,7 @@ from pathlib import Path
 
 from marko import Markdown, MarkoExtension, block, inline
 from marko.element import Element
-from marko.ext.gfm.elements import Table
-from marko.ext.gfm.renderer import GFMRendererMixin
+from marko.ext import gfm
 from marko.helpers import render_dispatch
 from marko.html_renderer import HTMLRenderer
 from slugify import slugify
@@ -82,12 +81,19 @@ class ElementAttributeSet:
             element.keyval_attrs = self.keyval_attrs
 
 
-class CambiumHTMLRenderer(HTMLRenderer):
+class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
     """Custom renderer class to support Cambium-specific features."""
 
     # --------------------------------------------------------------------#
     #                        Custom functionality                         #
     # --------------------------------------------------------------------#
+    wrapper_class_template = "cambium-{tag}-holder"
+
+    @classmethod
+    def wrap_anything(cls, html_string: str, tag: str) -> str:
+        """Wrap a string in a Cambium holder div."""
+        css_class = cls.wrapper_class_template.format(tag=tag)
+        return f'<div class="{css_class}">{html_string}</div>'
 
     def build_attr_string(self, element: Element) -> str:
         """Build an attribute string (id, classes, etc.) for an HTML tag."""
@@ -121,6 +127,7 @@ class CambiumHTMLRenderer(HTMLRenderer):
         return f"<{tag_name}{attrs} />"
 
     def ensure_attributes(self, element: Element) -> None:
+        """Create an empty set of attributes on `element`."""
         ElementAttributeSet().apply_to_element(element)
 
     # --------------------------------------------------------------------#
@@ -129,6 +136,7 @@ class CambiumHTMLRenderer(HTMLRenderer):
 
     # NOTE: skipping paragraphs, list items, code blocks, and inline elements
 
+    @render_dispatch(HTMLRenderer)
     def render_list(self, element: block.List) -> str:
         """Use custom system for applying attributes to render lists."""
         tag = "ul"
@@ -140,6 +148,7 @@ class CambiumHTMLRenderer(HTMLRenderer):
 
         return self.render_with_closing(element, tag, newline_after_opening=True) + "\n"
 
+    @render_dispatch(HTMLRenderer)
     def render_quote(self, element: block.Quote) -> str:
         """Use custom system for applying attributes to render headings."""
         return (
@@ -147,10 +156,12 @@ class CambiumHTMLRenderer(HTMLRenderer):
             + "\n"
         )
 
+    @render_dispatch(HTMLRenderer)
     def render_heading(self, element: block.Heading) -> str:
         """Use custom system for applying attributes to render headings."""
         return self.render_with_closing(element, f"h{element.level}") + "\n"
 
+    @render_dispatch(HTMLRenderer)
     def render_link(self, element: inline.Link) -> str:
         """Use custom system for applying attributes to render links."""
         self.ensure_attributes(element)
@@ -159,6 +170,7 @@ class CambiumHTMLRenderer(HTMLRenderer):
         element.keyval_attrs.append(("href", f'"{self.escape_url(element.dest)}"'))
         return self.render_with_closing(element, "a")
 
+    @render_dispatch(HTMLRenderer)
     def render_image(self, element: inline.Image) -> str:
         """Use custom system for applying attributes to render images."""
         self.ensure_attributes(element)
@@ -173,34 +185,16 @@ class CambiumHTMLRenderer(HTMLRenderer):
         self.render = original_renderer
 
         element.keyval_attrs.append(("alt", f'"{alt}"'))
-        return self.render_self_closing(element, "img")
-
-
-class WrappedBlocksMixin(GFMRendererMixin):
-    """Wrap certain block elements in Cambium-specific divs."""
-
-    class_template = "cambium-{tag}-holder"
-
-    @classmethod
-    def wrap_anything(cls, html_string: str, tag: str) -> str:
-        """Wrap a string in a Cambium holder div."""
-        css_class = cls.class_template.format(tag=tag)
-        return f'<div class="{css_class}">{html_string}</div>'
+        img_tag = self.render_self_closing(element, "img")
+        return self.wrap_anything(img_tag, "img")
 
     @render_dispatch(HTMLRenderer)
-    def render_table(self, element: Element) -> str:
-        """Wraps `table` tags in a div."""
+    def render_table(self, element: gfm.elements.Table) -> str:
         rendered_table = super().render_table(element)
         return self.wrap_anything(rendered_table, "table")
 
-    @render_dispatch(HTMLRenderer)
-    def render_image(self, element: inline.Image) -> str:
-        """Wraps `img` tags in a div."""
-        rendered_img = super().render_image(element)
-        return self.wrap_anything(rendered_img, "img")
 
-
-WrappedTables = MarkoExtension(elements=[Table], renderer_mixins=[WrappedBlocksMixin])
+CambiumRenderingExtensions = MarkoExtension(renderer_mixins=[CambiumHTMLMixin])
 
 
 def is_external_link(dest: str) -> bool:
@@ -464,7 +458,8 @@ def markdown_to_html(
     # WARNING: The Markdown class is not thread-safe.
     # Create a new instance for each thread.
     marko_object = Markdown(
-        extensions=["gfm", WrappedTables], renderer=CambiumHTMLRenderer
+        extensions=["gfm", CambiumRenderingExtensions],
+        renderer=HTMLRenderer,
     )
 
     document = marko_object.parse(markdown)
