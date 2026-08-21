@@ -6,6 +6,7 @@ import os
 import re
 import urllib
 from collections import Counter
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -95,6 +96,19 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         css_class = cls.wrapper_class_template.format(tag=tag)
         return f'<div class="{css_class}">{html_string}</div>'
 
+    @staticmethod
+    def wrap_as(tag_name: str) -> Callable[..., str]:
+        """Decorator to call `wrap_anything` on the result of a function."""
+
+        def decorator(render_fn: Callable[[Element], str]) -> str:
+            def wrapper(renderer: HTMLRenderer, element: Element) -> str:
+                result = render_fn(renderer, element)
+                return CambiumHTMLMixin.wrap_anything(result, tag_name)
+
+            return wrapper
+
+        return decorator
+
     def build_attr_string(self, element: Element) -> str:
         """Build an attribute string (id, classes, etc.) for an HTML tag."""
         string = ""
@@ -171,6 +185,7 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         return self.render_with_closing(element, "a")
 
     @render_dispatch(HTMLRenderer)
+    @wrap_as("img")
     def render_image(self, element: inline.Image) -> str:
         """Use custom system for applying attributes to render images."""
         self.ensure_attributes(element)
@@ -185,8 +200,7 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         self.render = original_renderer
 
         element.keyval_attrs.append(("alt", f'"{alt}"'))
-        img_tag = self.render_self_closing(element, "img")
-        return self.wrap_anything(img_tag, "img")
+        return self.render_self_closing(element, "img")
 
     @render_dispatch(HTMLRenderer)
     def render_table(self, element: gfm.elements.Table) -> str:
