@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 
 from cambium.builtin_stages.utils import (
@@ -60,15 +58,23 @@ def test_parse_comment(
 
 
 @pytest.mark.parametrize(
-    ("markdown_filename", "html_filename"),
+    ("markdown", "expected"),
     [
-        ("markdown-with-attrs.md", "markdown-with-attrs.html"),
+        (
+            "<!-- {#custom-header-id} -->\n## Header with a custom ID",
+            '<h2 id="custom-header-id">Header with a custom ID</h2>\n',
+        ),
+        (
+            "<!-- {#blockquote-1 .my-quotes} -->\n> This blockquote has\n> both an ID and a class\n",
+            '<blockquote id="blockquote-1" class="my-quotes">\n<p>This blockquote has\nboth an ID and a class</p>\n</blockquote>\n',
+        ),
+        (
+            '<!-- {title="Hover title" inert data-first-letter="G"} -->\n### Generic attributes',
+            '<h3 id="generic-attributes" inert title="Hover title" data-first-letter="G">Generic attributes</h3>\n',
+        ),
     ],
 )
-def test_markdown_to_html(markdown_filename: str, html_filename: str) -> None:
-    """Verify the output of `markdown_to_html` by using known input and output files."""
-    data_dir = Path("tests/test_cases")
-    markdown_string = (data_dir / markdown_filename).read_text()
-    html_string = (data_dir / html_filename).read_text()
+def test_markdown_to_html(markdown: str, expected: str) -> None:
+    """Verify the output of `markdown_to_html`."""
 
-    assert markdown_to_html(markdown_string, heading_id_prefix="") == html_string
+    assert markdown_to_html(markdown, heading_id_prefix="") == expected
