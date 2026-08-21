@@ -115,6 +115,11 @@ class CambiumHTMLRenderer(HTMLRenderer):
 
         return f"<{tag_name}{attrs}>{spacing}{contents}</{tag_name}>"
 
+    def render_self_closing(self, element: Element, tag_name: str) -> str:
+        """Render an arbitrary self-closing HTML tag."""
+        attrs = self.build_attr_string(element)
+        return f"<{tag_name}{attrs} />"
+
     def ensure_attributes(self, element: Element) -> None:
         ElementAttributeSet().apply_to_element(element)
 
@@ -154,6 +159,22 @@ class CambiumHTMLRenderer(HTMLRenderer):
         element.keyval_attrs.append(("href", f'"{self.escape_url(element.dest)}"'))
         return self.render_with_closing(element, "a")
 
+    def render_image(self, element: inline.Image) -> str:
+        """Use custom system for applying attributes to render images."""
+        self.ensure_attributes(element)
+        if element.title:  # TODO: check where a link might get a title from...
+            element.keyval_attrs.append(("title", self.escape_html(element.title)))
+        element.keyval_attrs.append(("src", f'"{self.escape_url(element.dest)}"'))
+
+        # use the plain text renderer to extract the alt text
+        original_renderer = self.render
+        self.render = self.render_plain_text
+        alt = self.render_children(element)
+        self.render = original_renderer
+
+        element.keyval_attrs.append(("alt", f'"{alt}"'))
+        return self.render_self_closing(element, "img")
+
 
 class WrappedBlocksMixin(GFMRendererMixin):
     """Wrap certain block elements in Cambium-specific divs."""
@@ -164,7 +185,7 @@ class WrappedBlocksMixin(GFMRendererMixin):
     def wrap_anything(cls, html_string: str, tag: str) -> str:
         """Wrap a string in a Cambium holder div."""
         css_class = cls.class_template.format(tag=tag)
-        return f"<div class='{css_class}'>{html_string}</div>"
+        return f'<div class="{css_class}">{html_string}</div>'
 
     @render_dispatch(HTMLRenderer)
     def render_table(self, element: Element) -> str:
@@ -327,9 +348,9 @@ def apply_inline_attributes(element: Element) -> Element:
     if isinstance(element, str):
         return element
 
-    # work with links, where the final element in the title is plain text
+    # work with links/images, where the final element in the title is plain text
     if (
-        isinstance(element, inline.Link)
+        isinstance(element, (inline.Image, inline.Link))
         and len(element.children) > 0
         and isinstance(element.children[-1], inline.RawText)
     ):

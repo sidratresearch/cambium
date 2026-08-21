@@ -60,6 +60,7 @@ def test_parse_comment(
 @pytest.mark.parametrize(
     ("markdown", "expected"),
     [
+        # preceding comments
         (
             "<!-- {#custom-header-id} -->\n## Header with a custom ID",
             '<h2 id="custom-header-id">Header with a custom ID</h2>\n',
@@ -72,6 +73,11 @@ def test_parse_comment(
             '<!-- {title="Hover title" inert data-first-letter="G"} -->\n### Generic attributes',
             '<h3 id="generic-attributes" inert title="Hover title" data-first-letter="G">Generic attributes</h3>\n',
         ),
+        (
+            "<!-- {#3-list} -->\n3. list starting at 3",
+            '<ol id="3-list" start="3">\n<li>list starting at 3</li>\n</ol>\n',
+        ),
+        # inline for links
         (
             "[link with class {.bookmark}](https://buildwithcambium.com)",
             '<p><a class="bookmark" href="https://buildwithcambium.com">link with class</a></p>\n',
@@ -88,9 +94,10 @@ def test_parse_comment(
             "[{#link-id}](https://buildwithcambium.com)",
             '<p><a id="link-id" href="https://buildwithcambium.com"></a></p>\n',
         ),
+        # inline for images
         (
-            "<!-- {#3-list} -->\n3. list starting at 3",
-            '<ol id="3-list" start="3">\n<li>list starting at 3</li>\n</ol>\n',
+            "![alt text {.image-with-alt .png}](fake.png)",
+            '<p><div class="cambium-img-holder"><img class="image-with-alt png" src="fake.png" alt="alt text" /></div></p>\n',
         ),
     ],
 )
