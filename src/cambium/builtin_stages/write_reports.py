@@ -89,7 +89,12 @@ class WriteReports(Stage):
             ]
 
         html_links.sort()
-        links = ["# Listing of HTML Pages"] + [
+        links = [
+            "# Listing of HTML Pages",
+            "",
+            f"Does not include pages in [`static`]({self.html_pages_index.relative_path_modifier}/static).",
+            "",
+        ] + [
             f"- [{e}]({self.html_pages_index.relative_path_modifier}{e})"
             for e in html_links
         ]
