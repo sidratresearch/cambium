@@ -1,3 +1,5 @@
+"""Definition and helper functions for the abstract Stage class."""
+
 import logging
 from pathlib import Path
 from typing import Any, Literal
@@ -7,7 +9,8 @@ from pydantic import BaseModel, ValidationError
 from .tree import TreeSpan
 
 """
-When adding a new built-in stage, add it to builtin_stages/__init__.py
+When adding a new built-in stage, add it to builtin_stages/__init__.py,
+and add documentation to docs/builtin_stages.md
 
 In general if you're adding a new stage
 - overwrite __init__ if you:
