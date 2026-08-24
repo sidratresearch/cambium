@@ -12,6 +12,18 @@ from .log import get_loglevel, init_logging
 logger = init_logging()
 app = typer.Typer()
 
+CLI_DEFAULTS = {
+    "build_directory": None,
+    "root_directory": None,
+    "dev_server": False,
+    "dev_server_port": 8000,
+    "dev_server_interval": 0.5,
+    "dev_server_directory": ".cambium-dev/",
+}
+"""Default values for the CLI parameters that get passed to `setup_config`.
+
+Stored here so they can also be used in tests."""
+
 # --------------------------------------------------------------------#
 #                           Main function                             #
 # --------------------------------------------------------------------#
@@ -56,7 +68,7 @@ def main(
             help="Location to build site into, overrides configuration file",
             rich_help_panel="Configuration",
         ),
-    ] = None,
+    ] = CLI_DEFAULTS["build_directory"],
     root_directory: Annotated[
         str | None,
         typer.Option(
@@ -64,7 +76,7 @@ def main(
             help="Location of input files for Cambium, overrides configuration file",
             rich_help_panel="Configuration",
         ),
-    ] = None,
+    ] = CLI_DEFAULTS["root_directory"],
     no_ascii: Annotated[
         bool, typer.Option("--no-ascii", help="Hide the Cambium ascii art")
     ] = False,
@@ -75,7 +87,7 @@ def main(
             help="Run Cambium in development server mode",
             rich_help_panel="Development Server",
         ),
-    ] = False,
+    ] = CLI_DEFAULTS["dev_server"],
     dev_server_port: Annotated[
         int,
         typer.Option(
@@ -83,7 +95,7 @@ def main(
             help="Port to host the development server",
             rich_help_panel="Development Server",
         ),
-    ] = 8000,
+    ] = CLI_DEFAULTS["dev_server_port"],
     dev_server_interval: Annotated[
         float,
         typer.Option(
@@ -92,7 +104,7 @@ def main(
             min=0.01,
             rich_help_panel="Development Server",
         ),
-    ] = 0.5,
+    ] = CLI_DEFAULTS["dev_server_interval"],
     dev_directory: Annotated[
         str,
         typer.Option(
@@ -100,7 +112,7 @@ def main(
             help="Location to build development-mode site into",
             rich_help_panel="Development Server",
         ),
-    ] = ".cambium-dev/",
+    ] = CLI_DEFAULTS["dev_server_directory"],
     # subcommands
     version_option: Annotated[
         bool,

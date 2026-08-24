@@ -7,21 +7,11 @@ import pytest
 from cambium import config
 from cambium.cli import cli
 
-# TODO: move this elsewhere and actually reference it in the cli args?
-# that ensures the test values stay in sync with the actual defaults
-MINIMAL_CLI_CONFIG = {
-    "dev_server": False,
-    "dev_server_port": 8000,
-    "dev_server_interval": 0.5,
-    "dev_server_directory": ".cambium-dev/",
-}
-"""Default parameters for CLI configuration"""
-
 
 def test_default_config() -> None:
     """Ensure that the default configuration is valid."""
     yaml_config = config.FileConfiguration().model_dump()
-    config.initialize_configuration(yaml_config, MINIMAL_CLI_CONFIG)
+    config.initialize_configuration(yaml_config, cli.CLI_DEFAULTS)
 
 
 @pytest.mark.parametrize(
@@ -46,7 +36,7 @@ def test_bad_config_file(tmp_path: Path, filename: str, contents: str) -> None:
     config_file = tmp_path / filename
     config_file.write_text(contents)
     config_dict = config.translate_yaml_configuration(config_file)
-    config.initialize_configuration(config_dict, MINIMAL_CLI_CONFIG)
+    config.initialize_configuration(config_dict, cli.CLI_DEFAULTS)
 
 
 def test_merge_config(tmp_path: Path) -> None:
@@ -54,7 +44,7 @@ def test_merge_config(tmp_path: Path) -> None:
     yaml_config = {"root_directory": "./unused"}
     cli_config = {"root_directory": str(tmp_path), "build_directory": None}
 
-    config.initialize_configuration(yaml_config, {**MINIMAL_CLI_CONFIG, **cli_config})
+    config.initialize_configuration(yaml_config, {**cli.CLI_DEFAULTS, **cli_config})
 
     assert str(config.current_config.root_dir) == cli_config["root_directory"]
 
@@ -70,7 +60,7 @@ def test_root_build(tmp_path: Path) -> None:
     # build directory always returns absolute
     cli_build = "../../_build/"
     cli.setup_config(
-        config_path, {"build_directory": cli_build, **MINIMAL_CLI_CONFIG}, verbosity
+        config_path, {**cli.CLI_DEFAULTS, "build_directory": cli_build}, verbosity
     )
     assert config.current_config.build_dir.is_absolute()
     # when given relative, build should be relative to root
@@ -81,14 +71,14 @@ def test_root_build(tmp_path: Path) -> None:
     with pytest.raises(AssertionError):
         cli.setup_config(
             config_path,
-            {"root_directory": str(tmp_path / "nonexistent"), **MINIMAL_CLI_CONFIG},
+            {**cli.CLI_DEFAULTS, "root_directory": str(tmp_path / "nonexistent")},
             verbosity,
         )
 
     # build directory is the same as unspecified root
     with pytest.raises(AssertionError):
         cli.setup_config(
-            config_path, {"build_directory": ".", **MINIMAL_CLI_CONFIG}, verbosity
+            config_path, {**cli.CLI_DEFAULTS, "build_directory": "."}, verbosity
         )
 
     # build directory is the same as specified root
@@ -96,9 +86,9 @@ def test_root_build(tmp_path: Path) -> None:
         cli.setup_config(
             config_path,
             {
+                **cli.CLI_DEFAULTS,
                 "root_directory": str(tmp_path),
                 "build_directory": str(tmp_path),
-                **MINIMAL_CLI_CONFIG,
             },
             verbosity,
         )
