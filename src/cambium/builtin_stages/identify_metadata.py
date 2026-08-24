@@ -99,7 +99,6 @@ def extract_generic_metadata(leaf_uuid: str, tree: TreeSpan) -> None:
     metadata_obj = tree.leaves["metadata"][leaf_uuid]
 
     # set a `page_id`
-    # TODO: should `cambium-page-` be a stage option or moved into the jinja?
     metadata_obj.page_id = "cambium-page-" + slugify(
         str(tree.leaves["final_path"][leaf_uuid].with_suffix(""))
     )
