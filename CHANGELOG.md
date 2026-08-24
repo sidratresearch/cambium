@@ -14,7 +14,7 @@
 - Add `--fail-fast` CLI option
 - Add configuration options for `WriteReports`
 - Added syntax for parsing HTML comments in Markdown as attributes to apply to rendered HTML
-- Added syntax for parsing specially formatted text inside Markdown links and images as attributes to apply to rendered HTML
+- Added syntax for parsing specially formatted text inside Markdown links, images, and fenced code blocks as attributes to apply to rendered HTML
 
 ### Fixed
 

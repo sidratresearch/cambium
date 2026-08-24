@@ -1,6 +1,7 @@
 """Utility functions for builtin stages."""
 
 import copy
+import html
 import logging
 import os
 import re
@@ -173,6 +174,23 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         return (
             self.render_with_closing(element, "blockquote", newline_after_opening=True)
             + "\n"
+        )
+
+    @render_dispatch(HTMLRenderer)
+    def render_fenced_code(self, element: block.FencedCode) -> str:
+        """Use custom system for applying attributes to render code blocks.
+
+        Indented code blocks call this function as well.
+        """
+        self.ensure_attributes(element)
+        if element.lang:
+            element.class_string += f" language-{self.escape_html(element.lang)}"
+        return (
+            "<pre>"
+            + self.render_with_closing(
+                element, "code", contents=html.escape(element.children[0].children)
+            )
+            + "</pre>\n"
         )
 
     @render_dispatch(HTMLRenderer)
@@ -371,6 +389,27 @@ def apply_inline_attributes(element: Element) -> Element:
     if isinstance(element, str):
         return element
 
+    # work with fenced code blocks
+    if isinstance(element, block.FencedCode):
+        # in the info string, the first text is taken as the language,
+        # and anything following a space is put in "extra", so if no language
+        # was given, the attribute string will be in element.lang
+        if element.extra:
+            attr_match = re.fullmatch(r"(\{.*\})", element.extra)
+        elif element.lang:
+            attr_match = re.fullmatch(r"(\{.*\})", element.lang)
+            if attr_match is not None:
+                element.lang = ""
+
+        if attr_match is None:
+            return element
+
+        attributes = parse_comment(attr_match.group(1).strip())
+        if attributes is not None:
+            attributes.apply_to_element(element)
+
+        return element
+
     # work with links/images, where the final element in the title is plain text
     if (
         isinstance(element, (inline.Image, inline.Link))
@@ -391,12 +430,10 @@ def apply_inline_attributes(element: Element) -> Element:
         title, attributes = attr_match.group(1), parse_comment(
             attr_match.group(2).strip()
         )
-        if attributes is None:
-            return element
-
-        # update the attributes and excise the curly braces from the displayed title
-        attributes.apply_to_element(element)
-        element.children[-1].children = title
+        if attributes is not None:
+            # update the attributes and excise the curly braces from the displayed title
+            attributes.apply_to_element(element)
+            element.children[-1].children = title
 
         return element
 

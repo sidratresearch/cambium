@@ -10,7 +10,7 @@ The following table shows a list of common markdown features and their support i
 | [`#` (ATX) Headings][thematic-breaks]             | ✅                   | Custom attributes           |
 | [Underlined (setext) headings][setext-headings]   | ✅                   | Custom attributes           |
 | [Indented code blocks][indented-code-blocks]      | ✅                   |                             |
-| [Fenced code blocks][fenced-code-blocks]          | ✅                   |                             |
+| [Fenced code blocks][fenced-code-blocks]          | ✅                   | Custom attributes           |
 | [HTML blocks][html-blocks]                        | ✅                   |                             |
 | [Named links][link-reference-definitions]         | ✅                   |                             |
 | [Paragraphs][paragraphs]                          | ✅                   |                             |
