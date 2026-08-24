@@ -89,6 +89,7 @@ class TreeSpan:
 
         self._apply_tree_hooks()
         self._build_final_tree()
+        self._check_protected_static_paths()
 
     # ----------------------------------------------------------------#
     #                    __init__ helper functions                    #
@@ -174,6 +175,18 @@ class TreeSpan:
                 f"Protected build paths prevent the following files/directories from being created in {self.build_directory}: {bad_paths_str}"
             )
             raise RuntimeError
+
+    def _check_protected_static_paths(self) -> None:
+        """Enforce that themes can't provide certain files."""
+        for source_dir, dest_dir in self.config.static_directories["theme"]:
+            theme_static_paths = [
+                p[1] for p in self._get_static_paths(source_dir, dest_dir)[1]
+            ]
+            for path in self.config.user_theme_files:
+                if path in theme_static_paths:
+                    raise RuntimeError(
+                        f"A theme is attempting to write the user-only file {path.name}"
+                    )
 
     # ----------------------------------------------------------------#
     #                     stage helper functions                      #
@@ -425,10 +438,8 @@ class TreeSpan:
                 self._copy_static_files(source_dir, dest_dir)
 
         # populate "required" static files
-        # TODO: enforce that these can only come from user, not theme
-        required_static = ["css/custom.css", "js/custom.js"]
         for path in [
-            self.build_directory / "static" / file for file in required_static
+            self.build_directory / file for file in self.config.user_theme_files
         ]:
             if not path.exists():
                 path.parent.mkdir(exist_ok=True)
