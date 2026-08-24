@@ -366,7 +366,8 @@ class TreeSpan:
                 try:
                     hook_main(uuid, self)
                 except Exception as e:
-                    # TODO: add a `fail-fast` option that raises an exception here
+                    if self.config.fail_fast:
+                        raise e
                     self._handle_hook_exception(e, uuid, stage_name, hook_type)
 
             logger.debug(f"Running {stage_name} {hook_type[:-1]}_finalize.")

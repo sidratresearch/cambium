@@ -13,6 +13,7 @@ logger = init_logging()
 app = typer.Typer()
 
 CLI_DEFAULTS = {
+    "fail_fast": False,
     "build_directory": None,
     "root_directory": None,
     "dev_server": False,
@@ -48,6 +49,12 @@ def main(
             the file structure""",
         ),
     ] = False,
+    fail_fast: Annotated[
+        bool,
+        typer.Option(
+            "--fail-fast", help="Quit on first error when running stage hooks."
+        ),
+    ] = CLI_DEFAULTS["fail_fast"],
     config_path: Annotated[
         Path | None,
         typer.Option(
@@ -146,6 +153,7 @@ def main(
     cli_config = {
         "build_directory": build_directory,
         "root_directory": root_directory,
+        "fail_fast": fail_fast,
         "dev_server": dev_server,
         "dev_server_port": dev_server_port,
         "dev_server_interval": dev_server_interval,

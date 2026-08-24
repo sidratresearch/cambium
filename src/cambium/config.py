@@ -59,6 +59,8 @@ class CLIConfiguration(BaseModel):
     by WorkingConfiguration.
     """
 
+    fail_fast: bool
+    # TODO: do these need to have default values?
     root_directory: build_directory_type = None
     build_directory: build_directory_type = None
     dev_server: bool
@@ -216,6 +218,7 @@ class WorkingConfiguration:
         self.populate_hosting_options()
 
         # Exposing Simple Parameters (that require no additional processing)
+        self.fail_fast = self.input_config.fail_fast
         self.max_leaves = self.input_config.max_leaves
         self.logging_level = self.input_config.logging_level
         self.site_name = self.input_config.site_name
