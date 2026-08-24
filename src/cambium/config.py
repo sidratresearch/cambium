@@ -26,6 +26,7 @@ config_default_path = Path(".cambium/config.yaml")
 builtin_paths_to_ignore: list[str] = [
     "/.cambium",
     ".*",
+    "*/.*",
     "__pycache__",
     "*.*~",  # tempfiles made while saving may end in ~
 ]
@@ -498,9 +499,9 @@ def translate_yaml_configuration(config_path: Path) -> dict[str, Any]:
 
 def convert_glob_string_to_regex(glob_string: str) -> str:
     """Convert glob string to regex string, escaping appropriate characters."""
-    main_segment = re.escape(glob_string).replace("\\*", ".*")
+    main_segment = re.escape(glob_string).replace(r"\*", ".*")
 
-    return "^" + main_segment + "$|\\/" + main_segment + "$"
+    return f"^{main_segment}$" + "|" + f"\\/{main_segment}$"
 
 
 def dump_default_config() -> None:
