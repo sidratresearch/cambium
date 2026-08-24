@@ -63,8 +63,9 @@ def run_dev_server(
                     tree = TreeSpan(config.current_config)  # make new tree
                     logger.info("Re-running Cambium")
                     build(tree)
-    except KeyboardInterrupt:
-        # TODO: how does this behave for other exceptions?
+    except Exception as e:
+        if not isinstance(e, KeyboardInterrupt):
+            logger.error(e)
         logger.info("Closing dev server and deleting development files")
         shutil.rmtree(tree.build_directory)
         server_process.terminate()  # prints "Process Process-1" to sys.stderr
