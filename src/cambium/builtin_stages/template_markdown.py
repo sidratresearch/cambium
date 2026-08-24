@@ -38,6 +38,9 @@ class TemplateMarkdown(Stage):
         # Apply to Leaves
         tree.apply_to_leaves(self._tree_hook_for_leaf)
 
+        # Read in special files as Jinja variables
+        self.jinja_globals = self._read_jinja_globals(tree)
+
     def post_hook_initialize(self, tree: TreeSpan) -> None:
         # Initialize Jinja Environment
         self._initialize_jinja(tree)
@@ -71,7 +74,6 @@ class TemplateMarkdown(Stage):
             globals_key = path.name.removesuffix(path.suffix)
 
             if globals_key in CambiumJinjaVariables.model_fields:
-                # TODO: move this check into a tree hook so it gets caught on dry run
                 raise ValueError(f"""{globals_key} ({path.name}) is a reserved name and
                     cannot be used in {search_path}.""")
             if path.name in jinja_globals:
@@ -94,7 +96,7 @@ class TemplateMarkdown(Stage):
             trim_blocks=True,
             lstrip_blocks=True,
         )
-        self.jinja_env.globals = self._read_jinja_globals(tree)
+        self.jinja_env.globals = self.jinja_globals
 
     def _create_page(self, leaf_uuid: str, tree: TreeSpan) -> None:
         input_path = tree.abs_leaf_path(leaf_uuid)
