@@ -142,11 +142,12 @@ function createDevServerIndicator() {
   document.body.appendChild(indicator);
   indicator.style.backgroundColor = "#4c7e97";
   indicator.style.color = "white";
-  indicator.style.position = "sticky";
   indicator.style.width = "fit-content";
-  indicator.style.bottom = 0;
-  indicator.style.margin = "0 auto";
   indicator.style.padding = "0.5em";
+  indicator.style.position = "fixed";
+  indicator.style.bottom = 0;
+  indicator.style.left = "50%";
+  indicator.style.transform = "translate(-50%)";
   return indicator;
 }
 
