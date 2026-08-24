@@ -1,10 +1,8 @@
 """Cambium stage to store metadata of leaves."""
 
 import datetime
-import urllib
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Any
 
 from marko import Markdown
 from marko.block import BlankLine, Heading, HTMLBlock
@@ -43,11 +41,6 @@ class TitleParser(HTMLParser):
 
 
 class IdentifyMetadata(Stage):
-    def __init__(self, _: dict[str, Any]) -> None:
-        self.requires = []
-        self.runs_after = []
-        self.runs_before = []
-
     def tree_hook(self, tree: TreeSpan) -> None:
 
         # Get all pages that should have metadata extracted

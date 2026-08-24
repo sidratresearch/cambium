@@ -62,7 +62,7 @@ class PagefindSearch(Stage):
             self.__class__.__name__
         )
 
-    def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
+    def post_hook(self, _: str, __: TreeSpan) -> None:
         """Fake post hook function for Pagefind integration."""
         return
 
