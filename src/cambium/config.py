@@ -115,7 +115,7 @@ class FileConfiguration(BaseModel):
     max_leaves: Optional[PositiveInt] = 10_000
     "Maximum Number of Leaves"
 
-    site_name: Optional[str] = "Cambium Site"
+    site_name: Optional[str] = None
     "The Name of the Cambium Site"
 
     theme: Optional[str] = "maple"
@@ -218,6 +218,9 @@ class WorkingConfiguration:
         self.dev_server = self.input_config.dev_server
         self.dev_server_port = self.input_config.dev_server_port
         self.dev_server_interval = self.input_config.dev_server_interval
+
+        # whether to re-extract the name from index.html on subsequent dev server runs
+        self.extract_site_name = self.site_name is None
 
     def __del__(self) -> None:
         """Clean up All Lingering Directories."""

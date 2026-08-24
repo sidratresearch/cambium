@@ -57,6 +57,30 @@ class IdentifyMetadata(Stage):
         elif readable_extension in (".html", ".htm"):
             extract_html_metadata(readable_path, leaf_uuid, tree)
 
+    def pre_hook_finalize(self, tree: TreeSpan) -> None:
+        """Set the site title.
+
+        Uses the following priority order:
+        1. "site_name" from config file
+        2. title of index.html, if present (may be <title> or Markdown H1)
+        3. "Cambium Site"
+        """
+        # on the dev server, we may or may not need to re-extract from index.html
+        # so this says whether or not a higher-priority site title already exists
+        if not tree.config.extract_site_name:
+            return
+
+        default_site_name = "Cambium Site"
+        try:
+            index_uuid = tree.get_leaf_from_path(Path("index.html"), "final_path")
+            index_name = self._get_leaf_metadata("title", index_uuid, tree, "cambium")
+            if index_name is not None:
+                default_site_name = index_name
+        except RuntimeError:
+            pass
+
+        tree.config.site_name = default_site_name
+
     # Utility Functions
 
     def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
