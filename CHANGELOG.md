@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/sidratresearch/cambium/tree/main)
 
+### Changed
+
+- Moved incomplete documentation into a hidden folder
+
+### Added
+
+- Add fallback system for site title
+- Add protections for `static/css/custom.css` and `static/js/custom.js`
+
 ## [0.6.0] - 2026-08-20
 
 ### Changed
