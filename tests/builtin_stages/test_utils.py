@@ -103,6 +103,15 @@ def test_parse_comment(
             "![alt text {.image-with-alt .png}](fake.png)",
             '<p><div class="cambium-img-holder"><img class="image-with-alt png" src="fake.png" alt="alt text" /></div></p>\n',
         ),
+        # fenced code blocks
+        (
+            "```the-language {#has-language}\ncode\n```",
+            '<pre><code id="has-language" class="language-the-language">code\n</code></pre>\n',
+        ),
+        (
+            "```{.no-language}\ncode\n```",
+            '<pre><code class="no-language">code\n</code></pre>\n',
+        ),
     ],
 )
 def test_markdown_to_html(markdown: str, expected: str) -> None:

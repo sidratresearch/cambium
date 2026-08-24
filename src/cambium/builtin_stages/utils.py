@@ -117,7 +117,8 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         if element.id is not None:
             string += f' id="{element.id}"'
         if len(element.classes) > 0:
-            class_string = " ".join(set(element.classes))
+            # using dict.fromkeys to deduplicate while maintaining order
+            class_string = " ".join(dict.fromkeys(element.classes))
             string += f' class="{class_string}"'
         if len(element.simple_attrs) > 0:
             for attr in element.simple_attrs:
@@ -230,6 +231,7 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
     @render_dispatch(HTMLRenderer)
     @wrap_as("table")
     def render_table(self, element: gfm.elements.Table) -> str:
+        """Use custom system for applying attributes to render tables."""
         head, *body = element.children
         theader = f"<thead>\n{self.render(head)}</thead>"
         tbody = ""
