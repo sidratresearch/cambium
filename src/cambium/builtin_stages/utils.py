@@ -73,8 +73,8 @@ class ElementAttributeSet:
 
     def apply_to_element(self, element: Element) -> None:
         """Attach attributes to an element for rendering."""
-        if not hasattr(element, "class_string"):
-            element.class_string = " ".join(self.classes)
+        if not hasattr(element, "classes"):
+            element.classes = self.classes
         if not hasattr(element, "id"):
             element.id = self.id
         if not hasattr(element, "simple_attrs"):
@@ -112,15 +112,17 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
 
     def build_attr_string(self, element: Element) -> str:
         """Build an attribute string (id, classes, etc.) for an HTML tag."""
+        self.ensure_attributes(element)
         string = ""
-        if hasattr(element, "id") and element.id is not None:
+        if element.id is not None:
             string += f' id="{element.id}"'
-        if hasattr(element, "class_string") and len(element.class_string) > 0:
-            string += f' class="{element.class_string}"'
-        if hasattr(element, "simple_attrs") and len(element.simple_attrs) > 0:
+        if len(element.classes) > 0:
+            class_string = " ".join(set(element.classes))
+            string += f' class="{class_string}"'
+        if len(element.simple_attrs) > 0:
             for attr in element.simple_attrs:
                 string += f" {attr}"
-        if hasattr(element, "keyval_attrs") and len(element.keyval_attrs) > 0:
+        if len(element.keyval_attrs) > 0:
             for key, value in element.keyval_attrs:
                 string += f" {key}={value}"
 
@@ -184,7 +186,7 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         """
         self.ensure_attributes(element)
         if element.lang:
-            element.class_string += f" language-{self.escape_html(element.lang)}"
+            element.classes.append(f"language-{self.escape_html(element.lang)}")
         return (
             "<pre>"
             + self.render_with_closing(
