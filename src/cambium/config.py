@@ -382,7 +382,7 @@ class WorkingConfiguration:
                 self.hosting["subpath"] = subpath
 
         if self.input_config.domain_name is not None:
-            self.hosting["domain_name"] = self.input_config.domain_name.strip("/")
+            self.hosting["domain_name"] = str(self.input_config.domain_name).strip("/")
 
             if self.hosting["subpath"] is None:
                 self.hosting["url"] = self.hosting["domain_name"]
