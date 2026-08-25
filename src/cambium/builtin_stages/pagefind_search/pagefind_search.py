@@ -58,10 +58,6 @@ class PagefindSearch(Stage):
                 self._set_css_include(self.css_path, uuid, tree)
                 self._set_js_include(self.js_path, uuid, tree)
 
-        self.abs_pagefind_directory = tree.abs_static_stage_path(
-            self.__class__.__name__
-        )
-
     def post_hook(self, _: str, __: TreeSpan) -> None:
         """Fake post hook function for Pagefind integration."""
         return
@@ -78,15 +74,14 @@ class PagefindSearch(Stage):
             logger.warning("No HTML files found for Pagefind to index.")
             return
 
-        self.abs_pagefind_directory.mkdir(parents=True)
+        self.abs_pagefind_directory = tree.abs_static_stage_path(
+            self.__class__.__name__
+        )
         asyncio.run(self._post_tree_hook(tree, html_leaves))
 
     async def _post_tree_hook(self, tree: TreeSpan, html_leaves: list[str]) -> None:
         """Read all HTML pages into the Pagefind index."""
         logger.info("Building Pagefind index")
-
-        if not self.abs_pagefind_directory.exists():
-            self.abs_pagefind_directory.mkdir(parents=True)
 
         async with PagefindIndex(config=self.pagefind_config) as index:
             for uuid in html_leaves:

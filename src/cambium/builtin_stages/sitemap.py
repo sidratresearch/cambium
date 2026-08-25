@@ -31,13 +31,8 @@ class AddSitemap(Stage):
     def _add_sitemap_leaf(self, tree: TreeSpan) -> None:
         logger.debug("Adding new leaf for sitemap.xml")
 
-        # need to create a latest_path so that it can get copied into the tempdir
-        # This slightly weird hack is also used by AddPlaceholderIndex
         source_path = Path(f".cambium/{self.__class__.__name__}/sitemap.xml")
-        uuid = tree.add_leaf(
-            Path(), latest_path=source_path, final_path=Path("sitemap.xml")
-        )
-        tree.abs_leaf_path(uuid).write_text("")
+        uuid = tree.add_leaf(source_path, final_path=Path("sitemap.xml"))
         tree.leaves["hooks"][uuid]["transforms"].append(self.__class__.__name__)
         logger.debug("Added sitemap file")
 

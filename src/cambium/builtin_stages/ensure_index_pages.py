@@ -84,12 +84,8 @@ class EnsureIndexPages(Stage):
 
     def _create_index_leaf(self, directory: Path, tree: TreeSpan) -> None:
         """Add a blank index.html file."""
-        # TODO: this path might change
-        source_path = Path(f".cambium/AddPlaceholderIndex/{directory}/index.html")
-        uuid = tree.add_leaf(
-            directory, latest_path=source_path, final_path=directory / "index.html"
-        )
-        tree.abs_leaf_path(uuid).write_text("")
+        uuid = tree.add_leaf(directory / "index.html")
+        self._register_hook(uuid, tree, "pre_hooks")
 
     def _path_updater(self, path: Path) -> Path:
         return path.with_name("index" + path.suffix)
@@ -105,13 +101,12 @@ class EnsureIndexPages(Stage):
         final = tree.leaves["final_path"][leaf_uuid]
         logger.info(f"Changing output path of {initial} to {final}")
 
-        # TODO: this path might change
         redirect_latest_path = original_initial.with_name(
             f"{self.__class__.__name__}-{original_initial.name}"
         )
+        # can't use the same initial path as another existing leaf
         redirect = tree.add_leaf(
             redirect_latest_path,
-            latest_path=redirect_latest_path,
             final_path=original_final,
         )
         self._register_hook(redirect, tree, "pre_hooks")
@@ -123,11 +118,14 @@ class EnsureIndexPages(Stage):
         self.redirects[redirect] = leaf_uuid
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        destination_leaf = self.redirects[leaf_uuid]
-        destination_url = tree.leaves["final_path"][destination_leaf]
-        tree.abs_leaf_path(leaf_uuid).write_text(
-            f'<meta http-equiv="refresh" content="0;url={destination_url}"/>'
-        )
+        if leaf_uuid in self.redirects:
+            destination_leaf = self.redirects[leaf_uuid]
+            destination_url = tree.leaves["final_path"][destination_leaf]
+            tree.abs_leaf_path(leaf_uuid).write_text(
+                f'<meta http-equiv="refresh" content="0;url={destination_url}"/>'
+            )
+        else:  # blank redirect page
+            tree.abs_leaf_path(leaf_uuid).write_text("")
 
     def _warn_extra_index_options(
         self, directory: Path, extra_uuids: list[str], tree: TreeSpan

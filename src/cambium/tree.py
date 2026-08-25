@@ -52,6 +52,7 @@ class TreeSpan:
     build_directory: Path
 
     def __init__(self, working_config: WorkingConfiguration) -> None:
+        self.filesystem_writeable = False
         self.config: WorkingConfiguration = working_config
 
         self.root_directory = self.config.root_dir
@@ -272,22 +273,23 @@ class TreeSpan:
     def abs_leaf_path(self, leaf_uuid: str) -> Path:
         """Get the absolute path to a safe writeable location for a leaf.
 
-        Ensures that the directory exists to be written to, which is mostly required
-        for "ghost" leaves (e.g., generated index.html files) where the relevant folder
-        in the temporary directory may not have been created on tree initialization
+        If called during the tree hooks, this will *not* create that path, as the
+        filesystem is not considered writeable at that time.
         """
         path = self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid]
-        path.parent.mkdir(parents=True, exist_ok=True)
+        if self.filesystem_writeable:
+            path.parent.mkdir(parents=True, exist_ok=True)
         return path
 
     def abs_static_stage_path(self, stage_name: str) -> Path:
         """Get the absolute path to a stage-specific directory in build/static.
 
-        This directory is *not* guaranteed to exist, and should be created
-        *by the requesting stage* at some point after the tree hooks.
+        If called during the tree hooks, this will *not* create that directory, as the
+        filesystem is not considered writeable at that time.
         """
         path = self.build_directory / "static" / "_cambium" / stage_name
-
+        if self.filesystem_writeable:
+            path.mkdir(parents=True, exist_ok=True)
         return path.absolute()
 
     def get_leaf_from_path(
@@ -407,6 +409,7 @@ class TreeSpan:
     def prepare_tree(self) -> None:
         """Preparation steps not taken during dry run."""
         self._check_disk_space()
+        self.filesystem_writeable = True
         self._init_tmp_files()
         self._init_build_directory()
 
