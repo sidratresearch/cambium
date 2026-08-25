@@ -4,10 +4,9 @@
 {% set title %}
   {# set the tab title based on whether or not the specific page has a title #}
   {% if metadata.title %}
-    {{ metadata.title }}
-    - {{ site_name }}
+    {{ metadata.title|trim ~ " - " ~ site_name |trim }}
   {% else %}
-    {{ site_name }}
+    {{ site_name|trim }}
   {% endif %}
 {% endset %}
 

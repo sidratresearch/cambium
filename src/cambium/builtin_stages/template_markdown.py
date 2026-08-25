@@ -127,4 +127,4 @@ class TemplateMarkdown(Stage):
 
         main_template = self.jinja_env.get_template(template_name)
         output_html = main_template.render(**cambium_jinja_variables.model_dump())
-        input_path.write_text(output_html)
+        input_path.write_text(output_html.strip())
