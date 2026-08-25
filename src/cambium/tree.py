@@ -58,8 +58,6 @@ class TreeSpan:
         self.root_directory = self.config.root_dir
         self.build_directory = self.config.build_dir
 
-        # TODO: there's not currently anything stopping a stage from setting a leaf path to something that isn't a Path, then when another stage tries to acces .suffix, it breaks
-        # maybe using a pydantic model would help?
         self.leaves: Leaves = {
             "uuids": deque(maxlen=self.config.max_leaves),
             # non-uuid dicts don't need to shrink, so long as uuids are up-to-date
@@ -103,8 +101,8 @@ class TreeSpan:
             try:
                 logger.debug(f"Running tree_hook for stage {stage}")
                 self.config.stage_dict[stage].tree_hook(self)
-                # TODO: decide if exception should be raised on first treehook failure (current) or wait
             except Exception as e:
+                # quit on first TreeHook error
                 errormsg = f"Error running tree hook for stage {stage}. "
                 logger.error(errormsg + f"Error message: {e}")
                 raise e

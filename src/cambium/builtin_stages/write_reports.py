@@ -79,6 +79,7 @@ class WriteReports(Stage):
     def pre_hook_initialize(self, tree: TreeSpan) -> None:
         # Generate the report for listing all HTML pages
 
+        # TODO: if we start wanting a *lot* of reports could make them subclasses of _Report
         html_leaves = []
         for leaf_uuid in tree.leaves["uuids"]:
             final_path = tree.leaves["final_path"][leaf_uuid]
@@ -92,6 +93,7 @@ class WriteReports(Stage):
             links.append(f"- [{title}]({path})")
         links.sort()
 
+        # TODO: change this into a Jinja template (e.g. for localization)
         links = [
             "# Listing of HTML Pages",
             "",
