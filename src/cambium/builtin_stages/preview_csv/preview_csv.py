@@ -72,9 +72,9 @@ class PreviewCSV(Stage):
         self._register_hook(md_uuid, tree, "pre_hooks")
 
         # create a companion leaf for the new data location
-        source_path = Path(f".cambium/{self.__class__.__name__}/{csv_initial_path}")
-        csv_uuid = tree.add_leaf(
-            source_path, final_path=csv_initial_path / csv_initial_path.name
+        # Stage.add_leaf will ensure the initial path doesn't actually collide
+        csv_uuid = self.add_leaf(
+            csv_initial_path, tree, final_path=csv_initial_path / csv_initial_path.name
         )
         self._register_hook(csv_uuid, tree, "pre_hooks")
 

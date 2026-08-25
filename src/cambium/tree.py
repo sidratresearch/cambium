@@ -78,7 +78,7 @@ class TreeSpan:
         self.directories_in_build = directories_in_build
 
         for path in leaf_paths:
-            self.add_leaf(path)
+            self._add_leaf(path)
 
         if len(self.leaves["uuids"]) == 0:
             logger.warning("Collected 0 files.")
@@ -193,7 +193,7 @@ class TreeSpan:
     #                     stage helper functions                      #
     # ----------------------------------------------------------------#
 
-    def add_leaf(
+    def _add_leaf(
         self,
         initial_path: Path,
         final_path: Path | None = None,
@@ -201,12 +201,7 @@ class TreeSpan:
     ) -> str:
         """Add a new leaf to the tree.
 
-        Note that if you're doing this while iterating through
-        tree.leaves["uuids"] you will likely encounter "RuntimeError: deque
-        mutated during iteration". If you *don't* want to iterate over
-        the new leaves, you can freeze the deque before iteration by doing
-        `for leaf_uuid in list(tree.leaves["uuids"])`. If you *do* want to
-        include the new leaves, use a while loop instead.
+        This function should only be called within TreeSpan, and by Stage.add_leaf.
         """
         if len(self.leaves["uuids"]) == self.leaves["uuids"].maxlen:
             raise ValueError("self.leaves will drop items")
@@ -484,6 +479,8 @@ class TreeSpan:
             self.directories_in_build.append(directory)
             directory = directory.parent
 
+        self.directories_in_build.sort()
+
     def _check_disk_space(self) -> None:
         """Check that there is enough free space for both the temp and build dirs."""
         logger.debug("Checking disk space")
@@ -594,7 +591,7 @@ class TreeSpan:
         dest_dir = self.build_directory / dest_dir
         source_dir, dest_dir = source_dir.absolute(), dest_dir.absolute()
         if not dest_dir.exists():
-            dest_dir.mkdir()
+            dest_dir.mkdir(parents=True)
 
         directories, files = self._get_static_paths(source_dir, dest_dir)
 

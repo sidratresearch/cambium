@@ -229,6 +229,9 @@ class WorkingConfiguration:
 
         # whether to re-extract the name from index.html on subsequent dev server runs
         self.extract_site_name = self.site_name is None
+        self.stage_leaf_prefix = Path(".cambium/stage_leaves")
+        """Prefix attached to initial paths for leaves created by stages. Helps
+        ensure that stage-created leaves don't collide with user-greated ones."""
 
     def __del__(self) -> None:
         """Clean up All Lingering Directories."""

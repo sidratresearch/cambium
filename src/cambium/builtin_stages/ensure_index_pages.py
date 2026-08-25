@@ -84,7 +84,7 @@ class EnsureIndexPages(Stage):
 
     def _create_index_leaf(self, directory: Path, tree: TreeSpan) -> None:
         """Add a blank index.html file."""
-        uuid = tree.add_leaf(directory / "index.html")
+        uuid = self.add_leaf(directory / "index.html", tree)
         self._register_hook(uuid, tree, "pre_hooks")
 
     def _path_updater(self, path: Path) -> Path:
@@ -101,12 +101,10 @@ class EnsureIndexPages(Stage):
         final = tree.leaves["final_path"][leaf_uuid]
         logger.info(f"Changing output path of {initial} to {final}")
 
-        redirect_latest_path = original_initial.with_name(
-            f"{self.__class__.__name__}-{original_initial.name}"
-        )
-        # can't use the same initial path as another existing leaf
-        redirect = tree.add_leaf(
-            redirect_latest_path,
+        # Stage.add_leaf will ensure the initial path doesn't actually collide
+        redirect = self.add_leaf(
+            original_initial,
+            tree,
             final_path=original_final,
         )
         self._register_hook(redirect, tree, "pre_hooks")

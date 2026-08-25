@@ -5,7 +5,7 @@ category or with a certain tag
 
 By default these reports are written to _build/_cambium-reports/. The
 directory name is configurable, and if a given report would conflict with
-a pre-existing file, an error would be raised at `TreeSpan.add_leaf()`.
+a pre-existing file, an error would be raised at `Stage.add_leaf()`.
 """
 
 import logging
@@ -41,7 +41,7 @@ class _Report:
         # Because we set relative_path_modifier based on final path, but
         # TransformMarkdown will validate links based on initial_path
         # Something to think about if we update the path later...
-        self.leaf_uuid = tree.add_leaf(self.path_in_build)
+        self.leaf_uuid = caller.add_leaf(self.path_in_build, tree)
 
         self.relative_path_modifier = get_relative_path_modifier(self.path_in_build)
 

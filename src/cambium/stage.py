@@ -121,6 +121,29 @@ class Stage:
 
         return leaf_metadata.stage_metadata[metadata_provider][metadata_name]
 
+    def add_leaf(
+        self,
+        initial_path: Path,
+        tree: TreeSpan,
+        final_path: Path | None = None,
+    ) -> str:
+        """Add a new leaf to the tree.
+
+        Note that if you're doing this while iterating through
+        tree.leaves["uuids"] you will likely encounter "RuntimeError: deque
+        mutated during iteration". If you *don't* want to iterate over
+        the new leaves, you can freeze the deque before iteration by doing
+        `for leaf_uuid in list(tree.leaves["uuids"])`. If you *do* want to
+        include the new leaves, use a while loop instead.
+        """
+        if final_path is None:
+            final_path = initial_path
+
+        prefixed_initial_path = (
+            tree.config.stage_leaf_prefix / self.__class__.__name__ / initial_path
+        )
+        return tree._add_leaf(prefixed_initial_path, final_path=final_path)
+
     # --------------------------------------------------------------------#
     #                             Tree Hook                               #
     # --------------------------------------------------------------------#

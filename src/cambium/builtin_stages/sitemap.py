@@ -31,8 +31,8 @@ class AddSitemap(Stage):
     def _add_sitemap_leaf(self, tree: TreeSpan) -> None:
         logger.debug("Adding new leaf for sitemap.xml")
 
-        source_path = Path(f".cambium/{self.__class__.__name__}/sitemap.xml")
-        uuid = tree.add_leaf(source_path, final_path=Path("sitemap.xml"))
+        path = Path("sitemap.xml")
+        uuid = self.add_leaf(path, tree, final_path=path)
         tree.leaves["hooks"][uuid]["transforms"].append(self.__class__.__name__)
         logger.debug("Added sitemap file")
 
