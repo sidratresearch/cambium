@@ -76,29 +76,39 @@ class WriteReports(Stage):
             if final_path.suffix in (".html", ".html"):
                 html_leaves.append(leaf_uuid)
 
+        links = []
+        for uuid in html_leaves:
+            title, path = self._get_htmlpage_link(uuid, tree)
+            path = self.html_pages_index.relative_path_modifier + str(path)
+            links.append(f"- [{title}]({path})")
+        links.sort()
+
+        links = [
+            "# Listing of HTML Pages",
+            "",
+            f"Does not include pages in [`static`]({self.html_pages_index.relative_path_modifier}static).",
+            "",
+            *links,
+        ]
+        self.html_pages_index.write("\n".join(links), tree)
+
+    def _get_htmlpage_link(self, leaf_uuid: str, tree: TreeSpan) -> tuple[str, str]:
+        initial_path, final_path = (
+            tree.leaves["initial_path"][leaf_uuid],
+            tree.leaves["final_path"][leaf_uuid],
+        )
+        title, path = final_path, final_path
         # HACK? If TransformMarkdown is active we need to put down initial
         # paths so that link change attempts have parseable links
         # If it's not active, we need to point to the final location
         if "TransformMarkdown" in tree.config.stages:
-            html_links = [
-                tree.leaves["initial_path"][leaf_uuid] for leaf_uuid in html_leaves
-            ]
-        else:
-            html_links = [
-                tree.leaves["final_path"][leaf_uuid] for leaf_uuid in html_leaves
-            ]
+            title, path = initial_path, initial_path
 
-        html_links.sort()
-        links = [
-            "# Listing of HTML Pages",
-            "",
-            f"Does not include pages in [`static`]({self.html_pages_index.relative_path_modifier}/static).",
-            "",
-        ] + [
-            f"- [{e}]({self.html_pages_index.relative_path_modifier}{e})"
-            for e in html_links
-        ]
-        self.html_pages_index.write("\n".join(links), tree)
+        if str(initial_path).startswith(str(tree.config.stage_leaf_prefix)):
+            stage_name = initial_path.parts[len(tree.config.stage_leaf_prefix.parts)]
+            title = f"{final_path} ({stage_name})"
+
+        return title, path
 
     def pre_hook(self, _: str, __: TreeSpan) -> None:
         """Dummy function as all work is done by initialize."""
