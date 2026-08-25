@@ -191,7 +191,6 @@ def setup_config(
     config.initialize_configuration(yaml_config, cli_config)
 
     logger.setLevel(get_loglevel(config.current_config.logging_level, verbosity_boost))
-    logger.info("Logger is setup")
 
 
 def build(treespan: TreeSpan) -> None:

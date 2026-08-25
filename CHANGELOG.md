@@ -12,6 +12,7 @@
 - Add fallback system for site title
 - Add protections for `static/css/custom.css` and `static/js/custom.js`
 - Add `--fail-fast` CLI option
+- Add configuration options for `WriteReports`
 
 ### Fixed
 

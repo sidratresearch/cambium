@@ -10,7 +10,7 @@ a pre-existing file, an error would be raised at `Stage.add_leaf()`.
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
@@ -18,17 +18,16 @@ from .utils import get_relative_path_modifier
 
 logger = logging.getLogger(__name__)
 
-# TODO: implement some stage config
-# do/don't index reports with pagefind
-# do/don't generate reports on dev server only
-# which reports to generate
-# content of page titles
-
-# TODO: consider the fact that this listing isn't actually complete - it misses the pagefind playground
-
 
 class WriteReportsConfig(StageConfig):
     report_directory: Path = Path("_cambium-reports/")
+    """Location in the build directory where reports will be placed."""
+
+    reports: list[Literal["html_pages"]] | None = ["html_pages"]
+    """List of reports to create."""
+
+    dev_only: bool = False
+    """Only create report pages when running the development server."""
 
 
 class _Report:
@@ -58,6 +57,11 @@ class WriteReports(Stage):
         self.requires = []
         self.runs_before = []
 
+        if self.config.reports is None:
+            self.config.reports = []
+        if len(self.config.reports) == 0:
+            logger.warning("No reports are requested")
+
         # At some point in the future we may use the metadata in generated reports
         # At the moment, linking directly to final paths breaks the
         # destination->leaf matching in IdentifyMetadata. And we should link
@@ -65,7 +69,12 @@ class WriteReports(Stage):
         self.runs_after = ["IdentifyMetadata"]
 
     def tree_hook(self, tree: TreeSpan) -> None:
-        self.html_pages_index = _Report("html_pages.md", self, tree)
+        if self.config.dev_only and not tree.config.dev_server:
+            logger.info(f"{self.__class__.__name__} is disabled on build")
+            return
+
+        if "html_pages" in self.config.reports:
+            self.html_pages_index = _Report("html_pages.md", self, tree)
 
     def pre_hook_initialize(self, tree: TreeSpan) -> None:
         # Generate the report for listing all HTML pages
