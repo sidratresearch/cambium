@@ -5,11 +5,17 @@
 ### Changed
 
 - Moved incomplete documentation into a hidden folder
+- Stages should add new leaves with `Stage.add_leaf()` rather than the (now renamed) `TreeSpan.add_leaf()`
 
 ### Added
 
 - Add fallback system for site title
 - Add protections for `static/css/custom.css` and `static/js/custom.js`
+- Add `--fail-fast` CLI option
+
+### Fixed
+
+- Fix for broken functionality in `AddSitemap`
 
 ## [0.6.0] - 2026-08-20
 
