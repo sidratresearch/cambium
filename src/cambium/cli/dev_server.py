@@ -29,7 +29,6 @@ def run_dev_server(
     any templated markdown files.
     """
     logger.info("Running Cambium in dev server mode, use CTRL-c to quit")
-    # TODO: consider tracking changes in static files
 
     server_process = start_http_server(
         tree.config.dev_server_port, tree.build_directory
@@ -60,15 +59,17 @@ def run_dev_server(
 
                 if files_changed:
                     tree.config.tmp_dir_obj.cleanup()  # clean up old tree
+                    tree.config.setup_tmp_dir()  # start a new tmpdir
                     tree = TreeSpan(config.current_config)  # make new tree
                     logger.info("Re-running Cambium")
                     build(tree)
     except Exception as e:
-        if not isinstance(e, KeyboardInterrupt):
-            logger.error(e)
         logger.info("Closing dev server and deleting development files")
         shutil.rmtree(tree.build_directory)
         server_process.terminate()  # prints "Process Process-1" to sys.stderr
+        if not isinstance(e, KeyboardInterrupt):
+            logger.error(e)
+            raise e
 
 
 # --------------------------------------------------------------------#
