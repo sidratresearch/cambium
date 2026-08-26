@@ -8,13 +8,12 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from pydantic import PositiveInt
 
-from ...config import sort_user_paths
 from ...stage import Stage, StageConfig
 from ...tree import TreeSpan
+from ...utils import path_matches_patterns, sort_user_paths
 from ..utils import (
     WrappedBlocksMixin,
     get_relative_path_modifier,
-    path_matches_patterns,
 )
 
 logger = logging.getLogger(__name__)

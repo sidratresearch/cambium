@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import inspect
 import logging
-import re
 import tempfile
 from pathlib import Path
 from typing import Any, Literal, Optional, TypedDict
@@ -15,6 +14,7 @@ from pydantic import BaseModel, HttpUrl, PositiveInt
 
 from . import __version__
 from .stage import populate_stage_dict
+from .utils import sort_user_paths
 
 # At runtime of this file the log level has not been set
 # So by default, only warnings and errors are shown
@@ -277,6 +277,9 @@ class WorkingConfiguration:
         self.ignore_lists["extensions"] = (
             self.ignore_lists["extensions"] + self.input_config.extensions_to_ignore
         )
+        self.ignore_lists["extensions"] = [
+            s.lower() for s in self.ignore_lists["extensions"]
+        ]
 
         # Removing periods if they exist on extensions
         for i, ext_str in enumerate(self.ignore_lists["extensions"]):
@@ -498,13 +501,6 @@ def translate_yaml_configuration(config_path: Path) -> dict[str, Any]:
     return input_dict
 
 
-def convert_glob_string_to_regex(glob_string: str) -> str:
-    """Convert glob string to regex string, escaping appropriate characters."""
-    main_segment = re.escape(glob_string).replace(r"\*", ".*")
-
-    return f"^{main_segment}$" + "|" + f"\\/{main_segment}$"
-
-
 def dump_default_config() -> None:
     """Print the default configuration in YAML format."""
     # TODO: how are we going to communicate the builtin_paths_to_ignore to the user?
@@ -518,30 +514,3 @@ def dump_default_config() -> None:
     )
 
     print(header + "\n\n" + config_yaml)
-
-
-def sort_user_paths(path_strings: list[str]) -> dict[str, list[str]]:
-    """Sort user-provided path strings into globs/paths/names.
-
-    `bar.txt` should be considered a name and match both `/bar.txt` and `/foo/bar.txt`
-
-    `/bar.txt` should be considered a path, and *only* match against `/bar.txt`
-
-    `foo/bar.txt` should be considered a path and *only* match against `/foo/bar.txt`,
-    *not* `/baz/foo/bar.txt`
-    """
-    result = {"globs": [], "paths": [], "names": []}
-    for entry in path_strings:
-
-        if entry[-1] == "/":
-            entry = entry[:-1]
-
-        if "*" in entry:
-            result["globs"].append(convert_glob_string_to_regex(entry))
-        elif entry[0] == "/":
-            result["paths"].append(entry)
-        elif "/" in entry:
-            result["paths"].append("/" + entry)
-        else:
-            result["names"].append(entry)
-    return result

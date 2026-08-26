@@ -1,11 +1,38 @@
-"""Tests for tree.py."""
+"""Tests for utils.py."""
 
 from pathlib import Path
 
 import pytest
 
-from cambium import tree
-from tests.test_config import default_configuration
+from cambium.utils import path_matches_patterns, sort_user_paths, walk_directory_tree
+
+from .test_config import default_configuration
+
+
+@pytest.mark.parametrize(
+    ("pattern_str", "path_expected"),
+    [
+        ("bar.txt", [("bar.txt", True), ("foo/bar.txt", True)]),
+        ("/bar.txt", [("bar.txt", True), ("foo/bar.txt", False)]),
+        (
+            "foo/bar.txt",
+            [
+                ("bar.txt", False),
+                ("foo/bar.txt", True),
+                ("baz/foo/bar.txt", False),
+                ("foo/baz/bar.txt", False),
+            ],
+        ),
+    ],
+)
+def test_path_matching(pattern_str: str, path_expected: list[tuple[str, bool]]) -> None:
+    """Test that the distinction between name, glob, and path patterns works as expected."""
+    sorted_patterns = sort_user_paths([pattern_str])
+
+    for path_str, match_expected in path_expected:
+        assert (
+            path_matches_patterns(Path(path_str), sorted_patterns) == match_expected
+        ), f"{pattern_str=} {path_str=} {match_expected=}"
 
 
 def _prepare_filesystem(root_directory: Path, to_create: list[str]) -> None:
@@ -73,7 +100,7 @@ def test_walk_directory_tree(
             expect_files.append(s)
 
     # walk the filesestem
-    found_directories_paths, found_files_paths = tree.walk_directory_tree(
+    found_directories_paths, found_files_paths = walk_directory_tree(
         root_directory, ignore_lists
     )
 

@@ -13,7 +13,8 @@ from pathlib import Path
 import typer
 
 from .. import config
-from ..tree import TreeSpan, walk_directory_tree
+from ..tree import TreeSpan
+from ..utils import walk_directory_tree
 
 logger = logging.getLogger(__name__)
 

@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 from cambium import config
-from cambium.builtin_stages.utils import path_matches_patterns
 from cambium.cli import cli
 
 
@@ -110,28 +109,3 @@ def test_dry_run(tmp_path: Path) -> None:
         dry_run=True, root_directory=str(tmp_path), build_directory=build_directory
     )
     assert not (tmp_path / build_directory).exists()
-
-
-@pytest.mark.parametrize(
-    ("pattern_str", "path_expected"),
-    [
-        ("bar.txt", [("bar.txt", True), ("foo/bar.txt", True)]),
-        ("/bar.txt", [("bar.txt", True), ("foo/bar.txt", False)]),
-        (
-            "foo/bar.txt",
-            [
-                ("bar.txt", False),
-                ("foo/bar.txt", True),
-                ("baz/foo/bar.txt", False),
-                ("foo/baz/bar.txt", False),
-            ],
-        ),
-    ],
-)
-def test_path_matching(pattern_str: str, path_expected: list[tuple[str, bool]]) -> None:
-    sorted_patterns = config.sort_user_paths([pattern_str])
-
-    for path_str, match_expected in path_expected:
-        assert (
-            path_matches_patterns(Path(path_str), sorted_patterns) == match_expected
-        ), f"{pattern_str=} {path_str=} {match_expected=}"
