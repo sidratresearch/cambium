@@ -707,6 +707,7 @@ def walk_directory_tree(
 
         # filter files by ext
         for extension in ignore_lists["extensions"]:
+            # TODO: make this case insensitive
             remove_files = [f for f in files if f.endswith(f".{extension}")]
             for f in remove_files:
                 files.remove(f)
@@ -716,7 +717,7 @@ def walk_directory_tree(
         for d in directories:
             directories_in_build.append(Path(f"{current_root}/{d}".removeprefix("./")))
 
-        # assign UUIDs to files
+        # store files to make leaves from
         for f in files:
             path = Path(f"{current_root}/{f}".removeprefix("./"))
             leaf_paths.append(path)

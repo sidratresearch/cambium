@@ -262,8 +262,6 @@ class WorkingConfiguration:
         except ValueError:
             pass
 
-        global builtin_paths_to_ignore
-
         for ignore_entry in builtin_paths_to_ignore:
             tmp_ignore_set.add(ignore_entry)
 
@@ -523,7 +521,15 @@ def dump_default_config() -> None:
 
 
 def sort_user_paths(path_strings: list[str]) -> dict[str, list[str]]:
-    """Sort user-provided path strings into globs/paths/names."""
+    """Sort user-provided path strings into globs/paths/names.
+
+    `bar.txt` should be considered a name and match both `/bar.txt` and `/foo/bar.txt`
+
+    `/bar.txt` should be considered a path, and *only* match against `/bar.txt`
+
+    `foo/bar.txt` should be considered a path and *only* match against `/foo/bar.txt`,
+    *not* `/baz/foo/bar.txt`
+    """
     result = {"globs": [], "paths": [], "names": []}
     for entry in path_strings:
 
@@ -534,6 +540,8 @@ def sort_user_paths(path_strings: list[str]) -> dict[str, list[str]]:
             result["globs"].append(convert_glob_string_to_regex(entry))
         elif entry[0] == "/":
             result["paths"].append(entry)
+        elif "/" in entry:
+            result["paths"].append("/" + entry)
         else:
             result["names"].append(entry)
     return result
