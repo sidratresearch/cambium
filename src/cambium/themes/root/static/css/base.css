@@ -112,12 +112,28 @@ img {
   max-width: 100%;
 }
 
+/* code styling */
+pre {
+  overflow-x: scroll;
+  background-color: #eeeeee;
+  padding: 1rem 1rem 0.2rem;
+}
+
+pre code {
+  max-width: 100%;
+}
+
+code {
+  word-wrap: break-word;
+}
+
 /* Containers */
 
 .container {
   max-width: min(1200px, 100vw) !important;
   padding: 1.5rem 2rem 1.5rem;
   margin: auto;
+  box-sizing: border-box;
 }
 
 .cambium-img-holder {
@@ -137,6 +153,7 @@ img {
 div.main-content {
   margin-top: 0;
   width: max(60vw, 600px);
+  box-sizing: border-box;
 }
 
 /* Header and Footer */
@@ -227,10 +244,11 @@ button.menu-button {
 
 div.menu-panel {
   max-height: 50vh;
-  position: fixed;
+  position: absolute;
   right: 0;
   left: 0;
   top: 0;
+  z-index: 100;
 
   background-color: var(--root-header-color);
   color: var(--root-bg-color);
@@ -356,6 +374,7 @@ table {
 
   div.main-content {
     width: 100%;
+    box-sizing: border-box;
   }
 
   h1 {
@@ -377,6 +396,24 @@ table {
     margin-left: 0;
     margin-right: 0;
   }
+
+  div.header-bar {
+    flex-wrap: wrap-reverse;
+    row-gap: 1em;
+    justify-content: space-around;
+
+    div.header-left {
+      flex: 0 1 100%;
+      justify-content: center;
+    }
+    div.header-centre {
+      justify-content: start;
+    }
+    div.header-right {
+      justify-content: space-around;
+    }
+  }
+
   div.menu-panel {
     width: 100vw;
     height: 100vh;
