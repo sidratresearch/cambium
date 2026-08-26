@@ -99,7 +99,7 @@ def extract_generic_metadata(leaf_uuid: str, tree: TreeSpan) -> None:
     metadata_obj = tree.leaves["metadata"][leaf_uuid]
 
     # set a `page_id`
-    metadata_obj.page_id = "cambium-page-" + slugify(
+    metadata_obj.page_id = slugify(
         str(tree.leaves["final_path"][leaf_uuid].with_suffix(""))
     )
 
