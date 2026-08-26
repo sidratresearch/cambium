@@ -5,6 +5,8 @@ The `init_logging` function is only called in `cli.py`
 """
 
 import logging
+import warnings
+from typing import Any, TypeVar
 
 
 def init_logging() -> logging.Logger:
@@ -15,12 +17,36 @@ def init_logging() -> logging.Logger:
     Then, all modules (which have names "cambium.<<something>>") will inherit
     configuration
     """
-    root_logger = logging.getLogger("cambium")
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(levelname)s: %(message)s [%(name)s]")
     handler.setFormatter(formatter)
+
+    root_logger = logging.getLogger("cambium")
     root_logger.addHandler(handler)
+
+    # also capture and format `warnings.warn()` calls
+    # these should not be used in Cambium, but may be used by dependencies
+    logging.captureWarnings(True)
+    warnings.formatwarning = formatwarning
+    warnings_logger = logging.getLogger("py.warnings")
+    warnings_logger.addHandler(handler)
+
     return root_logger
+
+
+def formatwarning(
+    message: UserWarning | Any,
+    _: type[TypeVar("Category", bound=Exception)],
+    filename: str,
+    lineno: int,
+    __: str | None = None,
+) -> str:
+    """Override default formatwarning function to play better with our log format.
+
+    Unused args are "category" (class of warning) and "line" (actual line of code)
+    https://docs.python.org/3/library/warnings.html#warnings.formatwarning
+    """
+    return f"{message!s} (warning thrown by {filename}:{lineno})"
 
 
 def get_loglevel(level_str: str, verbosity_count: int) -> int:
