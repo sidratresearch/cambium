@@ -1,7 +1,10 @@
 """
 Configure logging for Cambium.
 
-The `init_logging` function is only called in `cli.py`
+Within Cambium `init_logging` function is only called in `cli.py`
+However if it gets used in other packages we may want to move it to utils?
+
+Worth noting that other external packages that use logging (e.g. astropy) use their own log configuration (or lack thereof)
 """
 
 import logging
@@ -9,7 +12,7 @@ import warnings
 from typing import Any, TypeVar
 
 
-def init_logging() -> logging.Logger:
+def init_logging(package: str) -> logging.Logger:
     """Function to call once, returns the top-level Cambium logger.
 
     Module-specific loggers are children of this logger
@@ -21,7 +24,7 @@ def init_logging() -> logging.Logger:
     formatter = logging.Formatter("%(levelname)s: %(message)s [%(name)s]")
     handler.setFormatter(formatter)
 
-    root_logger = logging.getLogger("cambium")
+    root_logger = logging.getLogger(package)
     root_logger.addHandler(handler)
 
     # also capture and format `warnings.warn()` calls
