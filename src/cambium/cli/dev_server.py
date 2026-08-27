@@ -64,10 +64,11 @@ def run_dev_server(
                     tree = TreeSpan(config.current_config)  # make new tree
                     logger.info("Re-running Cambium")
                     build(tree)
-    except Exception as e:
+    except (KeyboardInterrupt, Exception) as e:
         logger.info("Closing dev server and deleting development files")
-        shutil.rmtree(tree.build_directory)
         server_process.terminate()  # prints "Process Process-1" to sys.stderr
+        shutil.rmtree(tree.build_directory)
+
         if not isinstance(e, KeyboardInterrupt):
             logger.error(e)
             raise e
