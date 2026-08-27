@@ -10,6 +10,10 @@
   --root-accent-color: #cc0000;
   --root-hover-color: #660000;
   --root-header-color: #444444;
+  --root-dark-theme-accent-color: #f26369;
+  --root-dark-theme-hover-color: #ffbdc0;
+  --root-dark-theme-header-color: #292929;
+  --root-dark-theme-font-color: #f2f2f2;
 }
 
 /* Utility Styling */
@@ -228,6 +232,9 @@ button.menu-button {
 
   &:hover svg {
     fill: var(--root-accent-color);
+    &:has(body.dark-theme) {
+      fill: var(--root-dark-theme-accent-color);
+    }
   }
 
   svg {
@@ -293,6 +300,9 @@ div.menu-panel {
           &:hover {
             color: var(--root-accent-color);
             text-decoration: underline;
+            &:has(body.dark-them) {
+              color: var(--root-dark-theme-accent-color);
+            }
           }
         }
       }
@@ -362,6 +372,38 @@ table {
 
   tr:nth-child(even) {
     background-color: #e9e9e9;
+  }
+}
+
+/* Dark Theme Styling */
+
+body.dark-theme {
+  background-color: var(--root-font-color);
+  color: var(--root-dark-theme-font-color);
+
+  h1 {
+    color: var(--root-dark-theme-accent-color);
+  }
+
+  a {
+    color: var(--root-dark-theme-accent-color);
+    &:hover {
+      color: var(--root-dark-theme-hover-color);
+    }
+  }
+
+  header {
+    background-color: var(--root-dark-theme-header-color);
+  }
+
+  footer {
+    background-color: var(--root-dark-theme-header-color);
+    color: var(--root-dark-theme-font-color);
+    border-top: var(--root-dark-theme-header-color) solid 1px;
+  }
+
+  div.menu-panel {
+    background-color: var(--root-dark-theme-header-color);
   }
 }
 
