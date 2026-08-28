@@ -31,3 +31,31 @@ export function attachMenuButtonListener() {
     closeMenu();
   });
 }
+
+export function themeToggle() {
+  const toggle = document.getElementById("mode-toggle");
+  const body = document.body;
+
+  toggle.addEventListener("change", function () {
+    if (this.checked) {
+      body.classList.add("dark-theme");
+      localStorage.setItem("darkMode", "enabled");
+      body.dataset.pfTheme = "dark";
+    } else {
+      body.classList.remove("dark-theme");
+      localStorage.setItem("darkMode", "disabled");
+      body.dataset.pfTheme = "light";
+    }
+  });
+
+  // check for saved user preference, if any, on load of the website
+  document.addEventListener("DOMContentLoaded", (event) => {
+    const darkMode = localStorage.getItem("darkMode");
+
+    if (darkMode === "enabled") {
+      body.classList.add("dark-theme");
+      toggle.checked = true;
+      body.dataset.pfTheme = "dark";
+    }
+  });
+}

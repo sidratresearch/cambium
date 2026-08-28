@@ -12,7 +12,7 @@
   --root-header-color: #444444;
   --root-dark-theme-accent-color: #f26369;
   --root-dark-theme-hover-color: #ffbdc0;
-  --root-dark-theme-header-color: #292929;
+  --root-dark-theme-header-color: #383838; /*292929*/
   --root-dark-theme-font-color: #f2f2f2;
 }
 
@@ -232,9 +232,6 @@ button.menu-button {
 
   &:hover svg {
     fill: var(--root-accent-color);
-    &:has(body.dark-theme) {
-      fill: var(--root-dark-theme-accent-color);
-    }
   }
 
   svg {
@@ -300,13 +297,52 @@ div.menu-panel {
           &:hover {
             color: var(--root-accent-color);
             text-decoration: underline;
-            &:has(body.dark-them) {
-              color: var(--root-dark-theme-accent-color);
-            }
           }
         }
       }
     }
+  }
+
+  .toggle-container {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 1rem;
+    padding-top: 1rem;
+  }
+
+  .toggle {
+    position: relative;
+    display: inline-block;
+  }
+
+  .toggle-input {
+    display: none;
+  }
+
+  .toggle-label {
+    display: block;
+    width: 60px;
+    height: 30px;
+    background-color: #cecece;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .toggle-input:checked + .toggle-label::after {
+    left: 32px;
+  }
+
+  .toggle-label::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 26px;
+    height: 26px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: left 0.3s ease;
   }
 }
 
@@ -392,6 +428,14 @@ body.dark-theme {
     }
   }
 
+  &:hover svg {
+    fill: var(--root-dark-theme-accent-color);
+  }
+
+  pre:has(> code) {
+    background-color: var(--root-header-color);
+  }
+
   header {
     background-color: var(--root-dark-theme-header-color);
   }
@@ -404,6 +448,30 @@ body.dark-theme {
 
   div.menu-panel {
     background-color: var(--root-dark-theme-header-color);
+
+    .toggle-label {
+      background-color: var(--root-dark-theme-accent-color);
+    }
+
+    nav ul li a:hover {
+      color: var(--root-dark-theme-hover-color);
+    }
+  }
+
+  table {
+    th {
+      border-bottom: 1px solid #bbb;
+      background-color: var(--root-font-color);
+      color: var(--root-dark-theme-hover-color);
+    }
+
+    tr:last-of-type td {
+      border-bottom: 1px solid #bbb;
+    }
+
+    tr:nth-child(even) {
+      background-color: #383838;
+    }
   }
 }
 
