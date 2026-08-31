@@ -16,6 +16,7 @@
   --root-table-border-color: #bbb;
   --root-header-font-color: #f9f9f9;
   --root-toggle-color: #cecece;
+  --pf-outline-focus: #cc0000;
 }
 
 /* Dark Theme Styling */
@@ -36,6 +37,7 @@
 
 .hidden {
   visibility: hidden;
+  display: none;
   opacity: 0;
 }
 
@@ -46,6 +48,11 @@ html {
   background-color: var(--root-bg-color);
   color: var(--root-font-color);
   font-size: var(--root-font-size);
+}
+
+/* Dark theme for pagefind styling */
+body[data-pf-theme="dark"] {
+  --pf-outline-focus: #f26369;
 }
 
 body {
@@ -233,8 +240,12 @@ footer {
   > div {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
+  }
+
+  img {
+    height: 5rem;
   }
 }
 
@@ -460,19 +471,21 @@ table {
   }
 
   div.header-bar {
-    flex-wrap: wrap-reverse;
     row-gap: 1em;
+    flex-direction: column-reverse;
     justify-content: space-around;
 
     div.header-left {
+      display: none;
       flex: 0 1 100%;
       justify-content: center;
     }
     div.header-centre {
-      justify-content: start;
+      justify-content: center;
+      display: none;
     }
     div.header-right {
-      justify-content: space-around;
+      justify-content: right;
     }
   }
 
@@ -480,6 +493,16 @@ table {
     width: 100vw;
     height: 100vh;
     max-height: unset;
+
+    div.header-left {
+      display: flex;
+      justify-content: center;
+    }
+
+    div.header-centre {
+      display: flex;
+      justify-content: center;
+    }
 
     nav {
       ul {
