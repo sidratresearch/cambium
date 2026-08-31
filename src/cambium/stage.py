@@ -1,9 +1,11 @@
 """Definition and helper functions for the abstract Stage class."""
 
+import importlib
 import logging
 from pathlib import Path
 from typing import Any, Literal
 
+from click import ClickException, UsageError
 from pydantic import BaseModel, ValidationError
 
 from .tree import TreeSpan
@@ -247,6 +249,27 @@ def populate_stage_dict(
     # Should consider doing some custom errors or something?
 
     from . import builtin_stages  # noqa: F401
+
+    for i, stage_name in enumerate(stage_list):
+        if stage_name in builtin_stages.__all__:
+            continue
+
+        if "." in stage_name:
+            import_string, new_name = stage_name.rsplit(".", maxsplit=1)
+            stage_list[i] = new_name
+            try:
+                # test importing the stage
+                _ = getattr(importlib.import_module(import_string), new_name)
+            except AttributeError as e:
+                raise ClickException(
+                    f"Error importing requested stage {stage_name}: {e}"
+                )
+
+        else:
+            raise UsageError(
+                f"Requested stage `{stage_name}` is not a Cambium builtin. "
+                f"If this is an external stage, try `<package name>.{stage_name}`."
+            )
 
     stage_dict: dict[str, Stage] = {}
 
