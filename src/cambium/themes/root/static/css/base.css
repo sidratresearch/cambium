@@ -17,6 +17,13 @@
   --root-header-font-color: #f9f9f9;
   --root-toggle-color: #cecece;
   --pf-outline-focus: #cc0000;
+
+  [data-dark] {
+    opacity: 0;
+  }
+  [data-light] {
+    opacity: 1;
+  }
 }
 
 /* Dark Theme Styling */
@@ -31,6 +38,13 @@
   --root-table-accent-color: #383838;
   --root-border-color: #444444;
   --root-toggle-color: #f26369;
+
+  [data-dark] {
+    opacity: 1;
+  }
+  [data-light] {
+    opacity: 0;
+  }
 }
 
 /* Utility Styling */
