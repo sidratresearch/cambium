@@ -497,7 +497,7 @@ def translate_yaml_configuration(config_path: Path) -> dict[str, Any]:
     if not isinstance(config_yaml, dict):
         errormsg = f"Error parsing configuration file {config_path}. Expected a dictionary/mapping, got '{config_yaml}'."
         logger.error(errormsg)
-        raise ValueError(errormsg)
+        raise ClickException(errormsg)
 
     # Extracting required dictionary parameters from the YAML
     configuration_parameters = FileConfiguration.model_fields.keys()

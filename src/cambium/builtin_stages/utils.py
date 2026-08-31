@@ -83,7 +83,7 @@ def resolve_internal_link(
         # definitionally both paths will be absolute
         # so the only option is full isn't within build
         raise ValueError(
-            f"Error resolving internal link {link}, perhaps this file is outside the root directory?"
+            f"Error resolving internal link `{link}`, perhaps this file is outside the root directory?"
         )
 
 

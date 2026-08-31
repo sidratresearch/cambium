@@ -50,7 +50,6 @@ class PagefindSearch(Stage):
         self.js_path = Path("pagefind-component-ui.js")
 
     def tree_hook(self, tree: TreeSpan) -> None:
-
         for uuid in tree.leaves["uuids"]:
             if tree.leaves["final_path"][uuid].suffix == ".html":
                 self._register_hook(uuid, tree, "post_hooks")

@@ -7,6 +7,8 @@ import re
 import typing
 from uuid import uuid4
 
+from click import ClickException
+
 if typing.TYPE_CHECKING:
     from .config import WorkingConfiguration
 
@@ -105,8 +107,7 @@ class TreeSpan:
             except Exception as e:
                 # quit on first TreeHook error
                 errormsg = f"Error running tree hook for stage {stage}. "
-                logger.error(errormsg + f"Error message: {e}")
-                raise e
+                raise ClickException(errormsg + f"Error message: {e}")
             self._check_leaf_collisions("final")
 
     def _build_final_tree(self) -> None:
@@ -171,10 +172,9 @@ class TreeSpan:
 
         if len(bad_generated_paths) > 0:
             bad_paths_str = ", ".join([str(p) for p in bad_generated_paths])
-            logger.error(
+            raise ClickException(
                 f"Protected build paths prevent the following files/directories from being created in {self.build_directory}: {bad_paths_str}"
             )
-            raise RuntimeError
 
     def _check_protected_static_paths(self) -> None:
         """Enforce that themes can't provide certain files."""
@@ -203,7 +203,9 @@ class TreeSpan:
         This function should only be called within TreeSpan, and by Stage.add_leaf.
         """
         if len(self.leaves["uuids"]) == self.leaves["uuids"].maxlen:
-            raise ValueError("self.leaves will drop items")
+            raise ClickException(
+                "Too many files. Raise the `max_leaves` configuration option or run on a smaller fileset."
+            )
 
         # Validate paths
         self._validate_leaf_path(initial_path)
@@ -354,7 +356,13 @@ class TreeSpan:
             hook_finalize = getattr(stage_instance, f"{hook_type[:-1]}_finalize")
 
             logger.debug(f"Running {stage_name} {hook_type[:-1]}_initalize.")
-            hook_init(self)
+            try:
+                hook_init(self)
+            except Exception as e:
+                errormsg = (
+                    f"Error running {hook_type[:-1]}_initalize for stage {stage_name}. "
+                )
+                raise ClickException(errormsg + f"Error message: {e}")
 
             # run hook for all leaves
             logger.debug(f"Running {stage_name} {hook_type[:-1]}.")
@@ -362,15 +370,21 @@ class TreeSpan:
                 try:
                     hook_main(uuid, self)
                 except Exception as e:
-                    if self.config.fail_fast:
-                        raise e
                     self._handle_hook_exception(e, uuid, stage_name, hook_type)
+                    if self.config.fail_fast:
+                        raise ClickException(str(e))
 
             logger.debug(f"Running {stage_name} {hook_type[:-1]}_finalize.")
-            hook_finalize(self)
+            try:
+                hook_finalize(self)
+            except Exception as e:
+                errormsg = (
+                    f"Error running {hook_type[:-1]}_finalize for stage {stage_name}. "
+                )
+                raise ClickException(errormsg + f"Error message: {e}")
 
         if any(self.leaves["failed"].values()):
-            raise Exception
+            raise ClickException("One or more stages errored. See logs for details.")
 
     def _handle_hook_exception(
         self, exception: Exception, leaf_uuid: str, stage_name: str, hook_type: str
@@ -467,16 +481,16 @@ class TreeSpan:
         if len(paths) > len(set(paths)):
             counts = Counter(paths)
             multiples = [p for p, c in counts.items() if c > 1]
-            raise ValueError(
+            raise ClickException(
                 f"Collision in leaf {path_type} paths - the following appear multiple times: {multiples}"
             )
 
     def _validate_leaf_path(self, path: Any) -> None:
         """Ensure `path` can be assigned to a leaf initial/latest/final path."""
         if not isinstance(path, Path):
-            raise ValueError("Use the Path object to work with leaf paths")
+            raise RuntimeError("Use the Path object to work with leaf paths")
         if path.is_absolute():
-            raise ValueError("Use relative paths for leaves")
+            raise RuntimeError("Use relative paths for leaves")
 
     def _update_directories_in_build(self, directory: Path) -> None:
         if directory.is_absolute():
@@ -515,10 +529,9 @@ class TreeSpan:
             free_bytes = shutil.disk_usage(build_location).free
             logger.debug(f"Requiring {required_bytes/1000} kb of free space")
             if free_bytes < required_bytes:
-                logger.error(
+                raise ClickException(
                     f"Not enough free space on disk. {required_bytes/1000} kb needed."
                 )
-                raise RuntimeError
         else:
             # TODO: handle checks for tmp being on a different drive
             # tmp should have safety*leaf bytes

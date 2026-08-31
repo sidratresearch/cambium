@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 from typing import Any, Literal
 
-from click import ClickException, UsageError
+from click import ClickException
 from pydantic import BaseModel, ValidationError
 
 from .tree import TreeSpan
@@ -266,7 +266,7 @@ def populate_stage_dict(
                 )
 
         else:
-            raise UsageError(
+            raise ClickException(
                 f"Requested stage `{stage_name}` is not a Cambium builtin. "
                 f"If this is an external stage, try `<package name>.{stage_name}`."
             )
@@ -286,11 +286,13 @@ def populate_stage_dict(
                 else:
                     initialized_stage = tmp_stage({})
             except ValidationError as e:
-                # TODO: see what traceback looks like here
                 logger.error(
                     f"Error validating configuration for stage `{tmp_stage.__name__}`"
                 )
-                raise e
+                raise ClickException(str(e))
+            except Exception as e:
+                errormsg = f"Error initializing stage {tmp_stage.__name__}: {e}"
+                raise ClickException(errormsg)
 
             stage_dict[tmp_stage.__name__] = initialized_stage
 
