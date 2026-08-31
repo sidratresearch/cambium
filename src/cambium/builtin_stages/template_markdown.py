@@ -4,14 +4,13 @@ import datetime
 import logging
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 
 from .. import __version__
 from ..metadata import LeafMetadata
 from ..stage import Stage
 from ..tree import TreeSpan
-from .utils import get_relative_path_modifier, markdown_to_html
+from .utils import get_relative_path_modifier, make_jinja_environment, markdown_to_html
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,11 @@ class TemplateMarkdown(Stage):
 
     def post_hook_initialize(self, tree: TreeSpan) -> None:
         # Initialize Jinja Environment
-        self._initialize_jinja(tree)
+        logger.debug(
+            f"Using Jinja template directories {[str(p) for p in tree.config.template_directories]}"
+        )
+        self.jinja_env = make_jinja_environment(tree)
+        self.jinja_env.globals = self.jinja_globals
 
     def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         self._create_page(leaf_uuid, tree)
@@ -85,18 +88,6 @@ class TemplateMarkdown(Stage):
                 variable = markdown_to_html(variable)
             jinja_globals[globals_key] = variable
         return jinja_globals
-
-    def _initialize_jinja(self, tree: TreeSpan) -> None:
-        """Initializing Jinja Templating Environment."""
-        logger.debug(
-            f"Using Jinja template directories {[str(p) for p in tree.config.template_directories]}"
-        )
-        self.jinja_env = Environment(
-            loader=FileSystemLoader(tree.config.template_directories),
-            trim_blocks=True,
-            lstrip_blocks=True,
-        )
-        self.jinja_env.globals = self.jinja_globals
 
     def _create_page(self, leaf_uuid: str, tree: TreeSpan) -> None:
         input_path = tree.abs_leaf_path(leaf_uuid)
