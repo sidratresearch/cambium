@@ -85,7 +85,7 @@ class WriteReports(Stage):
 
         if "html_pages" in self.config.reports:
             self.html_pages_index = _Report(
-                "html_pages.md", self, tree, "html_pages.md.jinja"
+                "html_pages.md", self, tree, "WriteReports-html_pages.md.jinja"
             )
 
     def pre_hook_initialize(self, tree: TreeSpan) -> None:
