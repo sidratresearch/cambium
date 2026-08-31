@@ -15,6 +15,18 @@
   <meta name="generator" content="Cambium v{{ cambium_version }}" />
   <title>{{ title }}</title>
 
+  {# Pre-paint theme script #}
+  <script>
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var system = window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
+      var theme = stored === 'dark' || stored === 'light' ? stored : system;
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
   {# Grabbable with JS #}
   <meta name="cambium-data" value="" data-initial-path="{{ initial_path }}" />
 

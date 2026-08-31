@@ -10,10 +10,26 @@
   --root-accent-color: #cc0000;
   --root-hover-color: #660000;
   --root-header-color: #444444;
-  --root-dark-theme-accent-color: #f26369;
-  --root-dark-theme-hover-color: #ffbdc0;
-  --root-dark-theme-header-color: #383838; /*292929*/
-  --root-dark-theme-font-color: #f2f2f2;
+  --root-footer-color: #eeeeee;
+  --root-border-color: #888888;
+  --root-table-accent-color: #e9e9e9;
+  --root-table-border-color: #bbb;
+  --root-header-font-color: #f9f9f9;
+  --root-toggle-color: #cecece;
+}
+
+/* Dark Theme Styling */
+[data-theme="dark"] {
+  --root-bg-color: #222222;
+  --root-accent-color: #f26369;
+  --root-hover-color: #ffbdc0;
+  --root-header-color: #333333; /* #383838 */
+  --root-header-font-color: #f2f2f2;
+  --root-footer-color: #333333;
+  --root-font-color: #f2f2f2;
+  --root-table-accent-color: #383838;
+  --root-border-color: #444444;
+  --root-toggle-color: #f26369;
 }
 
 /* Utility Styling */
@@ -119,7 +135,7 @@ img {
 /* code styling */
 pre:has(> code) {
   overflow-x: scroll;
-  background-color: #eeeeee;
+  background-color: var(--root-footer-color);
   padding: 1rem 1rem 0.2rem;
 }
 
@@ -170,7 +186,7 @@ header {
 div.header-bar {
   /* Used in both header and div.menu-panel */
   font-weight: 700;
-  color: var(--root-bg-color);
+  color: var(--root-header-font-color);
   font-size: 1rem;
   padding: 0.75rem 2rem;
   display: flex;
@@ -179,7 +195,7 @@ div.header-bar {
 
   a {
     text-decoration: none;
-    color: var(--root-bg-color);
+    color: var(--root-header-font-color);
     margin-top: auto;
     margin-bottom: auto;
   }
@@ -210,9 +226,9 @@ div.header-bar {
 }
 
 footer {
-  background-color: #eeeeee;
-  color: #222222;
-  border-top: #888888 solid 1px;
+  background-color: var(--root-footer-color);
+  color: var(--root-font-color);
+  border-top: var(--root-border-color) solid 1px;
 
   > div {
     display: flex;
@@ -237,7 +253,7 @@ button.menu-button {
   svg {
     width: 2rem;
     height: 2rem;
-    fill: var(--root-bg-color);
+    fill: var(--root-header-font-color);
     transition: fill 0.25s;
 
     &.menu-icon-inactive {
@@ -255,13 +271,13 @@ div.menu-panel {
   z-index: 100;
 
   background-color: var(--root-header-color);
-  color: var(--root-bg-color);
+  color: var(--root-header-font-color);
 
   transition: all 0.25s;
 
   button.menu-button,
   a {
-    color: var(--root-bg-color);
+    color: var(--root-header-font-color);
   }
 
   nav {
@@ -323,7 +339,7 @@ div.menu-panel {
     display: block;
     width: 60px;
     height: 30px;
-    background-color: #cecece;
+    background-color: var(--root-toggle-color);
     border-radius: 99px;
     cursor: pointer;
     transition: background-color 0.3s ease;
@@ -340,7 +356,7 @@ div.menu-panel {
     left: 2px;
     width: 26px;
     height: 26px;
-    background-color: #ffffff;
+    background-color: var(--root-header-font-color);
     border-radius: 50%;
     transition: left 0.3s ease;
   }
@@ -371,7 +387,7 @@ table {
     padding: 0.5rem;
     max-width: 20rem;
     vertical-align: bottom;
-    border-bottom: 1px solid #bbb;
+    border-bottom: 1px solid var(--root-table-border-color);
     font-weight: 700;
     font-size: 0.9rem;
     line-height: 1.1;
@@ -403,75 +419,11 @@ table {
   }
 
   tr:last-of-type td {
-    border-bottom: 1px solid #bbb;
+    border-bottom: 1px solid var(--root-table-border-color);
   }
 
   tr:nth-child(even) {
-    background-color: #e9e9e9;
-  }
-}
-
-/* Dark Theme Styling */
-
-body.dark-theme {
-  background-color: var(--root-font-color);
-  color: var(--root-dark-theme-font-color);
-
-  h1 {
-    color: var(--root-dark-theme-accent-color);
-  }
-
-  a {
-    color: var(--root-dark-theme-accent-color);
-    &:hover {
-      color: var(--root-dark-theme-hover-color);
-    }
-  }
-
-  &:hover svg {
-    fill: var(--root-dark-theme-accent-color);
-  }
-
-  pre:has(> code) {
-    background-color: var(--root-header-color);
-  }
-
-  header {
-    background-color: var(--root-dark-theme-header-color);
-  }
-
-  footer {
-    background-color: var(--root-dark-theme-header-color);
-    color: var(--root-dark-theme-font-color);
-    border-top: var(--root-dark-theme-header-color) solid 1px;
-  }
-
-  div.menu-panel {
-    background-color: var(--root-dark-theme-header-color);
-
-    .toggle-label {
-      background-color: var(--root-dark-theme-accent-color);
-    }
-
-    nav ul li a:hover {
-      color: var(--root-dark-theme-hover-color);
-    }
-  }
-
-  table {
-    th {
-      border-bottom: 1px solid #bbb;
-      background-color: var(--root-font-color);
-      color: var(--root-dark-theme-hover-color);
-    }
-
-    tr:last-of-type td {
-      border-bottom: 1px solid #bbb;
-    }
-
-    tr:nth-child(even) {
-      background-color: #383838;
-    }
+    background-color: var(--root-table-accent-color);
   }
 }
 

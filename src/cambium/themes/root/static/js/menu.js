@@ -38,12 +38,14 @@ export function themeToggle() {
 
   toggle.addEventListener("change", function () {
     if (this.checked) {
+      document.documentElement.setAttribute("data-theme", "dark");
       body.classList.add("dark-theme");
-      localStorage.setItem("darkMode", "enabled");
+      localStorage.setItem("theme", "dark");
       body.dataset.pfTheme = "dark";
     } else {
-      body.classList.remove("dark-theme");
-      localStorage.setItem("darkMode", "disabled");
+      document.documentElement.setAttribute("data-theme", "light");
+      // body.classList.remove("dark-theme");
+      localStorage.setItem("theme", "light");
       body.dataset.pfTheme = "light";
     }
   });
@@ -53,7 +55,8 @@ export function themeToggle() {
     const darkMode = localStorage.getItem("darkMode");
 
     if (darkMode === "enabled") {
-      body.classList.add("dark-theme");
+      // body.classList.add("dark-theme");
+      document.documentElement.setAttribute("data-theme", "dark");
       toggle.checked = true;
       body.dataset.pfTheme = "dark";
     }
