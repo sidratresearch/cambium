@@ -1,0 +1,7 @@
+# Listing of HTML Pages
+
+Does not include pages in [`static`]({{ relative_path_modifier }}static). Pages are listed by the originating file (i.e., while this document lists all HTML files output, some of these may have been generated from markdown files). Pages which don't have an originating file also indicate which stage created them.
+
+{% for title, link in entries %}
+- [{{ title }}]({{relative_path_modifier}}{{ link }})
+{% endfor %}

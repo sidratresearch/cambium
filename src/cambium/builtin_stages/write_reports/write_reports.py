@@ -12,9 +12,9 @@ import logging
 from pathlib import Path
 from typing import Any, Literal
 
-from ..stage import Stage, StageConfig
-from ..tree import TreeSpan
-from .utils import get_relative_path_modifier
+from ...stage import Stage, StageConfig
+from ...tree import TreeSpan
+from ..utils import get_relative_path_modifier, make_jinja_environment
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,13 @@ class WriteReportsConfig(StageConfig):
 class _Report:
     """A helper class for WriteReports which aggregates some of the bookkeeping."""
 
-    def __init__(self, filename: str, caller: "WriteReports", tree: TreeSpan) -> None:
+    def __init__(
+        self,
+        filename: str,
+        caller: "WriteReports",
+        tree: TreeSpan,
+        jinja_template_name: str,
+    ) -> None:
         self.path_in_build = caller.config.report_directory / filename
 
         # NOTE: the number of segments in initial path and final path have to match
@@ -43,6 +49,8 @@ class _Report:
         self.leaf_uuid = caller.add_leaf(self.path_in_build, tree)
 
         self.relative_path_modifier = get_relative_path_modifier(self.path_in_build)
+
+        self.jinja_template = caller.jinja_environment.get_template(jinja_template_name)
 
         caller._register_hook(self.leaf_uuid, tree, "pre_hooks")
 
@@ -73,8 +81,12 @@ class WriteReports(Stage):
             logger.info(f"{self.__class__.__name__} is disabled on build")
             return
 
+        self.jinja_environment = make_jinja_environment(tree)
+
         if "html_pages" in self.config.reports:
-            self.html_pages_index = _Report("html_pages.md", self, tree)
+            self.html_pages_index = _Report(
+                "html_pages.md", self, tree, "html_pages.md.jinja"
+            )
 
     def pre_hook_initialize(self, tree: TreeSpan) -> None:
         # Generate the report for listing all HTML pages
@@ -86,34 +98,26 @@ class WriteReports(Stage):
             if final_path.suffix in (".html", ".html"):
                 html_leaves.append(leaf_uuid)
 
-        links = []
-        for uuid in html_leaves:
-            title, path = self._get_htmlpage_link(uuid, tree)
-            path = self.html_pages_index.relative_path_modifier + str(path)
-            links.append(f"- [{title}]({path})")
-        links.sort()
+        links = [self._get_htmlpage_link(uuid, tree) for uuid in html_leaves]
+        links.sort(key=lambda entry: entry[0])
+        content = self.html_pages_index.jinja_template.render(
+            relative_path_modifier=self.html_pages_index.relative_path_modifier,
+            entries=links,
+        )
 
-        # TODO: change this into a Jinja template (e.g. for localization)
-        links = [
-            "# Listing of HTML Pages",
-            "",
-            f"Does not include pages in [`static`]({self.html_pages_index.relative_path_modifier}static).",
-            "",
-            *links,
-        ]
-        self.html_pages_index.write("\n".join(links), tree)
+        self.html_pages_index.write(content, tree)
 
     def _get_htmlpage_link(self, leaf_uuid: str, tree: TreeSpan) -> tuple[str, str]:
         initial_path, final_path = (
             tree.leaves["initial_path"][leaf_uuid],
             tree.leaves["final_path"][leaf_uuid],
         )
-        title, path = final_path, final_path
+        title, path = str(final_path), final_path
         # HACK? If TransformMarkdown is active we need to put down initial
         # paths so that link change attempts have parseable links
         # If it's not active, we need to point to the final location
         if "TransformMarkdown" in tree.config.stages:
-            title, path = initial_path, initial_path
+            title, path = str(initial_path), initial_path
 
         if str(initial_path).startswith(str(tree.config.stage_leaf_prefix)):
             stage_name = initial_path.parts[len(tree.config.stage_leaf_prefix.parts)]
