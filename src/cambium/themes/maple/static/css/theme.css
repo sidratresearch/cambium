@@ -1,1 +1,207 @@
 /* Maple-specific styling */
+
+:root {
+  /* Cambium variables */
+  --cambium-font: "Source Sans 3 VF", sans-serif;
+  --cambium-font-size: 14pt;
+  --cambium-bg-color: #f9f9f9;
+  --cambium-font-color: #222222;
+  --cambium-accent-color: #cc0000;
+  --cambium-hover-color: #660000;
+  --cambium-header-bg-color: #444444;
+  --cambium-header-font-color: #f9f9f9;
+  --cambium-footer-bg-color: #eeeeee;
+
+  /* Dark mode */
+  --cambium-font-color-dark: #f2f2f2;
+  --cambium-bg-color-dark: #222222;
+  --cambium-accent-color-dark: #f26369;
+  --cambium-hover-color-dark: #ffbdc0;
+  --cambium-header-bg-color-dark: #333333;
+  --cambium-header-font-color-dark: #f2f2f2;
+  --cambium-footer-bg-color-dark: #333333;
+
+  /* Maple-only variables */
+
+  /* Light mode */
+  --root-border-color: #888888;
+  --root-table-accent-color: #e9e9e9;
+  --root-table-border-color: #bbb;
+  --root-toggle-color: #cecece;
+
+  /* Dark mode */
+  --root-border-color-dark: #444444;
+  --root-table-accent-color-dark: #383838;
+  --root-border-color-dark: #444444;
+  --root-toggle-color-dark: #f26369;
+}
+
+/* Base elemnts */
+html {
+  --bg-color: var(--cambium-bg-color);
+  --font-color: var(--cambium-font-color);
+  --accent-color: var(--cambium-accent-color);
+  --hover-color: var(--cambium-hover-color);
+  --header-color: var(--cambium-header-bg-color);
+  --header-font-color: var(--cambium-header-font-color);
+  --footer-color: var(--cambium-footer-bg-color);
+  --border-color: var(--root-border-color);
+  --table-accent-color: var(--root-table-accent-color);
+  --table-border-color: var(--root-table-border-color);
+  --toggle-color: var(--root-toggle-color);
+  --pf-outline-focus: var(--cambium-accent-color);
+
+  [data-dark] {
+    opacity: 0;
+  }
+  [data-light] {
+    opacity: 1;
+  }
+
+  font-family: var(--cambium-font);
+  background-color: var(--bg-color);
+  color: var(--font-color);
+  font-size: var(--cambium-font-size);
+}
+
+html[data-theme="dark"] {
+  --bg-color: var(--cambium-bg-color-dark);
+  --font-color: var(--cambium-font-color-dark);
+  --accent-color: var(--cambium-accent-color-dark);
+  --hover-color: var(--cambium-hover-color-dark);
+  --header-color: var(--cambium-header-bg-color-dark);
+  --header-font-color: var(--cambium-header-font-color-dark);
+  --footer-color: var(--cambium-footer-bg-color-dark);
+  --border-color: var(--root-border-color-dark);
+  --table-accent-color: var(--root-table-accent-color-dark);
+  --toggle-color: var(--root-toggle-color-dark);
+
+  [data-dark] {
+    opacity: 1;
+  }
+  [data-light] {
+    opacity: 0;
+  }
+
+  body {
+    --pf-outline-focus: var(--cambium-accent-color-dark);
+  }
+}
+
+h1 {
+  color: var(--accent-color);
+}
+
+a {
+  color: var(--accent-color);
+  &:hover {
+    color: var(--hover-color);
+  }
+}
+
+pre:has(> code) {
+  background-color: var(--footer-color);
+}
+
+/* Header and Footer */
+
+header {
+  background-color: var(--header-color);
+}
+
+div.header-bar {
+  color: var(--header-font-color);
+
+  a {
+    color: var(--header-font-color);
+  }
+}
+
+footer {
+  background-color: var(--footer-color);
+  color: var(--font-color);
+  border-top: var(--border-color) solid 1px;
+}
+
+button.menu-button {
+  &:hover svg {
+    fill: var(--accent-color);
+  }
+
+  svg {
+    fill: var(--header-font-color);
+  }
+}
+
+div.menu-panel {
+  background-color: var(--header-color);
+  color: var(--header-font-color);
+
+  button.menu-button,
+  a {
+    color: var(--header-font-color);
+  }
+
+  nav ul li a:hover {
+    color: var(--accent-color);
+  }
+
+  .toggle-container {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 1rem;
+    padding-top: 1rem;
+  }
+
+  .toggle {
+    position: relative;
+    display: inline-block;
+  }
+
+  .toggle-input {
+    display: none;
+  }
+
+  .toggle-label {
+    display: block;
+    width: 60px;
+    height: 30px;
+    background-color: var(--toggle-color);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .toggle-input:checked + .toggle-label::after {
+    left: 32px;
+  }
+
+  .toggle-label::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 26px;
+    height: 26px;
+    background-color: var(--header-font-color);
+    border-radius: 50%;
+    transition: left 0.3s ease;
+  }
+}
+
+/* Table Styling */
+
+table {
+  th {
+    border-bottom: 1px solid var(--table-border-color);
+    color: var(--hover-color);
+    background-color: var(--bg-color);
+  }
+
+  tr:last-of-type td {
+    border-bottom: 1px solid var(--table-border-color);
+  }
+  tr:nth-child(even) {
+    background-color: var(--table-accent-color);
+  }
+}
