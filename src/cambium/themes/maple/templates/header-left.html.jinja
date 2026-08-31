@@ -5,7 +5,7 @@
 <div class="header-left">
   <a href="{{ relative_path_modifier }}index.html" class="header-link site-title">
     {% if site_logo is defined %}
-      <img src="{{ site_logo }}" alt="Site logo" id="cambium-header-logo" />
+      <img src="{{ site_logo|trim }}" alt="Site logo" id="cambium-header-logo" />
       {% if site_logo_dark is defined %}
         <meta name="cambium-light-logo-src" content="{{ site_logo|trim }}" />
         <meta name="cambium-dark-logo-src" content="{{ site_logo_dark|trim }}" />
