@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 import inspect
 import logging
 import tempfile
@@ -10,6 +11,7 @@ from typing import Any, Literal, Optional, TypedDict
 from urllib.parse import urljoin
 
 import yaml
+from click import ClickException
 from pydantic import BaseModel, HttpUrl, PositiveInt
 
 from . import __version__
@@ -99,6 +101,9 @@ class FileConfiguration(BaseModel):
         Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
     ] = "INFO"
 
+    extensions: Optional[list[str]] = []
+    """Additional Python packages to import"""
+
     stages: Optional[list[str]] = [
         "PreviewCSV",
         "IdentifyMetadata",
@@ -161,14 +166,21 @@ class WorkingConfiguration:
 
     def __init__(self, input_config: Optional[MergedConfiguration] = None) -> None:
 
-        # Setting Temporary Directory
-        self.setup_tmp_dir()
-
         # Setting Input Configuration if set, otherwise use default:
         if input_config is not None:
             self.input_config = input_config
         else:
             self.input_config = FileConfiguration()
+
+        # Import additional packages
+        for import_string in self.input_config.extensions:
+            try:
+                importlib.import_module(import_string)
+            except (ImportError, ModuleNotFoundError) as e:
+                ClickException(f"Error importing extensions: {e}")
+
+        # Setting Temporary Directory
+        self.setup_tmp_dir()
 
         # Creating Path object for root directory and testing
         self.root_dir = Path(self.input_config.root_directory)
@@ -204,6 +216,10 @@ class WorkingConfiguration:
         # Save lists of theme directories
         builtin_themes_directory = Path(__file__).parent / "themes"
         selected_theme_directory = builtin_themes_directory / self.input_config.theme
+        # TODO: allow for installed themes
+        assert (
+            selected_theme_directory.exists()
+        ), f"Unknown theme '{self.input_config.theme}'"
         self.populate_static_directories(
             builtin_themes_directory, selected_theme_directory
         )
@@ -235,8 +251,8 @@ class WorkingConfiguration:
 
     def __del__(self) -> None:
         """Clean up All Lingering Directories."""
-        # Cleaning up temporary directory
-        self.tmp_dir_obj.cleanup()
+        if hasattr(self, "tmp_dir_obj"):
+            self.tmp_dir_obj.cleanup()
 
     def __repr__(self) -> str:
         return f"""Cambium Working Configuration:\nTemporary Directory Path: {self.tmp_dir}"""

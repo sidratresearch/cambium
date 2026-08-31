@@ -428,7 +428,15 @@ class TreeSpan:
             from_path = self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid]
             to_path = self.build_directory / self.leaves["final_path"][leaf_uuid]
             logger.debug(f"Copying {from_path}->{to_path}")
-            shutil.copy(from_path, to_path)
+            try:
+                shutil.copy(from_path, to_path)
+            except OSError as e:
+                # NOTE: really just a development thing
+                initial_path = self.leaves["initial_path"][leaf_uuid]
+                logger.error(
+                    f"Failed to copy leaf with initial path {initial_path} from temporary directory ({from_path}) to build directory ({to_path})"
+                )
+                raise e
 
         # copy static files over
         for static_type in ["stage", "theme", "user"]:

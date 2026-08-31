@@ -2,11 +2,11 @@
 
 import logging
 import os
-import re
 import urllib
 from collections import Counter
 from pathlib import Path
 
+from jinja2 import Environment, FileSystemLoader
 from marko import Markdown, MarkoExtension
 from marko.block import Document, Heading
 from marko.element import Element
@@ -224,3 +224,22 @@ def markdown_to_html(
 def get_relative_path_modifier(final_path: Path) -> str:
     """String to prepend to a path to get from the path up to build."""
     return "../" * len(final_path.parent.parents)
+
+
+def make_jinja_environment(tree: TreeSpan) -> Environment:
+    """Create a new Jinja Environment with access to the loaded template directories.
+
+    Template directories include
+    - .cambium/theme/templates
+    - [user-selected theme]/templates
+    - root theme templates
+    - [stage directory]/includes/templates
+
+    See config.py for details
+    """
+    return Environment(
+        loader=FileSystemLoader(tree.config.template_directories),
+        lstrip_blocks=True,
+        trim_blocks=True,  # stops Jinja lines from being replaced with newlines
+        # if not enabled, Marko doesn't recognize the table as being a single HTMLBlock
+    )

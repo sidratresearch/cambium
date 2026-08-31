@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Template
 from pydantic import PositiveInt
 
 from ...stage import Stage, StageConfig
@@ -14,6 +14,7 @@ from ...utils import path_matches_patterns, sort_user_paths
 from ..utils import (
     WrappedBlocksMixin,
     get_relative_path_modifier,
+    make_jinja_environment,
 )
 
 logger = logging.getLogger(__name__)
@@ -45,12 +46,22 @@ class PreviewCSV(Stage):
         self.css_file = "css/preview_csv.css"
         # path from includes/static to the CSS file we want to import on preview pages
 
+    # --------------------------------------------------------------------#
+    #                        Tree hook + helpers                          #
+    # --------------------------------------------------------------------#
+
     def tree_hook(self, tree: TreeSpan) -> None:
         # get what the actual path of the CSS file will be in the build directory
         static_dir = tree.abs_static_stage_path(self.__class__.__name__).relative_to(
             tree.build_directory
         )
         self.css_link = static_dir / self.css_file
+
+        # get jinja template
+        jinja_environment = make_jinja_environment(tree)
+        self.md_template = jinja_environment.get_template(
+            "PreviewCSV-preview-page.md.jinja"
+        )
 
         # cast the deque to a list so that we can add new leaves to the end
         # we don't want to re-visit the added leaves anyway
@@ -82,6 +93,10 @@ class PreviewCSV(Stage):
 
         logger.info(f"Creating preview page for {csv_initial_path}")
 
+    # --------------------------------------------------------------------#
+    #                         Pre hook + helpers                          #
+    # --------------------------------------------------------------------#
+
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         # figure out if this is the index.html
         if leaf_uuid in self.md_to_csv:
@@ -96,6 +111,7 @@ class PreviewCSV(Stage):
             md_uuid,
             self.md_to_csv[md_uuid],
             tree,
+            self.md_template,
             {
                 "max_preview_rows": self.config.max_preview_rows,
                 "css_link": self.css_link,
@@ -106,6 +122,9 @@ class PreviewCSV(Stage):
         )
         tree.abs_leaf_path(md_uuid).write_text(preview_content)
 
+        csv_path = tree.leaves["initial_path"][md_uuid]
+        tree.leaves["metadata"][md_uuid].title = csv_path.name
+
     def _pre_hook_csv(self, csv_uuid: str, tree: TreeSpan) -> None:
         md_uuid = self.csv_to_md[csv_uuid]
         csv_content = tree.leaves["initial_path"][md_uuid].read_text()
@@ -113,7 +132,11 @@ class PreviewCSV(Stage):
 
 
 def get_md_content(
-    md_uuid: str, csv_uuid: str, tree: TreeSpan, jinja_variables: dict[str, Any]
+    md_uuid: str,
+    csv_uuid: str,
+    tree: TreeSpan,
+    jinja_template: Template,
+    jinja_variables: dict[str, Any],
 ) -> str:
     """Get the content for the Markdown preview page.
 
@@ -135,16 +158,7 @@ def get_md_content(
         for row in reader:
             csv_data.append(row)
 
-    jinja_environment = Environment(
-        loader=FileSystemLoader(tree.config.template_directories),
-        lstrip_blocks=True,
-        trim_blocks=True,  # stops Jinja lines from being replaced with newlines
-        # if not enabled, Marko doesn't recognize the table as being a single HTMLBlock
-    )
-
-    template = jinja_environment.get_template("preview-csv.md.jinja")
-
-    return template.render(
+    return jinja_template.render(
         download_filename=download_filename,
         csv_data=csv_data,
         cambium_wrap=WrappedBlocksMixin.wrap_anything,
