@@ -157,6 +157,8 @@ div.main-content {
 header {
   background-color: #444444;
   margin-bottom: 0.25rem;
+  box-sizing: border-box;
+  height: 3.5rem;
 }
 
 div.header-bar {
@@ -165,9 +167,9 @@ div.header-bar {
   color: #f9f9f9;
   font-size: 1rem;
   padding: 0.75rem 2rem;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
+  align-items: center;
 
   a {
     text-decoration: none;
@@ -180,24 +182,27 @@ div.header-bar {
   }
 
   div.header-left {
-    flex: 0 1 15%;
-    justify-content: start;
+    overflow: hidden;
+    white-space: nowrap;
 
     .site-title {
       text-transform: uppercase;
       font-size: 1.2rem;
+      text-overflow: ellipsis;
     }
   }
 
   div.header-centre {
-    flex: 1 0 auto;
-    justify-content: center;
-    text-align: center;
+    /* flex: 1 0 auto;
+    justify-content: center; */
+    /* text-align: center; */
+    justify-self: center;
   }
 
   div.header-right {
-    flex: 0 1 15%;
-    justify-content: end;
+    justify-self: end;
+    /* flex: 0 1 15%;
+    justify-content: end; */
   }
 }
 
@@ -247,7 +252,7 @@ div.menu-panel {
   position: absolute;
   right: 0;
   left: 0;
-  top: 0;
+  top: 3.5rem;
   z-index: 100;
 
   background-color: #444444;
@@ -258,6 +263,13 @@ div.menu-panel {
   button.menu-button,
   a {
     color: #f9f9f9;
+  }
+
+  div.header-left {
+    display: none;
+  }
+  div.header-centre {
+    display: none;
   }
 
   nav {
@@ -398,33 +410,25 @@ table {
   }
 
   div.header-bar {
-    row-gap: 1em;
-    flex-direction: column-reverse;
-    justify-content: space-around;
+    grid-template-columns: 1fr;
 
     div.header-left {
       display: none;
-      flex: 0 1 100%;
-      justify-content: center;
     }
     div.header-centre {
-      justify-content: center;
       display: none;
-    }
-    div.header-right {
-      justify-content: right;
     }
   }
 
   div.menu-panel {
     width: 100vw;
-    height: 100vh;
+    height: 100vh - 2.5rem;
     max-height: unset;
 
-    div.header-left {
+    /* div.header-left {
       display: flex;
       justify-content: center;
-    }
+    } */
 
     div.header-centre {
       display: flex;

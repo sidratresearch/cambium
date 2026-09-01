@@ -4,7 +4,11 @@
 {#  define whether or not there is content in the menu panel
       assumes that all menu content comes from {{menu}}, which comes from
       .cambium/jinja_variables/menu.md #}
-{% set menu_button_action = "open" %}
+{% if has_menu_content %}
+  {% set menu_button_action = "both" %}
+{% else %}
+  {% set menu_button_action = "open" %}
+{% endif %}
 
 <header>
   <div class="header-bar">
@@ -14,6 +18,5 @@
   </div>
 </header>
 {% if has_menu_content %}
-  {% set menu_button_action = "close" %}
   {% include 'menu-panel.html.jinja' %}
 {% endif %}
