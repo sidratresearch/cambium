@@ -183,26 +183,22 @@ div.header-bar {
 
   div.header-left {
     overflow: hidden;
-    white-space: nowrap;
-
     .site-title {
       text-transform: uppercase;
       font-size: 1.2rem;
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
       text-overflow: ellipsis;
     }
   }
 
   div.header-centre {
-    /* flex: 1 0 auto;
-    justify-content: center; */
-    /* text-align: center; */
     justify-self: center;
   }
 
   div.header-right {
     justify-self: end;
-    /* flex: 0 1 15%;
-    justify-content: end; */
   }
 }
 
@@ -377,6 +373,30 @@ table {
   }
 }
 
+/* Midsize Screen Styling */
+
+@media (max-width: 1000px) and (min-width: 601px) {
+  div.header-bar {
+    grid-template-columns: 1fr 1fr;
+    div.header-left {
+      max-width: 50vw;
+    }
+    div.header-centre {
+      display: none;
+    }
+  }
+
+  div.menu-panel {
+    div.header-bar {
+      grid-template-columns: 1fr;
+    }
+    div.header-centre {
+      display: flex;
+      justify-content: center;
+    }
+  }
+}
+
 /* Mobile Styling */
 
 @media (max-width: 600px) {
@@ -425,14 +445,22 @@ table {
     height: 100vh - 2.5rem;
     max-height: unset;
 
-    /* div.header-left {
-      display: flex;
-      justify-content: center;
-    } */
+    div.header-bar {
+      max-width: 100%;
+    }
+
+    div.header-left {
+      display: block;
+      justify-self: center;
+      .site-title {
+        white-space: pre-wrap;
+        text-overflow: unset;
+      }
+    }
 
     div.header-centre {
-      display: flex;
-      justify-content: center;
+      display: block;
+      justify-self: center;
     }
 
     nav {
