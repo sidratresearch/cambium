@@ -182,7 +182,7 @@ class TreeSpan:
             theme_static_paths = [
                 p[1] for p in self._get_static_paths(source_dir, dest_dir)[1]
             ]
-            for path in self.config.user_theme_files:
+            for path in self.config.user_only_theme_files:
                 if path in theme_static_paths:
                     raise RuntimeError(
                         f"A theme is attempting to write the user-only file {path.name}"
@@ -459,7 +459,7 @@ class TreeSpan:
 
         # populate "required" static files
         for path in [
-            self.build_directory / file for file in self.config.user_theme_files
+            self.build_directory / file for file in self.config.user_only_theme_files
         ]:
             if not path.exists():
                 path.parent.mkdir(exist_ok=True)

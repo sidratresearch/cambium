@@ -226,7 +226,7 @@ class WorkingConfiguration:
         self.populate_template_directories(
             builtin_themes_directory, selected_theme_directory
         )
-        self.user_theme_files = [
+        self.user_only_theme_files = [
             Path("static") / p for p in ("css/custom.css", "js/custom.js")
         ]
         """Static files that can only be provided by the user."""
