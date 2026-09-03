@@ -38,7 +38,7 @@ class ElementAttributeSet:
 
     @classmethod
     def from_str(cls, string: str) -> "ElementAttributeSet":
-        """Parse the contents of curly braces into an `AttributeSet`."""
+        """Parse the contents of curly braces into an `ElementAttributeSet`."""
         items = split_respecting_quotes(string, r"\s")
         ids, result = [], ElementAttributeSet()
 
@@ -533,6 +533,10 @@ def markdown_to_html(
     )
 
     document = marko_object.parse(markdown)
+
+    # a macro that happens here should give back an HTML string that we can maybe
+    # wrap into a Marko HTML block
+    # to prevent macros from calling other macros we could have a sentinel value
 
     document = apply_attribute_comments(document)
     document = apply_inline_attributes(document)
