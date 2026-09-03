@@ -10,7 +10,7 @@ from .dev_server import run_dev_server
 from .log import get_loglevel, init_logging
 
 logger = init_logging("cambium")
-app = typer.Typer()
+app = typer.Typer(pretty_exceptions_show_locals=True)
 
 CLI_DEFAULTS = {
     "fail_fast": False,
