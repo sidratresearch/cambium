@@ -1,4 +1,6 @@
 import json
+import signal
+import sys
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -149,6 +151,10 @@ def main(
     if not no_ascii:
         make_ascii_art()
 
+    # cleanup nicely if the terminal is closed
+    if sys.platform != "win32":
+        signal.signal(signal.SIGHUP, sighup_handler)
+
     # Common setup tasks
     cli_config = {
         "build_directory": build_directory,
@@ -221,3 +227,12 @@ def make_ascii_art() -> None:
     """
 
     print(ascii_art)
+
+
+def sighup_handler(_: signal.Signals, __) -> None:
+    """Convert SIGHUP (parent process exited) to KeyboardInterrupt.
+
+    Ensures that if the terminal window is closed, temporary directories still get
+    cleaned up.
+    """
+    raise KeyboardInterrupt

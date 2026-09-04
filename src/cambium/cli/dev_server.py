@@ -56,7 +56,7 @@ def run_dev_server(
                 )
                 if config_changed:
                     logger.warning("Config file changed, closing dev server")
-                    raise typer.Exit()
+                    raise KeyboardInterrupt
 
                 if files_changed:
                     tree.config.tmp_dir_obj.cleanup()  # clean up old tree
