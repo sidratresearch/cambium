@@ -40,7 +40,7 @@ Cambium is built on the following design principles:
 
 To install Cambium, run:
 
-```
+```sh
 pip install cambium
 ```
 
@@ -48,7 +48,7 @@ pip install cambium
 
 To run Cambium, in a folder containing Markdown documents, run:
 
-```
+```sh
 cambium
 ```
 

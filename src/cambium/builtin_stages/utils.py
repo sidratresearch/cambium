@@ -405,6 +405,8 @@ def apply_inline_attributes(element: Element) -> Element:
             attr_match = re.fullmatch(r"(\{.*\})", element.lang)
             if attr_match is not None:
                 element.lang = ""
+        else:  # no lang or attrs
+            return element
 
         if attr_match is None:
             return element
