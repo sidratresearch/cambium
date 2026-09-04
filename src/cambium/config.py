@@ -187,6 +187,16 @@ class WorkingConfiguration:
         assert (
             self.root_dir.exists()
         ), f"The specified root directory, {self.root_dir} does not exist"
+        if (self.input_config.root_directory == ".") and (
+            self.root_dir.resolve() == Path("C:/Windows")
+        ):
+            msg = (
+                f"Your root directory was detected as {self.root_dir.resolve()}. "
+                "This was probably unintentional and caused by running `cambium` within a Windows shell, in a WSL directory. "
+                "To use the *actual* WSL directory, run `cambium --root-directory \\wsl.localhost\your\desired\path` in PowerShell. "
+                "If you would actually like to run at C:\Windows, run `cambium --root-directory C:\Windows`"
+            )
+            raise ValueError(msg)
 
         # Creating Path object for build directory - will always be absolute
         # Determine the build directory which will always be ignored (on
