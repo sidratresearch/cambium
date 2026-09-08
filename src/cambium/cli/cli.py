@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Annotated, Any
 
 import typer
+from click import ClickException
 
 from .. import __version__, config
 from ..tree import TreeSpan
@@ -169,8 +170,13 @@ def main(
         setup_config(config_path, cli_config, verbosity_boost)
     except AssertionError as e:
         raise typer.BadParameter(str(e))
+    except Exception as e:
+        error_handler(e)
 
-    treespan = TreeSpan(config.current_config)
+    try:
+        treespan = TreeSpan(config.current_config)
+    except Exception as e:
+        error_handler(e)
 
     if dry_run:
         skipped_dir = f"{treespan.build_directory}/static/_cambium"
@@ -201,11 +207,14 @@ def setup_config(
 
 def build(treespan: TreeSpan) -> None:
     """Run all of the Cambium TreeSpan functions."""
-    treespan.prepare_tree()
-    treespan.apply_pre_hooks()
-    treespan.transform()
-    treespan.apply_post_hooks()
-    treespan.finalize()
+    try:
+        treespan.prepare_tree()
+        treespan.apply_pre_hooks()
+        treespan.transform()
+        treespan.apply_post_hooks()
+        treespan.finalize()
+    except Exception as e:
+        error_handler(e)
 
 
 def make_ascii_art() -> None:
@@ -236,3 +245,14 @@ def sighup_handler(_: signal.Signals, __) -> None:
     cleaned up.
     """
     raise KeyboardInterrupt
+
+
+def error_handler(error: Exception) -> None:
+    if isinstance(error, UnicodeDecodeError):
+        # if this isn't a windows+utf8 issue, pass it on
+        if sys.platform != "win32" or (sys.platform == "win32" and sys.flags.utf8_mode):
+            raise error
+        suggestion = "Set the environment variable PYTHONUTF8 to `1` and try again"
+        raise ClickException(f"{error}. {suggestion}")
+
+    raise ClickException(str(error))

@@ -62,10 +62,10 @@ class ElementAttributeSet:
                 result.keyval_attrs.append(tuple(attr_parts))
                 continue
 
-            raise ValueError(f"Don't know what to do with {i}")
+            raise RuntimeError(f"Don't know what to do with {i}")
 
         if len(ids) > 1:
-            raise ValueError(f"Can't have multiple IDs, found {ids}")
+            raise RuntimeError(f"Can't have multiple IDs, found {ids}")
 
         if len(ids) == 1:
             result.id = ids[0]
@@ -268,7 +268,7 @@ def resolve_internal_link(
     except ValueError:
         # definitionally both paths will be absolute
         # so the only option is full isn't within build
-        raise ValueError(
+        raise RuntimeError(
             f"Error resolving internal link `{link}`, perhaps this file is outside the root directory?"
         )
 
@@ -341,7 +341,7 @@ def parse_comment(comment: str) -> ElementAttributeSet | None:
     try:
         return ElementAttributeSet.from_str(comment[1:-1])
     except ValueError as e:
-        raise ValueError(f"Error parsing comment {comment}: {e}")
+        raise RuntimeError(f"Error parsing comment {comment}: {e}")
 
 
 def split_respecting_quotes(string: str, split_char: str) -> list[str]:

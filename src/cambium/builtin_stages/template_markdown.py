@@ -82,9 +82,9 @@ class TemplateMarkdown(Stage):
                 else:
                     msg = path.name
                 msg += f" is a reserved name and cannot be used in {search_path}."
-                raise ValueError(msg)
+                raise RuntimeError(msg)
             if globals_key in jinja_globals:
-                raise ValueError(
+                raise RuntimeError(
                     f"Multiple files which resolve to {globals_key} in {search_path}."
                 )
 

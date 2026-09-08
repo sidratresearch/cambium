@@ -177,7 +177,7 @@ class WorkingConfiguration:
             try:
                 importlib.import_module(import_string)
             except (ImportError, ModuleNotFoundError) as e:
-                ClickException(f"Error importing extensions: {e}")
+                ImportError(f"Error importing extensions: {e}")
 
         # Setting Temporary Directory
         self.setup_tmp_dir()
@@ -506,8 +506,7 @@ def translate_yaml_configuration(config_path: Path) -> dict[str, Any]:
 
     if not isinstance(config_yaml, dict):
         errormsg = f"Error parsing configuration file {config_path}. Expected a dictionary/mapping, got '{config_yaml}'."
-        logger.error(errormsg)
-        raise ClickException(errormsg)
+        raise RuntimeError(errormsg)
 
     # Extracting required dictionary parameters from the YAML
     configuration_parameters = FileConfiguration.model_fields.keys()

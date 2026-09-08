@@ -18,7 +18,7 @@ class AddSitemap(Stage):
 
     def tree_hook(self, tree: TreeSpan) -> None:
         if tree.config.hosting["url"] is None:
-            raise ValueError(
+            raise RuntimeError(
                 "Cannot create a sitemap.xml without `domain_name` set in the config."
             )
         self.url = tree.config.hosting["url"]

@@ -3,24 +3,21 @@
 from __future__ import annotations
 
 import logging
-import re
-import typing
-from uuid import uuid4
-
-from click import ClickException
-
-if typing.TYPE_CHECKING:
-    from .config import WorkingConfiguration
-
 import os
+import re
 import shutil
+import typing
 from collections import Counter, defaultdict, deque
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal, TypedDict
+from uuid import uuid4
 
 from .metadata import LeafMetadata
 from .utils import walk_directory_tree
+
+if typing.TYPE_CHECKING:
+    from .config import WorkingConfiguration
 
 
 class LeafHooks(TypedDict):
@@ -107,7 +104,7 @@ class TreeSpan:
             except Exception as e:
                 # quit on first TreeHook error
                 errormsg = f"Error running tree hook for stage {stage}. "
-                raise ClickException(errormsg + f"Error message: {e}")
+                raise RuntimeError(errormsg + f"Error message: {e}")
             self._check_leaf_collisions("final")
 
     def _build_final_tree(self) -> None:
@@ -172,7 +169,7 @@ class TreeSpan:
 
         if len(bad_generated_paths) > 0:
             bad_paths_str = ", ".join([str(p) for p in bad_generated_paths])
-            raise ClickException(
+            raise RuntimeError(
                 f"Protected build paths prevent the following files/directories from being created in {self.build_directory}: {bad_paths_str}"
             )
 
@@ -203,7 +200,7 @@ class TreeSpan:
         This function should only be called within TreeSpan, and by Stage.add_leaf.
         """
         if len(self.leaves["uuids"]) == self.leaves["uuids"].maxlen:
-            raise ClickException(
+            raise RuntimeError(
                 "Too many files. Raise the `max_leaves` configuration option or run on a smaller fileset."
             )
 
@@ -362,7 +359,7 @@ class TreeSpan:
                 errormsg = (
                     f"Error running {hook_type[:-1]}_initalize for stage {stage_name}. "
                 )
-                raise ClickException(errormsg + f"Error message: {e}")
+                raise RuntimeError(errormsg + f"Error message: {e}")
 
             # run hook for all leaves
             logger.debug(f"Running {stage_name} {hook_type[:-1]}.")
@@ -371,8 +368,6 @@ class TreeSpan:
                     hook_main(uuid, self)
                 except Exception as e:
                     self._handle_hook_exception(e, uuid, stage_name, hook_type)
-                    if self.config.fail_fast:
-                        raise ClickException(str(e))
 
             logger.debug(f"Running {stage_name} {hook_type[:-1]}_finalize.")
             try:
@@ -381,19 +376,20 @@ class TreeSpan:
                 errormsg = (
                     f"Error running {hook_type[:-1]}_finalize for stage {stage_name}. "
                 )
-                raise ClickException(errormsg + f"Error message: {e}")
+                raise RuntimeError(errormsg + f"Error message: {e}")
 
         if any(self.leaves["failed"].values()):
-            raise ClickException("One or more stages errored. See logs for details.")
+            raise RuntimeError("One or more stages errored. See logs for details.")
 
     def _handle_hook_exception(
         self, exception: Exception, leaf_uuid: str, stage_name: str, hook_type: str
     ) -> None:
+        """Add additional context to leaf errors and decide whether to continue."""
         initial_path = self.leaves["initial_path"][leaf_uuid]
-        errormsg = (
-            f"Error running {hook_type} for stage {stage_name} on file {initial_path}. "
-        )
-        logger.error(errormsg + f"Error message: {exception}")
+        errormsg = f"Error running {hook_type} for stage {stage_name} on file {initial_path}. Error message: {exception}"
+        if self.config.fail_fast:
+            raise RuntimeError(errormsg)
+        logger.error(errormsg)
         self.leaves["failed"][leaf_uuid] = True
 
     def _get_leaves_for_stage_hook(self, stage_name: str, hook_type: str) -> list[str]:
@@ -447,10 +443,8 @@ class TreeSpan:
             except OSError as e:
                 # NOTE: really just a development thing
                 initial_path = self.leaves["initial_path"][leaf_uuid]
-                logger.error(
-                    f"Failed to copy leaf with initial path {initial_path} from temporary directory ({from_path}) to build directory ({to_path})"
-                )
-                raise e
+                msg = f"Failed to copy leaf with initial path {initial_path} from temporary directory ({from_path}) to build directory ({to_path})."
+                raise OSError(f"{msg} {e}")
 
         # copy static files over
         for static_type in ["stage", "theme", "user"]:
@@ -481,7 +475,7 @@ class TreeSpan:
         if len(paths) > len(set(paths)):
             counts = Counter(paths)
             multiples = [p for p, c in counts.items() if c > 1]
-            raise ClickException(
+            raise RuntimeError(
                 f"Collision in leaf {path_type} paths - the following appear multiple times: {multiples}"
             )
 
@@ -529,7 +523,7 @@ class TreeSpan:
             free_bytes = shutil.disk_usage(build_location).free
             logger.debug(f"Requiring {required_bytes/1000} kb of free space")
             if free_bytes < required_bytes:
-                raise ClickException(
+                raise RuntimeError(
                     f"Not enough free space on disk. {required_bytes/1000} kb needed."
                 )
         else:
@@ -580,10 +574,9 @@ class TreeSpan:
         - directories from the installed cambium package
         """
         if not search_directory.is_absolute():
-            logger.error(
+            raise RuntimeError(
                 f"Only use absolute paths when listing static files. Recieved relative path {search_directory}."
             )
-            raise RuntimeError
 
         static_files, static_subdirectories = [], []
 

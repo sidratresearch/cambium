@@ -70,7 +70,6 @@ def run_dev_server(
         shutil.rmtree(tree.build_directory)
 
         if not isinstance(e, KeyboardInterrupt):
-            logger.error(e)
             raise e
 
 

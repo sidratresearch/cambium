@@ -6,6 +6,7 @@
 
 - Moved incomplete documentation into a hidden folder
 - Stages should add new leaves with `Stage.add_leaf()` rather than the (now renamed) `TreeSpan.add_leaf()`
+- All exception transformation (from a generic traceback-having exception to a Typer or Click exception) now happens in `cli.py`, error messages are not duplicated in the log
 
 ### Added
 
