@@ -5,6 +5,7 @@ import html
 import logging
 import os
 import re
+import sys
 import urllib
 from collections import Counter
 from collections.abc import Callable
@@ -555,7 +556,10 @@ def markdown_to_html(
 
 def get_relative_path_modifier(final_path: Path) -> str:
     """String to prepend to a path to get from the path up to build."""
-    return "../" * len(final_path.parent.parents)
+    modifier = "../" * len(final_path.parent.parents)
+    if sys.platform == "win32":
+        return modifier.replace("/", "\\")
+    return modifier
 
 
 def make_jinja_environment(tree: TreeSpan) -> Environment:

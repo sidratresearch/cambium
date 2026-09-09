@@ -25,6 +25,7 @@
 
 - Fix for broken functionality in `AddSitemap`
 - Fix dev server not cleaning up after itself all the time
+- Fix issues where Windows paths were not correctly handled due to backslashes
 
 ## [0.6.0] - 2026-08-20
 
