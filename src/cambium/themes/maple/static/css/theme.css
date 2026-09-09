@@ -94,6 +94,18 @@ pre:has(> code) {
   scrollbar-color: var(--border-color) var(--footer-color);
 }
 
+/* Callout styling */
+blockquote.alert {
+  padding: 1em;
+  background-color: var(--footer-color);
+
+  p {
+    &:first-child {
+      font-weight: 800;
+    }
+  }
+}
+
 /* Header and Footer */
 
 header {
