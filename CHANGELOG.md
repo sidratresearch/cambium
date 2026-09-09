@@ -6,6 +6,7 @@
 
 - Moved incomplete documentation into a hidden folder
 - Stages should add new leaves with `Stage.add_leaf()` rather than the (now renamed) `TreeSpan.add_leaf()`
+- All exception transformation (from a generic traceback-having exception to a Typer or Click exception) now happens in `cli.py`, error messages are not duplicated in the log
 
 ### Added
 
@@ -13,10 +14,16 @@
 - Add protections for `static/css/custom.css` and `static/js/custom.js`
 - Add `--fail-fast` CLI option
 - Add configuration options for `WriteReports`
+- Add syntax for parsing HTML comments in Markdown as attributes to apply to rendered HTML
+- Add syntax for parsing specially formatted text inside Markdown links, images, and fenced code blocks as attributes to apply to rendered HTML
+- Add documentation page with a table of supported Markdown features
+- Add (not fully implemented, and liable to change) theme variables for `site_logo` and `site_logo_dark`
+- Add `extensions` configuration entry to list Python modules that Cambium should load
 
 ### Fixed
 
 - Fix for broken functionality in `AddSitemap`
+- Fix dev server not cleaning up after itself all the time
 
 ## [0.6.0] - 2026-08-20
 
@@ -40,8 +47,6 @@
 ### Removed
 
 - Removed Sitemap's stage configuration
-
-### Fixed
 
 ## [0.5.10] - 2026-08-02
 

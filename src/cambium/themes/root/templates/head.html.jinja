@@ -16,13 +16,7 @@
   <title>{{ title }}</title>
 
   {# Grabbable with JS #}
-  <meta name="cambium-data" value="" data-initial-path="{{ initial_path }}" />
-
-  {# Activate Pagefind #}
-  {# TODO: this should be part of Maple, not root? #}
-  {% if metadata.stage_metadata.PagefindSearch is defined %}
-    {% include "PagefindSearch-head.html.jinja" %}
-  {% endif %}
+  <meta name="cambium-initial-path" content="{{ initial_path }}" />
 
   {# Stage CSS Files #}
   {% for  stage_metadata in metadata.stage_metadata.values() %}

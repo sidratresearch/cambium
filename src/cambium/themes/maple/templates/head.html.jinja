@@ -1,4 +1,4 @@
-{# Cambium Theme: Root #}
+{# Cambium Theme: Maple #}
 
 {#
   Overwrite this template with `.cambium/theme/templates/head.html.jinja`
@@ -28,10 +28,9 @@
   </script>
 
   {# Grabbable with JS #}
-  <meta name="cambium-data" value="" data-initial-path="{{ initial_path }}" />
+  <meta name="cambium-initial-path" content="{{ initial_path }}" />
 
   {# Activate Pagefind #}
-  {# TODO: this should be part of Maple, not root? #}
   {% if metadata.stage_metadata.PagefindSearch is defined %}
     {% include "PagefindSearch-head.html.jinja" %}
   {% endif %}

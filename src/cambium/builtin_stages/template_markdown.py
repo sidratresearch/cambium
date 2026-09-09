@@ -77,10 +77,16 @@ class TemplateMarkdown(Stage):
             globals_key = path.name.removesuffix(path.suffix)
 
             if globals_key in CambiumJinjaVariables.model_fields:
-                raise ValueError(f"""{globals_key} ({path.name}) is a reserved name and
-                    cannot be used in {search_path}.""")
-            if path.name in jinja_globals:
-                raise ValueError(f"Multiple files {path.name} in {search_path}.")
+                if globals_key != path.name:
+                    msg = f"{globals_key} ({path.name})"
+                else:
+                    msg = path.name
+                msg += f" is a reserved name and cannot be used in {search_path}."
+                raise RuntimeError(msg)
+            if globals_key in jinja_globals:
+                raise RuntimeError(
+                    f"Multiple files which resolve to {globals_key} in {search_path}."
+                )
 
             variable = path.read_text()
             if path.suffix == ".md":

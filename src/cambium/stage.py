@@ -5,7 +5,6 @@ import logging
 from pathlib import Path
 from typing import Any, Literal
 
-from click import ClickException, UsageError
 from pydantic import BaseModel, ValidationError
 
 from .tree import TreeSpan
@@ -240,15 +239,8 @@ def populate_stage_dict(
     stage_config: dict[str, dict[str, Any]],
     logger: logging.Logger,
 ) -> dict[str, Stage]:
-    """Importing Built-in Stages and compiling all Stages available to Cambium.
-
-    Raises AssertionError if requested stages are missing, and ValidationError
-    if the stage configuration is incorrect.
-    """
-    # TODO: AssertionErrors raised here and below raise a typer.BadParameter, which prints "Invalid value"
-    # Should consider doing some custom errors or something?
-
-    from . import builtin_stages  # noqa: F401
+    """Importing Built-in Stages and compiling all Stages available to Cambium."""
+    from . import builtin_stages
 
     for i, stage_name in enumerate(stage_list):
         if stage_name in builtin_stages.__all__:
@@ -261,12 +253,12 @@ def populate_stage_dict(
                 # test importing the stage
                 _ = getattr(importlib.import_module(import_string), new_name)
             except AttributeError as e:
-                raise ClickException(
+                raise AttributeError(
                     f"Error importing requested stage {stage_name}: {e}"
                 )
 
         else:
-            raise UsageError(
+            raise RuntimeError(
                 f"Requested stage `{stage_name}` is not a Cambium builtin. "
                 f"If this is an external stage, try `<package name>.{stage_name}`."
             )
@@ -286,11 +278,13 @@ def populate_stage_dict(
                 else:
                     initialized_stage = tmp_stage({})
             except ValidationError as e:
-                # TODO: see what traceback looks like here
-                logger.error(
-                    f"Error validating configuration for stage `{tmp_stage.__name__}`"
+                msg = (
+                    f"Error validating configuration for stage `{tmp_stage.__name__}`."
                 )
-                raise e
+                raise RuntimeError(f"{msg} {e}")
+            except Exception as e:
+                errormsg = f"Error initializing stage {tmp_stage.__name__}: {e}"
+                raise RuntimeError(errormsg)
 
             stage_dict[tmp_stage.__name__] = initialized_stage
 
