@@ -48,14 +48,14 @@ export function themeToggle() {
       document.documentElement.setAttribute("data-theme", "dark");
       localStorage.setItem("theme", "dark");
       body.dataset.pfTheme = "dark";
-      // line here to change out the 'built with cambium' image
+      // hange out the 'built with cambium' image
       const basepath = getBasePathFromPath(logo.src);
       logo.src = basepath + imageDark;
     } else {
       document.documentElement.setAttribute("data-theme", "light");
       localStorage.setItem("theme", "light");
       body.dataset.pfTheme = "light";
-      // line here to change out the 'built with cambium' image
+      // change out the 'built with cambium' image
       const basepath = getBasePathFromPath(logo.src);
       logo.src = basepath + imageLight;
     }
@@ -69,7 +69,7 @@ export function themeToggle() {
       document.documentElement.setAttribute("data-theme", "dark");
       toggle.checked = true;
       body.dataset.pfTheme = "dark";
-      // line here to change out the 'built with cambium' image
+      // change out the 'built with cambium' image
       const basepath = getBasePathFromPath(logo.src);
       logo.src = basepath + imageDark;
     }

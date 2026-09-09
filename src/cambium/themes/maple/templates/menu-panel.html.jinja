@@ -7,12 +7,9 @@
     {% include "header-centre.html.jinja" %}
   </div>
   <nav class="menu-items">{{ menu }}</nav>
-  <div class="toggle-container">
-    <div class="toggle">
-      <input type="checkbox" id="mode-toggle" class="toggle-input">
-      <label for="mode-toggle" class="toggle-label"></label>
-    </div>
-    <span data-dark>Dark</span>
-    <span data-light>Light</span>
-  </div>
+  <label class="toggle">
+  <input id="mode-toggle" type="checkbox">
+      <span data-light class="light-txt">Light</span>
+      <span data-dark class="dark-txt">Dark</span>
+  </label>
 </div>

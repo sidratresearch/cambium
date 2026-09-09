@@ -51,17 +51,14 @@ html {
   --toggle-color: var(--root-toggle-color);
   --pf-outline-focus: var(--cambium-accent-color);
 
-  [data-dark] {
-    opacity: 0;
-  }
-  [data-light] {
-    opacity: 1;
-  }
-
   font-family: var(--cambium-font);
   background-color: var(--bg-color);
   color: var(--font-color);
   font-size: var(--cambium-font-size);
+
+  body {
+    --pf-outline-focus: var(--cambium-accent-color);
+  }
 }
 
 html[data-theme="dark"] {
@@ -75,13 +72,6 @@ html[data-theme="dark"] {
   --border-color: var(--root-border-color-dark);
   --table-accent-color: var(--root-table-accent-color-dark);
   --toggle-color: var(--root-toggle-color-dark);
-
-  [data-dark] {
-    opacity: 1;
-  }
-  [data-light] {
-    opacity: 0;
-  }
 
   body {
     --pf-outline-focus: var(--cambium-accent-color-dark);
@@ -101,6 +91,7 @@ a {
 
 pre:has(> code) {
   background-color: var(--footer-color);
+  scrollbar-color: var(--border-color) var(--footer-color);
 }
 
 /* Header and Footer */
@@ -146,46 +137,66 @@ div.menu-panel {
     color: var(--accent-color);
   }
 
-  .toggle-container {
-    display: flex;
-    justify-content: center;
-    padding-bottom: 1rem;
-    padding-top: 1rem;
+  span {
+    transition: all 1.2s;
+    -webkit-transition: all 1.2s;
+    color: var(--font-color);
   }
 
   .toggle {
     position: relative;
-    display: inline-block;
+    display: flex;
+    margin-top: 0.5rem;
+    margin-bottom: 0.2rem;
+    margin-left: 2rem;
+    background: var(--border-color);
+    border-radius: 10px;
+    width: 200px;
+    transition: all 1.2s;
+    -webkit-transition: all 1.2s;
   }
 
-  .toggle-input {
-    display: none;
+  .toggle:has(input:checked) {
+    background: var(--border-color);
   }
-
-  .toggle-label {
-    display: block;
-    width: 60px;
-    height: 30px;
-    background-color: var(--toggle-color);
-    border-radius: 99px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-
-  .toggle-input:checked + .toggle-label::after {
-    left: 32px;
-  }
-
-  .toggle-label::after {
+  .toggle::before {
     content: "";
     position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 26px;
-    height: 26px;
-    background-color: var(--header-font-color);
-    border-radius: 50%;
-    transition: left 0.3s ease;
+    left: 0;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    background: var(--accent-color);
+    border-radius: 10px;
+    z-index: 1;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+    -webkit-box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+    transition: 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    -webkit-transition: 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .toggle input[type="checkbox"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .toggle span {
+    color: var(--header-font-color);
+    display: block;
+    width: 50%;
+    text-align: center;
+    padding: 0.5rem;
+    z-index: 2;
+    text-transform: capitalize;
+  }
+  .toggle:has(input:checked)::before {
+    left: 50%;
+  }
+  .toggle:has(input:checked) .dark-txt {
+    color: var(--header-font-color);
   }
 }
 
@@ -203,5 +214,16 @@ table {
   }
   tr:nth-child(even) {
     background-color: var(--table-accent-color);
+  }
+}
+
+/* Mobile Styling */
+
+@media (max-width: 600px) {
+  div.menu-panel {
+    .toggle {
+      margin-left: auto;
+      margin-right: auto;
+    }
   }
 }
