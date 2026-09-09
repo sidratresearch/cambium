@@ -141,58 +141,59 @@ def main(
     ] = False,
 ) -> None:
 
-    # Quick-exit options
-    if version_option:
-        print(f"Cambium {__version__}")
-        return
-    if dump_config_option:
-        config.dump_default_config()
-        return
-
-    if not no_ascii:
-        make_ascii_art()
-
     # cleanup nicely if the terminal is closed
     if sys.platform != "win32":
         signal.signal(signal.SIGHUP, sighup_handler)
 
-    # Common setup tasks
-    cli_config = {
-        "build_directory": build_directory,
-        "root_directory": root_directory,
-        "fail_fast": fail_fast,
-        "dev_server": dev_server,
-        "dev_server_port": dev_server_port,
-        "dev_server_interval": dev_server_interval,
-        "dev_server_directory": dev_directory,
-    }
     try:
-        setup_config(config_path, cli_config, verbosity_boost)
-    except AssertionError as e:
-        raise typer.BadParameter(str(e))
-    except Exception as e:
-        error_handler(e)
+        # Quick-exit options
+        if version_option:
+            print(f"Cambium {__version__}")
+            return
+        if dump_config_option:
+            config.dump_default_config()
+            return
 
-    try:
+        if not no_ascii:
+            make_ascii_art()
+
+        # Common setup tasks
+        cli_config = {
+            "build_directory": build_directory,
+            "root_directory": root_directory,
+            "fail_fast": fail_fast,
+            "dev_server": dev_server,
+            "dev_server_port": dev_server_port,
+            "dev_server_interval": dev_server_interval,
+            "dev_server_directory": dev_directory,
+        }
+        try:
+            setup_config(config_path, cli_config, verbosity_boost)
+        except AssertionError as e:
+            raise typer.BadParameter(str(e))
+
         treespan = TreeSpan(config.current_config)
-    except Exception as e:
-        error_handler(e)
 
-    if dry_run:
-        skipped_dir = f"{treespan.build_directory}/static/_cambium"
-        logger.warning(
-            f"Dry run file structure does not include paths within {skipped_dir}"
-        )
-        print(json.dumps(treespan.filestructure_in_build, indent=2))
-        return
+        if dry_run:
+            skipped_dir = f"{treespan.build_directory}/static/_cambium"
+            logger.warning(
+                f"Dry run file structure does not include paths within {skipped_dir}"
+            )
+            print(json.dumps(treespan.filestructure_in_build, indent=2))
+            return
 
-    if dev_server:
-        run_dev_server(treespan, build, config_path)
-        return
+        if dev_server:
+            run_dev_server(treespan, build, config_path)
+            return
 
-    build(treespan)
+        build(treespan)
 
-    logger.info("Cambium complete!")
+        logger.info("Cambium complete!")
+
+    except typer.BadParameter:
+        raise
+    except Exception as error:
+        raise ClickException(str(error))
 
 
 def setup_config(
@@ -207,14 +208,11 @@ def setup_config(
 
 def build(treespan: TreeSpan) -> None:
     """Run all of the Cambium TreeSpan functions."""
-    try:
-        treespan.prepare_tree()
-        treespan.apply_pre_hooks()
-        treespan.transform()
-        treespan.apply_post_hooks()
-        treespan.finalize()
-    except Exception as e:
-        error_handler(e)
+    treespan.prepare_tree()
+    treespan.apply_pre_hooks()
+    treespan.transform()
+    treespan.apply_post_hooks()
+    treespan.finalize()
 
 
 def make_ascii_art() -> None:
@@ -245,8 +243,3 @@ def sighup_handler(_: signal.Signals, __) -> None:
     cleaned up.
     """
     raise KeyboardInterrupt
-
-
-def error_handler(error: Exception) -> None:
-    """Convert an exception into a clean ClickException."""
-    raise ClickException(str(error))
