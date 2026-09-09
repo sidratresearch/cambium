@@ -13,7 +13,7 @@
 
 - Add fallback system for site title
 - Add protections for `static/css/custom.css` and `static/js/custom.js`
-- Add `--fail-fast` CLI option
+- Add `--fail-fast` and `--show-traceback` CLI options
 - Add configuration options for `WriteReports`
 - Add syntax for parsing HTML comments in Markdown as attributes to apply to rendered HTML
 - Add syntax for parsing specially formatted text inside Markdown links, images, and fenced code blocks as attributes to apply to rendered HTML

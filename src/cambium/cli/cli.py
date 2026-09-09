@@ -52,6 +52,10 @@ def main(
             the file structure""",
         ),
     ] = False,
+    show_traceback: Annotated[
+        bool,
+        typer.Option("--show-traceback", help="Show full Python traceback on errors"),
+    ] = False,
     fail_fast: Annotated[
         bool,
         typer.Option(
@@ -193,6 +197,8 @@ def main(
     except typer.BadParameter:
         raise
     except Exception as error:
+        if show_traceback:
+            raise
         raise ClickException(str(error))
 
 
