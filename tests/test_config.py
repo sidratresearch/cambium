@@ -99,13 +99,3 @@ def test_root_build(tmp_path: Path) -> None:
             },
             verbosity,
         )
-
-
-# TODO: move to test_cli.py?
-def test_dry_run(tmp_path: Path) -> None:
-    """Test that the dry run doesn't create the build dir."""
-    build_directory = "_build"
-    cli.main(
-        dry_run=True, root_directory=str(tmp_path), build_directory=build_directory
-    )
-    assert not (tmp_path / build_directory).exists()
