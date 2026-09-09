@@ -35,15 +35,7 @@ Stored here so they can also be used in tests."""
 
 @app.command()
 def main(
-    verbosity_boost: Annotated[
-        int,
-        typer.Option(
-            "--verbose",
-            "-v",
-            help="Increase verbosity (repeatable)",
-            count=True,
-        ),
-    ] = 0,
+    # Default Option Group
     dry_run: Annotated[
         bool,
         typer.Option(
@@ -52,22 +44,19 @@ def main(
             the file structure""",
         ),
     ] = False,
-    show_traceback: Annotated[
-        bool,
-        typer.Option("--show-traceback", help="Show full Python traceback on errors"),
-    ] = False,
-    fail_fast: Annotated[
+    version_option: Annotated[
         bool,
         typer.Option(
-            "--fail-fast", help="Quit on first error when running stage hooks."
+            "--version",
+            help="Print version info",
         ),
-    ] = CLI_DEFAULTS["fail_fast"],
+    ] = False,
+    # Configuration
     config_path: Annotated[
         Path | None,
         typer.Option(
             "--config",
-            "-c",
-            help="Location of configuration file",
+            help=f"Location of configuration file (checks for {config.config_default_path})",
             rich_help_panel="Configuration",
             exists=True,
             file_okay=True,
@@ -75,6 +64,14 @@ def main(
             readable=True,
         ),
     ] = None,
+    dump_config_option: Annotated[
+        bool,
+        typer.Option(
+            "--dump-default-config",
+            help="Dump default configuration info to stdout",
+            rich_help_panel="Configuration",
+        ),
+    ] = False,
     build_directory: Annotated[
         str | None,
         typer.Option(
@@ -91,9 +88,7 @@ def main(
             rich_help_panel="Configuration",
         ),
     ] = CLI_DEFAULTS["root_directory"],
-    no_ascii: Annotated[
-        bool, typer.Option("--no-ascii", help="Hide the Cambium ascii art")
-    ] = False,
+    # Development Server
     dev_server: Annotated[
         bool,
         typer.Option(
@@ -127,20 +122,39 @@ def main(
             rich_help_panel="Development Server",
         ),
     ] = CLI_DEFAULTS["dev_server_directory"],
-    # subcommands
-    version_option: Annotated[
+    # Logging & Output
+    verbosity_boost: Annotated[
+        int,
+        typer.Option(
+            "--verbose",
+            "-v",
+            help="Increase verbosity (repeatable)",
+            count=True,
+            rich_help_panel="Logging & Output",
+        ),
+    ] = 0,
+    show_traceback: Annotated[
         bool,
         typer.Option(
-            "--version",
-            help="Print version info",
+            "--show-traceback",
+            help="Show full Python traceback on errors",
+            rich_help_panel="Logging & Output",
         ),
     ] = False,
-    dump_config_option: Annotated[
+    fail_fast: Annotated[
         bool,
         typer.Option(
-            "--dump-default-config",
-            help="Dump default configuration info to stdout",
-            rich_help_panel="Configuration",
+            "--fail-fast",
+            help="Quit on first error when running stage hooks.",
+            rich_help_panel="Logging & Output",
+        ),
+    ] = CLI_DEFAULTS["fail_fast"],
+    no_ascii: Annotated[
+        bool,
+        typer.Option(
+            "--no-ascii",
+            help="Hide the Cambium ascii art",
+            rich_help_panel="Logging & Output",
         ),
     ] = False,
 ) -> None:
