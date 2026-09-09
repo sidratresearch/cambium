@@ -248,11 +248,5 @@ def sighup_handler(_: signal.Signals, __) -> None:
 
 
 def error_handler(error: Exception) -> None:
-    if isinstance(error, UnicodeDecodeError):
-        # if this isn't a windows+utf8 issue, pass it on
-        if sys.platform != "win32" or (sys.platform == "win32" and sys.flags.utf8_mode):
-            raise error
-        suggestion = "Set the environment variable PYTHONUTF8 to `1` and try again"
-        raise ClickException(f"{error}. {suggestion}")
-
+    """Convert an exception into a clean ClickException."""
     raise ClickException(str(error))

@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Literal, TypedDict
 from uuid import uuid4
 
+from .exceptions import CambiumError
 from .metadata import LeafMetadata
 from .utils import walk_directory_tree
 
@@ -101,10 +102,9 @@ class TreeSpan:
             try:
                 logger.debug(f"Running tree_hook for stage {stage}")
                 self.config.stage_dict[stage].tree_hook(self)
-            except Exception as e:
+            except Exception:
                 # quit on first TreeHook error
-                errormsg = f"Error running tree hook for stage {stage}. "
-                raise RuntimeError(errormsg + f"Error message: {e}")
+                raise CambiumError(f"running tree hook for stage {stage}")
             self._check_leaf_collisions("final")
 
     def _build_final_tree(self) -> None:
@@ -355,11 +355,10 @@ class TreeSpan:
             logger.debug(f"Running {stage_name} {hook_type[:-1]}_initalize.")
             try:
                 hook_init(self)
-            except Exception as e:
-                errormsg = (
-                    f"Error running {hook_type[:-1]}_initalize for stage {stage_name}. "
+            except Exception:
+                raise CambiumError(
+                    f"running {hook_type[:-1]}_initalize for stage {stage_name}"
                 )
-                raise RuntimeError(errormsg + f"Error message: {e}")
 
             # run hook for all leaves
             logger.debug(f"Running {stage_name} {hook_type[:-1]}.")
@@ -372,11 +371,10 @@ class TreeSpan:
             logger.debug(f"Running {stage_name} {hook_type[:-1]}_finalize.")
             try:
                 hook_finalize(self)
-            except Exception as e:
-                errormsg = (
-                    f"Error running {hook_type[:-1]}_finalize for stage {stage_name}. "
+            except Exception:
+                raise CambiumError(
+                    f"running {hook_type[:-1]}_finalize for stage {stage_name}"
                 )
-                raise RuntimeError(errormsg + f"Error message: {e}")
 
         if any(self.leaves["failed"].values()):
             raise RuntimeError("One or more stages errored. See logs for details.")
@@ -386,10 +384,15 @@ class TreeSpan:
     ) -> None:
         """Add additional context to leaf errors and decide whether to continue."""
         initial_path = self.leaves["initial_path"][leaf_uuid]
-        errormsg = f"Error running {hook_type} for stage {stage_name} on file {initial_path}. Error message: {exception}"
+
+        new_exception = CambiumError(
+            f"running {hook_type[:-1]} for stage {stage_name} on file {initial_path}",
+            cause=exception,
+        )
         if self.config.fail_fast:
-            raise RuntimeError(errormsg)
-        logger.error(errormsg)
+            raise new_exception
+
+        logger.error(str(new_exception))
         self.leaves["failed"][leaf_uuid] = True
 
     def _get_leaves_for_stage_hook(self, stage_name: str, hook_type: str) -> list[str]:
@@ -443,8 +446,8 @@ class TreeSpan:
             except OSError as e:
                 # NOTE: really just a development thing
                 initial_path = self.leaves["initial_path"][leaf_uuid]
-                msg = f"Failed to copy leaf with initial path {initial_path} from temporary directory ({from_path}) to build directory ({to_path})."
-                raise OSError(f"{msg} {e}")
+                msg = f"copying leaf with initial path {initial_path} from temporary directory ({from_path}) to build directory ({to_path})"
+                raise CambiumError(msg)
 
         # copy static files over
         for static_type in ["stage", "theme", "user"]:
