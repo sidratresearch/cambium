@@ -32,7 +32,6 @@
   /* Dark mode */
   --root-border-color-dark: #444444;
   --root-table-accent-color-dark: #383838;
-  --root-border-color-dark: #444444;
   --root-toggle-color-dark: #f26369;
 }
 
@@ -97,13 +96,29 @@ pre:has(> code) {
 /* Callout styling */
 blockquote.alert {
   padding: 1em;
+  margin-top: 1em;
+  margin-bottom: 1em;
   background-color: var(--footer-color);
+  border-left: 0.5em solid var(--border-color);
 
   p {
     &:first-child {
       font-weight: 800;
     }
   }
+}
+
+blockquote.alert-caution,
+blockquote.alert-warning {
+  border-left: 0.5em solid var(--accent-color);
+}
+
+blockquote.alert-important {
+  border-left: 0.5em solid var(--hover-color);
+}
+
+blockquote.alert-tip {
+  border-left: 0.5em solid var(--table-border-color);
 }
 
 /* Header and Footer */
@@ -237,5 +252,10 @@ table {
       margin-left: auto;
       margin-right: auto;
     }
+  }
+
+  blockquote.alert {
+    margin-inline-start: unset;
+    margin-inline-end: unset;
   }
 }
