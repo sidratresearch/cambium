@@ -98,6 +98,11 @@ class CheckLinks(Stage):
         leaf_uuid: str,
         tree: TreeSpan,
     ) -> None:
+
+        # HACK? "../index.html" and "..\index.html" become "..%5Cindex.html" when
+        # parsing UTF-8 files on Windows. So just convert all of them to "/"
+        destination = destination.replace("%5C", "/")
+
         # split anchor from page
         if "#" in destination:
             page_destination, anchor = destination.split("#")

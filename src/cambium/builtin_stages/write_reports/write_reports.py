@@ -112,12 +112,12 @@ class WriteReports(Stage):
             tree.leaves["initial_path"][leaf_uuid],
             tree.leaves["final_path"][leaf_uuid],
         )
-        title, path = str(final_path), final_path
+        title, path = str(final_path), str(final_path)
         # HACK? If TransformMarkdown is active we need to put down initial
         # paths so that link change attempts have parseable links
         # If it's not active, we need to point to the final location
         if "TransformMarkdown" in tree.config.stages:
-            title, path = str(initial_path), initial_path
+            title, path = str(initial_path), str(initial_path)
 
         if str(initial_path).startswith(str(tree.config.stage_leaf_prefix)):
             stage_name = initial_path.parts[len(tree.config.stage_leaf_prefix.parts)]

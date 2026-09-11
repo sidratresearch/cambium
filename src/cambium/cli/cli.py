@@ -35,15 +35,7 @@ Stored here so they can also be used in tests."""
 
 @app.command()
 def main(
-    verbosity_boost: Annotated[
-        int,
-        typer.Option(
-            "--verbose",
-            "-v",
-            help="Increase verbosity (repeatable)",
-            count=True,
-        ),
-    ] = 0,
+    # Default Option Group
     dry_run: Annotated[
         bool,
         typer.Option(
@@ -52,18 +44,19 @@ def main(
             the file structure""",
         ),
     ] = False,
-    fail_fast: Annotated[
+    version_option: Annotated[
         bool,
         typer.Option(
-            "--fail-fast", help="Quit on first error when running stage hooks."
+            "--version",
+            help="Print version info",
         ),
-    ] = CLI_DEFAULTS["fail_fast"],
+    ] = False,
+    # Configuration
     config_path: Annotated[
         Path | None,
         typer.Option(
             "--config",
-            "-c",
-            help="Location of configuration file",
+            help=f"Location of configuration file (checks for {config.config_default_path})",
             rich_help_panel="Configuration",
             exists=True,
             file_okay=True,
@@ -71,6 +64,14 @@ def main(
             readable=True,
         ),
     ] = None,
+    dump_config_option: Annotated[
+        bool,
+        typer.Option(
+            "--dump-default-config",
+            help="Dump default configuration info to stdout",
+            rich_help_panel="Configuration",
+        ),
+    ] = False,
     build_directory: Annotated[
         str | None,
         typer.Option(
@@ -87,9 +88,7 @@ def main(
             rich_help_panel="Configuration",
         ),
     ] = CLI_DEFAULTS["root_directory"],
-    no_ascii: Annotated[
-        bool, typer.Option("--no-ascii", help="Hide the Cambium ascii art")
-    ] = False,
+    # Development Server
     dev_server: Annotated[
         bool,
         typer.Option(
@@ -123,76 +122,98 @@ def main(
             rich_help_panel="Development Server",
         ),
     ] = CLI_DEFAULTS["dev_server_directory"],
-    # subcommands
-    version_option: Annotated[
+    # Logging & Output
+    verbosity_boost: Annotated[
+        int,
+        typer.Option(
+            "--verbose",
+            "-v",
+            help="Increase verbosity (repeatable)",
+            count=True,
+            rich_help_panel="Logging & Output",
+        ),
+    ] = 0,
+    show_traceback: Annotated[
         bool,
         typer.Option(
-            "--version",
-            help="Print version info",
+            "--show-traceback",
+            help="Show full Python traceback on errors",
+            rich_help_panel="Logging & Output",
         ),
     ] = False,
-    dump_config_option: Annotated[
+    fail_fast: Annotated[
         bool,
         typer.Option(
-            "--dump-default-config",
-            help="Dump default configuration info to stdout",
-            rich_help_panel="Configuration",
+            "--fail-fast",
+            help="Quit on first error when running stage hooks.",
+            rich_help_panel="Logging & Output",
+        ),
+    ] = CLI_DEFAULTS["fail_fast"],
+    no_ascii: Annotated[
+        bool,
+        typer.Option(
+            "--no-ascii",
+            help="Hide the Cambium ascii art",
+            rich_help_panel="Logging & Output",
         ),
     ] = False,
 ) -> None:
-
-    # Quick-exit options
-    if version_option:
-        print(f"Cambium {__version__}")
-        return
-    if dump_config_option:
-        config.dump_default_config()
-        return
-
-    if not no_ascii:
-        make_ascii_art()
 
     # cleanup nicely if the terminal is closed
     if sys.platform != "win32":
         signal.signal(signal.SIGHUP, sighup_handler)
 
-    # Common setup tasks
-    cli_config = {
-        "build_directory": build_directory,
-        "root_directory": root_directory,
-        "fail_fast": fail_fast,
-        "dev_server": dev_server,
-        "dev_server_port": dev_server_port,
-        "dev_server_interval": dev_server_interval,
-        "dev_server_directory": dev_directory,
-    }
     try:
-        setup_config(config_path, cli_config, verbosity_boost)
-    except AssertionError as e:
-        raise typer.BadParameter(str(e))
-    except Exception as e:
-        error_handler(e)
+        # Quick-exit options
+        if version_option:
+            print(f"Cambium {__version__}")
+            return
+        if dump_config_option:
+            config.dump_default_config()
+            return
 
-    try:
+        if not no_ascii:
+            make_ascii_art()
+
+        # Common setup tasks
+        cli_config = {
+            "build_directory": build_directory,
+            "root_directory": root_directory,
+            "fail_fast": fail_fast,
+            "dev_server": dev_server,
+            "dev_server_port": dev_server_port,
+            "dev_server_interval": dev_server_interval,
+            "dev_server_directory": dev_directory,
+        }
+        try:
+            setup_config(config_path, cli_config, verbosity_boost)
+        except AssertionError as e:
+            raise typer.BadParameter(str(e))
+
         treespan = TreeSpan(config.current_config)
-    except Exception as e:
-        error_handler(e)
 
-    if dry_run:
-        skipped_dir = f"{treespan.build_directory}/static/_cambium"
-        logger.warning(
-            f"Dry run file structure does not include paths within {skipped_dir}"
-        )
-        print(json.dumps(treespan.filestructure_in_build, indent=2))
-        return
+        if dry_run:
+            skipped_dir = f"{treespan.build_directory}/static/_cambium"
+            logger.warning(
+                f"Dry run file structure does not include paths within {skipped_dir}"
+            )
+            print(json.dumps(treespan.filestructure_in_build, indent=2))
+            return
 
-    if dev_server:
-        run_dev_server(treespan, build, config_path)
-        return
+        if dev_server:
+            run_dev_server(treespan, build, config_path)
+            return
 
-    build(treespan)
+        build(treespan)
 
-    logger.info("Cambium complete!")
+        logger.info("Cambium complete!")
+
+    except typer.BadParameter:
+        raise
+    except Exception as error:
+        if show_traceback:
+            raise
+        raise ClickException(str(error))
 
 
 def setup_config(
@@ -207,14 +228,11 @@ def setup_config(
 
 def build(treespan: TreeSpan) -> None:
     """Run all of the Cambium TreeSpan functions."""
-    try:
-        treespan.prepare_tree()
-        treespan.apply_pre_hooks()
-        treespan.transform()
-        treespan.apply_post_hooks()
-        treespan.finalize()
-    except Exception as e:
-        error_handler(e)
+    treespan.prepare_tree()
+    treespan.apply_pre_hooks()
+    treespan.transform()
+    treespan.apply_post_hooks()
+    treespan.finalize()
 
 
 def make_ascii_art() -> None:
@@ -245,14 +263,3 @@ def sighup_handler(_: signal.Signals, __) -> None:
     cleaned up.
     """
     raise KeyboardInterrupt
-
-
-def error_handler(error: Exception) -> None:
-    if isinstance(error, UnicodeDecodeError):
-        # if this isn't a windows+utf8 issue, pass it on
-        if sys.platform != "win32" or (sys.platform == "win32" and sys.flags.utf8_mode):
-            raise error
-        suggestion = "Set the environment variable PYTHONUTF8 to `1` and try again"
-        raise ClickException(f"{error}. {suggestion}")
-
-    raise ClickException(str(error))

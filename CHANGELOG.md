@@ -6,13 +6,14 @@
 
 - Moved incomplete documentation into a hidden folder
 - Stages should add new leaves with `Stage.add_leaf()` rather than the (now renamed) `TreeSpan.add_leaf()`
-- All exception transformation (from a generic traceback-having exception to a Typer or Click exception) now happens in `cli.py`, error messages are not duplicated in the log
+- Exceptions are now mostly handled in a two-step process, where `TreeSpan` raises a `CambiumError`, which `cli.py` converts into a `ClickException`, hiding traceback
+- Error messages are not duplicated in the log
 
 ### Added
 
 - Add fallback system for site title
 - Add protections for `static/css/custom.css` and `static/js/custom.js`
-- Add `--fail-fast` CLI option
+- Add `--fail-fast` and `--show-traceback` CLI options
 - Add configuration options for `WriteReports`
 - Add syntax for parsing HTML comments in Markdown as attributes to apply to rendered HTML
 - Add syntax for parsing specially formatted text inside Markdown links, images, and fenced code blocks as attributes to apply to rendered HTML
@@ -24,6 +25,7 @@
 
 - Fix for broken functionality in `AddSitemap`
 - Fix dev server not cleaning up after itself all the time
+- Fix issues where Windows paths were not correctly handled due to backslashes
 
 ## [0.6.0] - 2026-08-20
 

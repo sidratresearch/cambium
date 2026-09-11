@@ -11,7 +11,6 @@ from typing import Any, Literal, Optional, TypedDict
 from urllib.parse import urljoin
 
 import yaml
-from click import ClickException
 from pydantic import BaseModel, HttpUrl, PositiveInt
 
 from . import __version__
@@ -196,7 +195,7 @@ class WorkingConfiguration:
                 "To use the *actual* WSL directory, run `cambium --root-directory \\wsl.localhost\your\desired\path` in PowerShell. "
                 "If you would actually like to run at C:\Windows, run `cambium --root-directory C:\Windows`"
             )
-            raise ValueError(msg)
+            raise RuntimeError(msg)
 
         # Creating Path object for build directory - will always be absolute
         # Determine the build directory which will always be ignored (on

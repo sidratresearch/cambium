@@ -4,12 +4,36 @@ Configure logging for Cambium.
 Within Cambium `init_logging` function is only called in `cli.py`
 However if it gets used in other packages we may want to move it to utils?
 
-Worth noting that other external packages that use logging (e.g. astropy) use their own log configuration (or lack thereof)
+Worth noting that other external packages that use logging (e.g. astropy) use their
+own log configuration (or lack thereof)
 """
 
 import logging
 import warnings
 from typing import Any, TypeVar
+
+from rich.console import ConsoleRenderable
+from rich.logging import RichHandler
+from rich.text import Text
+
+
+class CambiumHandler(RichHandler):
+    """Customizations to the Rich log handler which colourizes output."""
+
+    def get_level_text(self, record: logging.LogRecord) -> Text:
+        """Get the formatted text to show for the log level."""
+        level_name = record.levelname
+        return Text.styled(level_name, f"logging.level.{level_name.lower()}")
+
+    def render_message(
+        self, record: logging.LogRecord, message: str
+    ) -> ConsoleRenderable:
+        """Create a Text object to display from a log message."""
+        message_text = super().render_message(record, message)
+
+        # add the source module
+        module = Text.styled(f" [{record.name}]", style="bright_black")
+        return message_text + module
 
 
 def init_logging(package: str) -> logging.Logger:
@@ -20,9 +44,7 @@ def init_logging(package: str) -> logging.Logger:
     Then, all modules (which have names "cambium.<<something>>") will inherit
     configuration
     """
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(levelname)s: %(message)s [%(name)s]")
-    handler.setFormatter(formatter)
+    handler = CambiumHandler(show_path=False, show_time=False)
 
     root_logger = logging.getLogger(package)
     root_logger.addHandler(handler)
