@@ -12,14 +12,23 @@
   --cambium-header-font-color: #f9f9f9;
   --cambium-footer-bg-color: #eeeeee;
 
-  /* Dark mode */
+  /* Dark mode black*/
   --cambium-font-color-dark: #f2f2f2;
   --cambium-bg-color-dark: #222222;
-  --cambium-accent-color-dark: #f26369;
-  --cambium-hover-color-dark: #ffbdc0;
+  /* --cambium-accent-color-dark: #f26369; #ffbdc0; #ffa3a3 #ff8c8c; */
+  --cambium-hover-color-dark: #e69c9c;
+  --cambium-accent-color-dark: #f2f2f2;
+  /* old header and footer color #333333 */
   --cambium-header-bg-color-dark: #333333;
   --cambium-header-font-color-dark: #f2f2f2;
   --cambium-footer-bg-color-dark: #333333;
+
+  /* Dark mode bluer */
+  /* --cambium-bg-color-dark: #1b2133;
+  --cambium-header-bg-color-dark: #4a4852;
+  --cambium-footer-bg-color-dark: #4a4852;
+  --cambium-accent-color-dark: #e69c9c;
+  --cambium-hover-color-dark: #f2d0d0; */
 
   /* Maple-only variables */
 
@@ -32,7 +41,6 @@
   /* Dark mode */
   --root-border-color-dark: #444444;
   --root-table-accent-color-dark: #383838;
-  --root-toggle-color-dark: #f26369;
 }
 
 /* Base elemnts */
@@ -49,6 +57,7 @@ html {
   --table-border-color: var(--root-table-border-color);
   --toggle-color: var(--root-toggle-color);
   --pf-outline-focus: var(--cambium-accent-color);
+  --warning-color: var(--cambium-accent-color);
 
   font-family: var(--cambium-font);
   background-color: var(--bg-color);
@@ -71,6 +80,7 @@ html[data-theme="dark"] {
   --border-color: var(--root-border-color-dark);
   --table-accent-color: var(--root-table-accent-color-dark);
   --toggle-color: var(--root-toggle-color-dark);
+  --warning-color: var(--cambium-hover-color-dark);
 
   body {
     --pf-outline-focus: var(--cambium-accent-color-dark);
@@ -91,6 +101,7 @@ a {
 pre:has(> code) {
   background-color: var(--footer-color);
   scrollbar-color: var(--border-color) var(--footer-color);
+  border-radius: 10px;
 }
 
 /* Callout styling */
@@ -98,8 +109,11 @@ blockquote.alert {
   padding: 1em;
   margin-top: 1em;
   margin-bottom: 1em;
+  margin-inline-start: 2em;
+  margin-inline-end: 2em;
   background-color: var(--footer-color);
   border-left: 0.5em solid var(--border-color);
+  border-radius: 10px;
 
   p {
     &:first-child {
@@ -110,7 +124,7 @@ blockquote.alert {
 
 blockquote.alert-caution,
 blockquote.alert-warning {
-  border-left: 0.5em solid var(--accent-color);
+  border-left: 0.5em solid var(--warning-color);
 }
 
 blockquote.alert-important {
@@ -165,8 +179,8 @@ div.menu-panel {
   }
 
   span {
-    transition: all 1.2s;
-    -webkit-transition: all 1.2s;
+    transition: all 0.3s;
+    -webkit-transition: all 0.3s;
     color: var(--font-color);
   }
 
@@ -179,8 +193,8 @@ div.menu-panel {
     background: var(--border-color);
     border-radius: 10px;
     width: 200px;
-    transition: all 1.2s;
-    -webkit-transition: all 1.2s;
+    transition: all 0.8s;
+    -webkit-transition: all 0.8s;
   }
 
   .toggle:has(input:checked) {
@@ -198,8 +212,8 @@ div.menu-panel {
     z-index: 1;
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
     -webkit-box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
-    transition: 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    -webkit-transition: 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    -webkit-transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
   .toggle input[type="checkbox"] {
     position: absolute;
@@ -221,9 +235,10 @@ div.menu-panel {
   }
   .toggle:has(input:checked)::before {
     left: 50%;
+    background: var(--hover-color);
   }
   .toggle:has(input:checked) .dark-txt {
-    color: var(--header-font-color);
+    color: var(--bg-color);
   }
 }
 

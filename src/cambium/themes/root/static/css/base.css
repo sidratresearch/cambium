@@ -443,10 +443,13 @@ table {
   }
 
   div.header-bar {
-    grid-template-columns: 1fr;
+    display: flex;
+    justify-content: space-between;
 
     div.header-left {
-      display: none;
+      span {
+        display: none;
+      }
     }
     div.header-centre {
       display: none;
@@ -461,6 +464,7 @@ table {
     div.header-bar {
       max-width: 100%;
       display: grid;
+      grid-template-columns: 1fr;
       row-gap: 1rem;
     }
 
@@ -475,6 +479,14 @@ table {
         white-space: wrap;
         text-overflow: unset;
         text-align: center;
+      }
+
+      span {
+        display: unset;
+      }
+
+      img {
+        display: none;
       }
     }
 
@@ -506,5 +518,9 @@ table {
   }
   footer > div {
     flex-direction: column;
+
+    div {
+      text-align: center;
+    }
   }
 }
