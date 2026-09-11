@@ -1,6 +1,5 @@
 import json
 import signal
-import sys
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -160,7 +159,8 @@ def main(
 ) -> None:
 
     # cleanup nicely if the terminal is closed
-    if sys.platform != "win32":
+    # sighup is not present on windows
+    if hasattr(signal, "SIGHUP"):
         signal.signal(signal.SIGHUP, sighup_handler)
 
     try:
@@ -185,11 +185,7 @@ def main(
             "dev_server_interval": dev_server_interval,
             "dev_server_directory": dev_directory,
         }
-        try:
-            setup_config(config_path, cli_config, verbosity_boost)
-        except AssertionError as e:
-            raise typer.BadParameter(str(e))
-
+        setup_config(config_path, cli_config, verbosity_boost)
         treespan = TreeSpan(config.current_config)
 
         if dry_run:
@@ -221,7 +217,11 @@ def setup_config(
 ) -> None:
     """Process file and command-line configuration, and set up logger."""
     yaml_config = config.read_input_configuration(config_path)
-    config.initialize_configuration(yaml_config, cli_config)
+
+    try:
+        config.initialize_configuration(yaml_config, cli_config)
+    except AssertionError as e:
+        raise typer.BadParameter(str(e))
 
     logger.setLevel(get_loglevel(config.current_config.logging_level, verbosity_boost))
 

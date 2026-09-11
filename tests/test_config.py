@@ -4,6 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
+import typer
 
 from cambium import config
 from cambium.cli import cli
@@ -75,7 +76,7 @@ def test_root_build(tmp_path: Path) -> None:
     assert config.current_config.build_dir == expected_build
 
     # root directory does not exist
-    with pytest.raises(AssertionError):
+    with pytest.raises(typer.BadParameter):
         cli.setup_config(
             config_path,
             {**cli.CLI_DEFAULTS, "root_directory": str(tmp_path / "nonexistent")},
@@ -83,13 +84,13 @@ def test_root_build(tmp_path: Path) -> None:
         )
 
     # build directory is the same as unspecified root
-    with pytest.raises(AssertionError):
+    with pytest.raises(typer.BadParameter):
         cli.setup_config(
             config_path, {**cli.CLI_DEFAULTS, "build_directory": "."}, verbosity
         )
 
     # build directory is the same as specified root
-    with pytest.raises(AssertionError):
+    with pytest.raises(typer.BadParameter):
         cli.setup_config(
             config_path,
             {
