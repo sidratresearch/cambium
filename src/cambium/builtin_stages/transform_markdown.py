@@ -9,13 +9,13 @@ from marko.block import Heading
 
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
-from ..utils.other_utils import apply_to_leaves
-from ..utils.path_utils import abs_leaf_path
-from .utils import (
+from ..utils.md_html_utils import (
     add_heading_anchors,
     get_element_text,
     markdown_to_html,
 )
+from ..utils.other_utils import apply_to_leaves
+from ..utils.path_utils import abs_leaf_path
 
 logger = logging.getLogger(__name__)
 

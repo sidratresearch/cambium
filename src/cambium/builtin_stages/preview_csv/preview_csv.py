@@ -10,6 +10,7 @@ from pydantic import PositiveInt
 
 from ...stage import Stage, StageConfig
 from ...tree import TreeSpan
+from ...utils.md_html_utils import wrap_with_div
 from ...utils.other_utils import make_jinja_environment
 from ...utils.path_utils import (
     abs_leaf_path,
@@ -17,9 +18,6 @@ from ...utils.path_utils import (
     get_relative_path_modifier,
     path_matches_patterns,
     sort_user_paths,
-)
-from ..utils import (
-    wrap_with_div,
 )
 
 logger = logging.getLogger(__name__)

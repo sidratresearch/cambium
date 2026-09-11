@@ -12,12 +12,12 @@ from slugify import slugify
 
 from ..stage import Stage
 from ..tree import TreeSpan
-from ..utils.other_utils import apply_to_leaves
-from ..utils.path_utils import abs_leaf_path, get_leaf_from_path
-from .utils import (
+from ..utils.md_html_utils import (
     fetch_leaf_from_href,
     get_element_text,
 )
+from ..utils.other_utils import apply_to_leaves
+from ..utils.path_utils import abs_leaf_path, get_leaf_from_path
 
 
 # HTML Parser

@@ -1,4 +1,6 @@
-"""Utility functions for builtin stages."""
+"""Utility functions working with markdown and HTML text."""
+
+from __future__ import annotations
 
 import copy
 import html
@@ -9,6 +11,7 @@ from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from marko import Markdown, MarkoExtension, block, inline
 from marko.element import Element
@@ -17,14 +20,16 @@ from marko.helpers import render_dispatch
 from marko.html_renderer import HTMLRenderer
 from slugify import slugify
 
-from ..tree import TreeSpan
-from ..utils.other_utils import fetch_leaf_from_href, split_respecting_quotes
+from .other_utils import fetch_leaf_from_href, split_respecting_quotes
+
+if TYPE_CHECKING:
+    from ..tree import TreeSpan
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass()
-class ElementAttributeSet:
+class _ElementAttributeSet:
     """Hold parsed contents from curly brackets.
 
     Using dataclass to make it simple to instantiate with defaults and check
@@ -37,10 +42,10 @@ class ElementAttributeSet:
     keyval_attrs: list[tuple[str, str]] = field(default_factory=list)
 
     @classmethod
-    def from_str(cls, string: str) -> "ElementAttributeSet":
+    def from_str(cls, string: str) -> "_ElementAttributeSet":
         """Parse the contents of curly braces into an `ElementAttributeSet`."""
         items = split_respecting_quotes(string, r"\s")
-        ids, result = [], ElementAttributeSet()
+        ids, result = [], _ElementAttributeSet()
 
         # regex for how a class or id can be named
         class_or_id_name = r"(\S*)"
@@ -83,7 +88,7 @@ class ElementAttributeSet:
             element.keyval_attrs = self.keyval_attrs
 
 
-class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
+class _CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
     """Custom renderer class to support Cambium-specific features."""
 
     # --------------------------------------------------------------------#
@@ -104,7 +109,7 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         def decorator(render_fn: Callable[[Element], str]) -> str:
             def wrapper(renderer: HTMLRenderer, element: Element) -> str:
                 result = render_fn(renderer, element)
-                return CambiumHTMLMixin.wrap_anything(result, tag_name)
+                return _CambiumHTMLMixin.wrap_anything(result, tag_name)
 
             return wrapper
 
@@ -151,7 +156,7 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
 
     def ensure_attributes(self, element: Element) -> None:
         """Create an empty set of attributes on `element`."""
-        ElementAttributeSet().apply_to_element(element)
+        _ElementAttributeSet().apply_to_element(element)
 
     # --------------------------------------------------------------------#
     #            Simple overrides to use custom functionality             #
@@ -250,7 +255,7 @@ def wrap_with_div(html_string: str, tag_being_wrapped: str) -> str:
 
     Utility function to be imported and used by stages.
     """
-    return CambiumHTMLMixin.wrap_anything(html_string, tag_being_wrapped)
+    return _CambiumHTMLMixin.wrap_anything(html_string, tag_being_wrapped)
 
 
 def get_element_text(element: Element) -> str:
@@ -266,23 +271,6 @@ def get_element_text(element: Element) -> str:
         else:
             content += get_element_text(child)
     return content
-
-
-def is_attr_string(string: str) -> bool:
-    """Check if a string should be parsed as a meta attribute string."""
-    return re.fullmatch(r"\{.*\}", string) is not None
-
-
-def parse_comment(comment: str) -> ElementAttributeSet | None:
-    """Parse a comment as either attributes to apply or a macro command."""
-    if not is_attr_string(comment):
-        logger.debug(f"{comment} is not a parseable comment (no brackets)")
-        return
-
-    try:
-        return ElementAttributeSet.from_str(comment[1:-1])
-    except ValueError as e:
-        raise RuntimeError(f"Error parsing comment {comment}: {e}")
 
 
 def add_heading_anchors(
@@ -320,7 +308,52 @@ def add_heading_anchors(
     return document
 
 
-def apply_inline_attributes(element: Element) -> Element:
+def markdown_to_html(
+    markdown: str,
+    tree: TreeSpan | None = None,
+    file: Path | None = None,
+    heading_id_prefix: str | None = None,
+) -> str:
+    """Main function of the TransformMarkdown stage."""
+    # WARNING: The Markdown class is not thread-safe.
+    # Create a new instance for each thread.
+    marko_object = Markdown(
+        extensions=["gfm", MarkoExtension(renderer_mixins=[_CambiumHTMLMixin])],
+        renderer=HTMLRenderer,
+    )
+
+    document = marko_object.parse(markdown)
+
+    # a macro that happens here should give back an HTML string that we can maybe
+    # wrap into a Marko HTML block
+    # to prevent macros from calling other macros we could have a sentinel value
+
+    document = _apply_comment_attributes(document)
+    document = _apply_inline_attributes(document)
+
+    if heading_id_prefix is not None:
+        document = add_heading_anchors(document, heading_id_prefix)
+
+    if file is not None:
+        document = _update_link_dests(document, file, tree)
+
+    return marko_object.render(document)
+
+
+def _parse_str_as_attrs(string: str) -> _ElementAttributeSet | None:
+    """Parse a string as a set of attributes to apply - or return None."""
+    is_attr_string = re.fullmatch(r"\{.*\}", string) is not None
+    if not is_attr_string:
+        logger.debug(f"{string} is not a parseable comment (no brackets)")
+        return
+
+    try:
+        return _ElementAttributeSet.from_str(string[1:-1])
+    except ValueError as e:
+        raise RuntimeError(f"Error parsing comment {string}: {e}")
+
+
+def _apply_inline_attributes(element: Element) -> Element:
     """Parse curly braces in certain element types as HTML attributes."""
     if isinstance(element, str):
         return element
@@ -342,7 +375,7 @@ def apply_inline_attributes(element: Element) -> Element:
         if attr_match is None:
             return element
 
-        attributes = parse_comment(attr_match.group(1).strip())
+        attributes = _parse_str_as_attrs(attr_match.group(1).strip())
         if attributes is not None:
             attributes.apply_to_element(element)
 
@@ -365,7 +398,7 @@ def apply_inline_attributes(element: Element) -> Element:
         if attr_match is None:
             return element
 
-        title, attributes = attr_match.group(1), parse_comment(
+        title, attributes = attr_match.group(1), _parse_str_as_attrs(
             attr_match.group(2).strip()
         )
         if attributes is not None:
@@ -376,12 +409,12 @@ def apply_inline_attributes(element: Element) -> Element:
         return element
 
     for child in element.children:
-        child = apply_inline_attributes(child)
+        child = _apply_inline_attributes(child)
 
     return element
 
 
-def apply_attribute_comments(document: block.Document) -> block.Document:
+def _apply_comment_attributes(document: block.Document) -> block.Document:
     """Parse HTML comments into attributes applied to the next block-level item."""
     new_document = copy.deepcopy(document)
     new_document.children = []
@@ -409,7 +442,7 @@ def apply_attribute_comments(document: block.Document) -> block.Document:
         if comment_contents is None:
             continue
 
-        attributes = parse_comment(comment_contents.group(1).strip())
+        attributes = _parse_str_as_attrs(comment_contents.group(1).strip())
 
         # skip if the comment didn't parse into attributes
         if attributes is None:
@@ -426,7 +459,7 @@ def apply_attribute_comments(document: block.Document) -> block.Document:
     return new_document
 
 
-def update_link_dests(element: Element, file: Path, tree: TreeSpan) -> Element:
+def _update_link_dests(element: Element, file: Path, tree: TreeSpan) -> Element:
     """Look for links in `element`, and ensure they point to the correct final path."""
     if isinstance(element, str):
         return element
@@ -447,38 +480,6 @@ def update_link_dests(element: Element, file: Path, tree: TreeSpan) -> Element:
             element.dest = new_dest
 
     for child in element.children:
-        child = update_link_dests(child, file, tree)
+        child = _update_link_dests(child, file, tree)
 
     return element
-
-
-def markdown_to_html(
-    markdown: str,
-    tree: TreeSpan | None = None,
-    file: Path | None = None,
-    heading_id_prefix: str | None = None,
-) -> str:
-    """Main function of the TransformMarkdown stage."""
-    # WARNING: The Markdown class is not thread-safe.
-    # Create a new instance for each thread.
-    marko_object = Markdown(
-        extensions=["gfm", MarkoExtension(renderer_mixins=[CambiumHTMLMixin])],
-        renderer=HTMLRenderer,
-    )
-
-    document = marko_object.parse(markdown)
-
-    # a macro that happens here should give back an HTML string that we can maybe
-    # wrap into a Marko HTML block
-    # to prevent macros from calling other macros we could have a sentinel value
-
-    document = apply_attribute_comments(document)
-    document = apply_inline_attributes(document)
-
-    if heading_id_prefix is not None:
-        document = add_heading_anchors(document, heading_id_prefix)
-
-    if file is not None:
-        document = update_link_dests(document, file, tree)
-
-    return marko_object.render(document)

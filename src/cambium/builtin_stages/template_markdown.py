@@ -10,9 +10,9 @@ from .. import __version__
 from ..metadata import LeafMetadata
 from ..stage import Stage
 from ..tree import TreeSpan
+from ..utils.md_html_utils import markdown_to_html
 from ..utils.other_utils import apply_to_leaves, make_jinja_environment
 from ..utils.path_utils import abs_leaf_path, get_relative_path_modifier
-from .utils import markdown_to_html
 
 logger = logging.getLogger(__name__)
 
