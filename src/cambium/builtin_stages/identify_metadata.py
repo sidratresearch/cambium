@@ -12,6 +12,7 @@ from slugify import slugify
 
 from ..stage import Stage
 from ..tree import TreeSpan
+from ..utils.path_utils import abs_leaf_path, get_leaf_from_path
 from .utils import (
     fetch_leaf_from_href,
     get_element_text,
@@ -49,7 +50,7 @@ class IdentifyMetadata(Stage):
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         extract_generic_metadata(leaf_uuid, tree)
 
-        readable_path: Path = tree.abs_leaf_path(leaf_uuid)
+        readable_path: Path = abs_leaf_path(tree, leaf_uuid)
         readable_extension: str = readable_path.suffix
 
         if readable_extension in (".md"):
@@ -72,7 +73,7 @@ class IdentifyMetadata(Stage):
 
         default_site_name = "Cambium Site"
         try:
-            index_uuid = tree.get_leaf_from_path(Path("index.html"), "final_path")
+            index_uuid = get_leaf_from_path(tree, Path("index.html"), "final_path")
             index_name = self._get_leaf_metadata("title", index_uuid, tree, "cambium")
             if index_name is not None:
                 default_site_name = index_name

@@ -9,6 +9,7 @@ from pagefind.index import IndexConfig, PagefindIndex
 
 from ...stage import Stage, StageConfig
 from ...tree import TreeSpan
+from ...utils.path_utils import abs_leaf_path, abs_static_stage_path
 
 logger = logging.getLogger(__name__)
 
@@ -73,8 +74,8 @@ class PagefindSearch(Stage):
             logger.warning("No HTML files found for Pagefind to index.")
             return
 
-        self.abs_pagefind_directory = tree.abs_static_stage_path(
-            self.__class__.__name__
+        self.abs_pagefind_directory = abs_static_stage_path(
+            tree, self.__class__.__name__
         )
         asyncio.run(self._post_tree_hook(tree, html_leaves))
 
@@ -85,7 +86,7 @@ class PagefindSearch(Stage):
         async with PagefindIndex(config=self.pagefind_config) as index:
             for uuid in html_leaves:
                 final_path = tree.leaves["final_path"][uuid]
-                content = tree.abs_leaf_path(uuid).read_text()
+                content = abs_leaf_path(tree, uuid).read_text()
                 logger.debug(
                     f"Adding {tree.leaves['initial_path'][uuid]} to Pagefind index."
                 )

@@ -14,7 +14,8 @@ from typing import Any, Literal
 
 from ...stage import Stage, StageConfig
 from ...tree import TreeSpan
-from ..utils import get_relative_path_modifier, make_jinja_environment
+from ...utils.path_utils import abs_leaf_path, get_relative_path_modifier
+from ..utils import make_jinja_environment
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class _Report:
         caller._register_hook(self.leaf_uuid, tree, "pre_hooks")
 
     def write(self, text: str, tree: TreeSpan) -> None:
-        tree.abs_leaf_path(self.leaf_uuid).write_text(text)
+        abs_leaf_path(tree, self.leaf_uuid).write_text(text)
         logger.info(f"Wrote report {self.path_in_build}")
 
 

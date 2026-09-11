@@ -7,7 +7,7 @@ import os
 import re
 import shutil
 import typing
-from collections import Counter, defaultdict, deque
+from collections import Counter, deque
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal, TypedDict
@@ -15,7 +15,11 @@ from uuid import uuid4
 
 from .exceptions import CambiumError
 from .metadata import LeafMetadata
-from .utils import walk_directory_tree
+from .utils.path_utils import (
+    leaf_final_paths,
+    make_nested_filetree,
+    walk_directory_tree,
+)
 
 if typing.TYPE_CHECKING:
     from .config import WorkingConfiguration
@@ -110,7 +114,7 @@ class TreeSpan:
     def _build_final_tree(self) -> None:
         """Generate a nested human-readable file structure for the entire output dir."""
         # generate a list of all paths
-        all_files = self.leaf_final_paths()
+        all_files = leaf_final_paths(self)
         all_directories = self.directories_in_build.copy()
 
         for static_source_dir, static_dest_dir in [
@@ -263,50 +267,6 @@ class TreeSpan:
         if path_type == "final":
             self._update_directories_in_build(updated.parent)
 
-    def abs_leaf_path(self, leaf_uuid: str) -> Path:
-        """Get the absolute path to a safe writeable location for a leaf.
-
-        If called during the tree hooks, this will *not* create that path, as the
-        filesystem is not considered writeable at that time.
-        """
-        path = self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid]
-        if self.filesystem_writeable:
-            path.parent.mkdir(parents=True, exist_ok=True)
-        return path
-
-    def abs_static_stage_path(self, stage_name: str) -> Path:
-        """Get the absolute path to a stage-specific directory in build/static.
-
-        If called during the tree hooks, this will *not* create that directory, as the
-        filesystem is not considered writeable at that time.
-        """
-        path = self.build_directory / "static" / "_cambium" / stage_name
-        if self.filesystem_writeable:
-            path.mkdir(parents=True, exist_ok=True)
-        return path.absolute()
-
-    def get_leaf_from_path(
-        self, path: Path, path_type: Literal["initial_path", "final_path"]
-    ) -> str:
-        """Fetch the leaf UUID associated with a certain path."""
-        self._validate_leaf_path(path)
-        uuids = [u for u in self.leaves["uuids"] if self.leaves[path_type][u] == path]
-
-        if len(uuids) == 0:
-            raise RuntimeError(
-                f"No leaves found with {path_type.replace('_',' ')}={path}."
-            )
-        if len(uuids) > 1:
-            raise RuntimeError(
-                f"Multiple leaves found with {path_type.replace('_',' ')}={path}."
-            )
-
-        return uuids[0]
-
-    def leaf_final_paths(self) -> list[Path]:
-        """Up-to-date listing of the final paths for all leaves."""
-        return [self.leaves["final_path"][uuid] for uuid in self.leaves["uuids"]]
-
     # ----------------------------------------------------------------#
     #                     Main Cambium functions                      #
     # ----------------------------------------------------------------#
@@ -443,7 +403,7 @@ class TreeSpan:
             logger.debug(f"Copying {from_path}->{to_path}")
             try:
                 shutil.copy(from_path, to_path)
-            except OSError as e:
+            except OSError:
                 # NOTE: really just a development thing
                 initial_path = self.leaves["initial_path"][leaf_uuid]
                 msg = f"copying leaf with initial path {initial_path} from temporary directory ({from_path}) to build directory ({to_path})"
@@ -617,42 +577,3 @@ class TreeSpan:
         for initial_path, final_path in files:
             logger.debug(f"Copying static file {initial_path} to {final_path}")
             shutil.copy(initial_path, final_path)
-
-
-def nested_dict_set(
-    dictionary: dict[Any, Any], keys: list[Any], value: Any, intermediate: Any
-) -> None:
-    """Recurse down a dictionary to set a new value."""
-    if len(keys) == 1:
-        dictionary[keys[0]] = value
-        return
-    if not dictionary[keys[0]]:
-        dictionary[keys[0]] = intermediate
-    nested_dict_set(dictionary[keys[0]], keys[1:], value, intermediate)
-
-
-def make_nested_filetree(
-    directories: list[Path], files: list[Path]
-) -> defaultdict[str, Any]:
-    """Create a nested tree structure from a list of files and directories.
-
-    Explicitly filters out anything in static/_cambium - stages can add leaves
-    into that directory which show up in `files`, but not in `directories`.
-    """
-    node = lambda: defaultdict(node)
-    tree = node()
-
-    check_string = str(Path("static/_cambium"))
-    skip = lambda path: str(path).startswith(check_string)
-    directories = [d for d in directories if not skip(d)]
-    files = [f for f in files if not skip(f)]
-
-    for d in sorted(directories):
-        keys = [p + "/" for p in d.parts]
-        nested_dict_set(tree, keys, node(), node())
-
-    for f in sorted(files):
-        keys = [p + "/" for p in f.parts[:-1]] + [f.name]
-        nested_dict_set(tree, keys, None, {})
-
-    return tree

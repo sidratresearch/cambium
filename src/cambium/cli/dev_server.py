@@ -14,7 +14,7 @@ import typer
 
 from .. import config
 from ..tree import TreeSpan
-from ..utils import walk_directory_tree
+from ..utils.path_utils import walk_directory_tree
 
 logger = logging.getLogger(__name__)
 

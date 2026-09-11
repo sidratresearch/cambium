@@ -12,7 +12,13 @@ from typing import Any
 
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
-from .utils import is_external_link, resolve_internal_path
+from ..utils.path_utils import (
+    abs_leaf_path,
+    get_leaf_from_path,
+    leaf_final_paths,
+    resolve_internal_path,
+)
+from .utils import is_external_link
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +76,7 @@ class CheckLinks(Stage):
         self.all_links = defaultdict(list)
 
         for uuid in tree.leaves["uuids"]:
-            latest_path = tree.abs_leaf_path(uuid)
+            latest_path = abs_leaf_path(tree, uuid)
             if latest_path.suffix not in (".html", ".htm"):
                 continue
 
@@ -80,7 +86,7 @@ class CheckLinks(Stage):
             self.all_links[uuid] = html_parser.links
             self.all_anchors[uuid] = html_parser.anchor_ids
 
-        self.leaf_final_paths = tree.leaf_final_paths()
+        self.leaf_final_paths = leaf_final_paths(tree)
 
     def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         links = self.all_links[leaf_uuid]
@@ -182,4 +188,4 @@ class CheckLinks(Stage):
         if dest_full in tree.directories_in_build:
             return
 
-        return tree.get_leaf_from_path(dest_full, "final_path")
+        return get_leaf_from_path(tree, dest_full, "final_path")

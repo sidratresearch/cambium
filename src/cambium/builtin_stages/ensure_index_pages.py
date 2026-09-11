@@ -7,6 +7,7 @@ from typing import Any
 
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
+from ..utils.path_utils import abs_leaf_path, get_leaf_from_path, leaf_final_paths
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class EnsureIndexPages(Stage):
 
     def _get_index_for_dir(self, directory: Path, tree: TreeSpan) -> None:
         """Ensure directory contains a leaf that will be built to index.html."""
-        final_paths = tree.leaf_final_paths()
+        final_paths = leaf_final_paths(tree)
         directory_has_index = directory / "index.html" in final_paths
         index_path_options = [directory / p for p in self.config.useable_as_index]
         option_existence = [p in final_paths for p in index_path_options]
@@ -64,7 +65,7 @@ class EnsureIndexPages(Stage):
         # cases where one readme file exists
         if sum(option_existence) == 1:
             use_as_index = index_path_options[option_existence.index(True)]
-            uuid = tree.get_leaf_from_path(use_as_index, "final_path")
+            uuid = get_leaf_from_path(tree, use_as_index, "final_path")
             if not directory_has_index:
                 self._use_as_index(uuid, tree)
             else:
@@ -75,11 +76,11 @@ class EnsureIndexPages(Stage):
         # use the first one (which is index.html if it's already there)
         if not directory_has_index:
             use_as_index = index_path_options.pop(option_existence.index(True))
-            use_uuid = tree.get_leaf_from_path(use_as_index, "final_path")
+            use_uuid = get_leaf_from_path(tree, use_as_index, "final_path")
             self._use_as_index(use_uuid, tree)
 
         extra_paths = [p for p, e in zip(index_path_options, option_existence) if e]
-        extra_uuids = [tree.get_leaf_from_path(p, "final_path") for p in extra_paths]
+        extra_uuids = [get_leaf_from_path(tree, p, "final_path") for p in extra_paths]
         self._warn_extra_index_options(directory, extra_uuids, tree)
 
     def _create_index_leaf(self, directory: Path, tree: TreeSpan) -> None:
@@ -119,11 +120,11 @@ class EnsureIndexPages(Stage):
         if leaf_uuid in self.redirects:
             destination_leaf = self.redirects[leaf_uuid]
             destination_url = tree.leaves["final_path"][destination_leaf]
-            tree.abs_leaf_path(leaf_uuid).write_text(
+            abs_leaf_path(tree, leaf_uuid).write_text(
                 f'<meta http-equiv="refresh" content="0;url={destination_url}"/>'
             )
         else:  # blank redirect page
-            tree.abs_leaf_path(leaf_uuid).write_text("")
+            abs_leaf_path(tree, leaf_uuid).write_text("")
 
     def _warn_extra_index_options(
         self, directory: Path, extra_uuids: list[str], tree: TreeSpan

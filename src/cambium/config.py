@@ -15,7 +15,7 @@ from pydantic import BaseModel, HttpUrl, PositiveInt
 
 from . import __version__
 from .stage import populate_stage_dict
-from .utils import sort_user_paths
+from .utils.path_utils import sort_user_paths
 
 # At runtime of this file the log level has not been set
 # So by default, only warnings and errors are shown

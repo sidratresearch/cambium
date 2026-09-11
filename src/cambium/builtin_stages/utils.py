@@ -5,7 +5,6 @@ import html
 import logging
 import os
 import re
-import sys
 import urllib
 from collections import Counter
 from collections.abc import Callable
@@ -21,6 +20,7 @@ from marko.html_renderer import HTMLRenderer
 from slugify import slugify
 
 from ..tree import TreeSpan
+from ..utils.path_utils import get_leaf_from_path, resolve_internal_path
 
 logger = logging.getLogger(__name__)
 
@@ -260,25 +260,6 @@ def is_external_link(dest: str) -> bool:
     return any(dest.startswith(prefix) for prefix in ["http:", "https:", "www."])
 
 
-def resolve_internal_path(
-    link: Path, parent_directory: Path, build_directory: Path
-) -> Path:
-    """Resolve internal paths as they may appear in user files.
-
-    For "../a.html" located in "[root]/b/c.html", this returns "a.html"
-    """
-    full = (build_directory / parent_directory / link).resolve()
-    build_abs = build_directory.resolve()
-    try:
-        return full.relative_to(build_abs)
-    except ValueError:
-        # definitionally both paths will be absolute
-        # so the only option is full isn't within build
-        raise RuntimeError(
-            f"Error resolving internal link `{link}`, perhaps this file is outside the root directory?"
-        )
-
-
 def fetch_leaf_from_href(
     destination: str, file_parent_directory: Path, tree: TreeSpan
 ) -> str | None:
@@ -312,7 +293,7 @@ def fetch_leaf_from_href(
     # breaks link resolution for previews
 
     try:
-        return tree.get_leaf_from_path(resolved, "initial_path")
+        return get_leaf_from_path(tree, resolved, "initial_path")
     except RuntimeError:
         # Previewer stages need to link to the downloadable file by the final path
         return
@@ -557,14 +538,6 @@ def markdown_to_html(
         document = update_link_dests(document, file, tree)
 
     return marko_object.render(document)
-
-
-def get_relative_path_modifier(final_path: Path) -> str:
-    """String to prepend to a path to get from the path up to build."""
-    modifier = "../" * len(final_path.parent.parents)
-    if sys.platform == "win32":
-        return modifier.replace("/", "\\")
-    return modifier
 
 
 def make_jinja_environment(tree: TreeSpan) -> Environment:

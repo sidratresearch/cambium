@@ -10,7 +10,8 @@ from .. import __version__
 from ..metadata import LeafMetadata
 from ..stage import Stage
 from ..tree import TreeSpan
-from .utils import get_relative_path_modifier, make_jinja_environment, markdown_to_html
+from ..utils.path_utils import abs_leaf_path, get_relative_path_modifier
+from .utils import make_jinja_environment, markdown_to_html
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ class TemplateMarkdown(Stage):
         return jinja_globals
 
     def _create_page(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        input_path = tree.abs_leaf_path(leaf_uuid)
+        input_path = abs_leaf_path(tree, leaf_uuid)
 
         template_name = "base.html.jinja"
         logger.debug(

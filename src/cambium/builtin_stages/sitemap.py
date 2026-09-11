@@ -6,6 +6,7 @@ from pathlib import Path
 
 from ..stage import Stage
 from ..tree import TreeSpan
+from ..utils.path_utils import abs_leaf_path, leaf_final_paths
 
 """
 This stage is NOT default because it requires a URL
@@ -42,7 +43,7 @@ class AddSitemap(Stage):
         We could put this in the tree hook and just assume that all html-creating
         stages are already run, but that's not necessary.
         """
-        for final_path in tree.leaf_final_paths():
+        for final_path in leaf_final_paths(tree):
             if final_path.suffix in (".html", ".htm"):
                 self.entries.append(final_path)
 
@@ -66,4 +67,11 @@ class AddSitemap(Stage):
         xml_entries.sort()
 
         sitemap_contents = sitemap_template.format(entries="\n\t  ".join(xml_entries))
-        tree.abs_leaf_path(leaf_uuid).write_text(sitemap_contents)
+        abs_leaf_path(tree, leaf_uuid).write_text(sitemap_contents)
+
+        p = Path("/tmp/touch")
+        if p.exists():
+            p.unlink()
+            raise RuntimeError("2nd dev")
+        if tree.config.dev_server:
+            p.touch()

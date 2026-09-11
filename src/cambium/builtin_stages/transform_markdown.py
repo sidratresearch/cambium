@@ -9,6 +9,7 @@ from marko.block import Heading
 
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
+from ..utils.path_utils import abs_leaf_path
 from .utils import (
     add_heading_anchors,
     get_element_text,
@@ -57,7 +58,7 @@ class TransformMarkdown(Stage):
 
     def _extract_table_of_contents(self, leaf_uuid: str, tree: TreeSpan) -> None:
         # TODO: should this be moved into IdentifyMetadata?
-        raw_data = tree.abs_leaf_path(leaf_uuid).read_text()
+        raw_data = abs_leaf_path(tree, leaf_uuid).read_text()
         md = Markdown()
         doc = add_heading_anchors(md.parse(raw_data), self.config.heading_id_prefix)
 
@@ -72,9 +73,9 @@ class TransformMarkdown(Stage):
 
     def transform(self, leaf_uuid: str, tree: TreeSpan) -> None:
         """Use Marko to write an HTML version of a markdown leaf."""
-        markdown_path = tree.abs_leaf_path(leaf_uuid)
+        markdown_path = abs_leaf_path(tree, leaf_uuid)
         tree.update_leaf_path(leaf_uuid, "latest", self._update_path)
-        html_path = tree.abs_leaf_path(leaf_uuid)
+        html_path = abs_leaf_path(tree, leaf_uuid)
 
         final_path = tree.leaves["final_path"][leaf_uuid]
         markdown = (markdown_path).read_text()

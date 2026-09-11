@@ -10,9 +10,14 @@ from pydantic import PositiveInt
 
 from ...stage import Stage, StageConfig
 from ...tree import TreeSpan
-from ...utils import path_matches_patterns, sort_user_paths
-from ..utils import (
+from ...utils.path_utils import (
+    abs_leaf_path,
+    abs_static_stage_path,
     get_relative_path_modifier,
+    path_matches_patterns,
+    sort_user_paths,
+)
+from ..utils import (
     make_jinja_environment,
     wrap_with_div,
 )
@@ -52,7 +57,7 @@ class PreviewCSV(Stage):
 
     def tree_hook(self, tree: TreeSpan) -> None:
         # get what the actual path of the CSS file will be in the build directory
-        static_dir = tree.abs_static_stage_path(self.__class__.__name__).relative_to(
+        static_dir = abs_static_stage_path(tree, self.__class__.__name__).relative_to(
             tree.build_directory
         )
         self.css_link = static_dir / self.css_file
@@ -120,7 +125,7 @@ class PreviewCSV(Stage):
                 ),
             },
         )
-        tree.abs_leaf_path(md_uuid).write_text(preview_content)
+        abs_leaf_path(tree, md_uuid).write_text(preview_content)
 
         csv_path = tree.leaves["initial_path"][md_uuid]
         tree.leaves["metadata"][md_uuid].title = csv_path.name
@@ -128,7 +133,7 @@ class PreviewCSV(Stage):
     def _pre_hook_csv(self, csv_uuid: str, tree: TreeSpan) -> None:
         md_uuid = self.csv_to_md[csv_uuid]
         csv_content = tree.leaves["initial_path"][md_uuid].read_text()
-        tree.abs_leaf_path(csv_uuid).write_text(csv_content)
+        abs_leaf_path(tree, csv_uuid).write_text(csv_content)
 
 
 def get_md_content(

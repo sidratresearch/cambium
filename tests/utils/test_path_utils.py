@@ -4,9 +4,13 @@ from pathlib import Path
 
 import pytest
 
-from cambium.utils import path_matches_patterns, sort_user_paths, walk_directory_tree
+from cambium.utils.path_utils import (
+    path_matches_patterns,
+    sort_user_paths,
+    walk_directory_tree,
+)
 
-from .test_config import default_configuration
+from ..test_config import default_configuration
 
 
 @pytest.mark.parametrize(
