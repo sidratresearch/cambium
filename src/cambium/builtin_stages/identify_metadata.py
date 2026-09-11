@@ -12,6 +12,7 @@ from slugify import slugify
 
 from ..stage import Stage
 from ..tree import TreeSpan
+from ..utils.other_utils import apply_to_leaves
 from ..utils.path_utils import abs_leaf_path, get_leaf_from_path
 from .utils import (
     fetch_leaf_from_href,
@@ -45,7 +46,7 @@ class IdentifyMetadata(Stage):
     def tree_hook(self, tree: TreeSpan) -> None:
 
         # Get all pages that should have metadata extracted
-        tree.apply_to_leaves(self._tree_hook_for_leaf)
+        apply_to_leaves(tree, self._tree_hook_for_leaf)
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         extract_generic_metadata(leaf_uuid, tree)

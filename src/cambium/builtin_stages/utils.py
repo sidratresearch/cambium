@@ -5,13 +5,11 @@ import html
 import logging
 import os
 import re
-import urllib
 from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader
 from marko import Markdown, MarkoExtension, block, inline
 from marko.element import Element
 from marko.ext import gfm
@@ -20,7 +18,7 @@ from marko.html_renderer import HTMLRenderer
 from slugify import slugify
 
 from ..tree import TreeSpan
-from ..utils.path_utils import get_leaf_from_path, resolve_internal_path
+from ..utils.other_utils import fetch_leaf_from_href, split_respecting_quotes
 
 logger = logging.getLogger(__name__)
 
@@ -255,50 +253,6 @@ def wrap_with_div(html_string: str, tag_being_wrapped: str) -> str:
     return CambiumHTMLMixin.wrap_anything(html_string, tag_being_wrapped)
 
 
-def is_external_link(dest: str) -> bool:
-    """Check if a link points to an external URL."""
-    return any(dest.startswith(prefix) for prefix in ["http:", "https:", "www."])
-
-
-def fetch_leaf_from_href(
-    destination: str, file_parent_directory: Path, tree: TreeSpan
-) -> str | None:
-    """Return the UUID of the leaf that a link points to.
-
-    Returns None if the link does not point to a leaf (as identified by initial
-    paths), or points to somewhere in the current document.
-    """
-    if is_external_link(destination):
-        return
-    if destination.startswith("#"):
-        return
-
-    # go from link contents to a Path
-    resolved = resolve_internal_path(
-        destination, file_parent_directory, tree.build_directory
-    )
-    if "#" in resolved.name:
-        resolved = resolved.with_name(resolved.name[: resolved.name.index("#")])
-    resolved = Path(urllib.parse.unquote_plus(str(resolved)))
-
-    # skip links to static files
-    if resolved.parts[0] == "static":
-        return
-
-    # skip links to directories
-    # TODO: if you link to a directory, should we:
-    # fail, warn, warn + return index.html
-    # if resolved in tree.directories_in_build:
-    #     return
-    # breaks link resolution for previews
-
-    try:
-        return get_leaf_from_path(tree, resolved, "initial_path")
-    except RuntimeError:
-        # Previewer stages need to link to the downloadable file by the final path
-        return
-
-
 def get_element_text(element: Element) -> str:
     """Get the pure text content of an element."""
     content = ""
@@ -329,16 +283,6 @@ def parse_comment(comment: str) -> ElementAttributeSet | None:
         return ElementAttributeSet.from_str(comment[1:-1])
     except ValueError as e:
         raise RuntimeError(f"Error parsing comment {comment}: {e}")
-
-
-def split_respecting_quotes(string: str, split_char: str) -> list[str]:
-    """Split `string` on every `split_char`, unless double quotes are used.
-
-    Double quotes can be escaped with a single backslash.
-    https://stackoverflow.com/a/16710842
-    """
-    pattern = "(?:[^" + split_char + r'"]|"(?:\.|[^"])*")+'
-    return re.findall(pattern, string)
 
 
 def add_heading_anchors(
@@ -538,22 +482,3 @@ def markdown_to_html(
         document = update_link_dests(document, file, tree)
 
     return marko_object.render(document)
-
-
-def make_jinja_environment(tree: TreeSpan) -> Environment:
-    """Create a new Jinja Environment with access to the loaded template directories.
-
-    Template directories include
-    - .cambium/theme/templates
-    - [user-selected theme]/templates
-    - root theme templates
-    - [stage directory]/includes/templates
-
-    See config.py for details
-    """
-    return Environment(
-        loader=FileSystemLoader(tree.config.template_directories),
-        lstrip_blocks=True,
-        trim_blocks=True,  # stops Jinja lines from being replaced with newlines
-        # if not enabled, Marko doesn't recognize the table as being a single HTMLBlock
-    )

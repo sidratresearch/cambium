@@ -12,13 +12,13 @@ from typing import Any
 
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
+from ..utils.other_utils import apply_to_leaves, is_external_link
 from ..utils.path_utils import (
     abs_leaf_path,
     get_leaf_from_path,
     leaf_final_paths,
     resolve_internal_path,
 )
-from .utils import is_external_link
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class CheckLinks(Stage):
         self.runs_before = []
 
     def tree_hook(self, tree: TreeSpan) -> None:
-        tree.apply_to_leaves(self._tree_hook_for_leaf)
+        apply_to_leaves(tree, self._tree_hook_for_leaf)
 
     def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
         final_path = tree.leaves["final_path"][leaf_uuid]

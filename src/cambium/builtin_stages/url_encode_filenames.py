@@ -12,7 +12,7 @@ from slugify import slugify
 
 from ..stage import Stage
 from ..tree import TreeSpan
-from .utils import is_external_link
+from ..utils.other_utils import is_external_link
 
 logger = logging.getLogger(__name__)
 

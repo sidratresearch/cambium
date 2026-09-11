@@ -238,15 +238,6 @@ class TreeSpan:
 
         return uuid
 
-    def apply_to_leaves(self, function: Callable[[str, TreeSpan], None]) -> None:
-        """Generic method to apply some function across all leaves.
-
-        If we support multithreading for some operations, this is where it will happen
-        Which means `function` should be thread-safe
-        """
-        for leaf_uuid in self.leaves["uuids"]:
-            function(leaf_uuid, self)
-
     def update_leaf_path(
         self,
         leaf_uuid: str,

@@ -192,8 +192,8 @@ class WorkingConfiguration:
             msg = (
                 f"Your root directory was detected as {self.root_dir.resolve()}. "
                 "This was probably unintentional and caused by running `cambium` within a Windows shell, in a WSL directory. "
-                "To use the *actual* WSL directory, run `cambium --root-directory \\wsl.localhost\your\desired\path` in PowerShell. "
-                "If you would actually like to run at C:\Windows, run `cambium --root-directory C:\Windows`"
+                r"To use the *actual* WSL directory, run `cambium --root-directory \\wsl.localhost\your\desired\path` in PowerShell. "
+                r"If you would actually like to run at C:\Windows, run `cambium --root-directory C:\Windows`"
             )
             raise RuntimeError(msg)
 

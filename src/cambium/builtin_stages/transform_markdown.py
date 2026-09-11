@@ -9,6 +9,7 @@ from marko.block import Heading
 
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
+from ..utils.other_utils import apply_to_leaves
 from ..utils.path_utils import abs_leaf_path
 from .utils import (
     add_heading_anchors,
@@ -33,7 +34,7 @@ class TransformMarkdown(Stage):
 
     def tree_hook(self, tree: TreeSpan) -> None:
         """Update final path and list of transforms for markdown leaves."""
-        tree.apply_to_leaves(self._tree_hook_for_leaf)
+        apply_to_leaves(tree, self._tree_hook_for_leaf)
 
     def _update_path(self, path: Path) -> Path:
         """Function-ize the path change."""

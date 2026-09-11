@@ -10,8 +10,9 @@ from .. import __version__
 from ..metadata import LeafMetadata
 from ..stage import Stage
 from ..tree import TreeSpan
+from ..utils.other_utils import apply_to_leaves, make_jinja_environment
 from ..utils.path_utils import abs_leaf_path, get_relative_path_modifier
-from .utils import make_jinja_environment, markdown_to_html
+from .utils import markdown_to_html
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class TemplateMarkdown(Stage):
         self.build_time_utc = datetime.datetime.now(tz=datetime.UTC)
 
         # Apply to Leaves
-        tree.apply_to_leaves(self._tree_hook_for_leaf)
+        apply_to_leaves(tree, self._tree_hook_for_leaf)
 
         # Read in special files as Jinja variables
         self.jinja_globals = self._read_jinja_globals(tree)

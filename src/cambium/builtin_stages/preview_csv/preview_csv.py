@@ -10,6 +10,7 @@ from pydantic import PositiveInt
 
 from ...stage import Stage, StageConfig
 from ...tree import TreeSpan
+from ...utils.other_utils import make_jinja_environment
 from ...utils.path_utils import (
     abs_leaf_path,
     abs_static_stage_path,
@@ -18,7 +19,6 @@ from ...utils.path_utils import (
     sort_user_paths,
 )
 from ..utils import (
-    make_jinja_environment,
     wrap_with_div,
 )
 
