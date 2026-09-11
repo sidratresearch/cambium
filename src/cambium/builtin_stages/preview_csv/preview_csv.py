@@ -12,9 +12,9 @@ from ...stage import Stage, StageConfig
 from ...tree import TreeSpan
 from ...utils import path_matches_patterns, sort_user_paths
 from ..utils import (
-    CambiumHTMLMixin,
     get_relative_path_modifier,
     make_jinja_environment,
+    wrap_with_div,
 )
 
 logger = logging.getLogger(__name__)
@@ -161,7 +161,7 @@ def get_md_content(
     return jinja_template.render(
         download_filename=download_filename,
         csv_data=csv_data,
-        cambium_wrap=CambiumHTMLMixin.wrap_anything,
+        cambium_wrap=wrap_with_div,
         csv_filesize=csv_path.stat().st_size,
         **jinja_variables,
     )

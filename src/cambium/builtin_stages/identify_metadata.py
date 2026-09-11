@@ -13,8 +13,8 @@ from slugify import slugify
 from ..stage import Stage
 from ..tree import TreeSpan
 from .utils import (
-    fetch_linked_leaf,
-    get_raw_content,
+    fetch_leaf_from_href,
+    get_element_text,
 )
 
 
@@ -140,7 +140,7 @@ def extract_md_metadata(input_path: Path, leaf_uuid: str, tree: TreeSpan) -> Non
     )
     for element in doc.children:
         if isinstance(element, Heading) and (element.level == 1):
-            tree.leaves["metadata"][leaf_uuid].title = get_raw_content(element)
+            tree.leaves["metadata"][leaf_uuid].title = get_element_text(element)
             break
         elif not (is_comment(element) or isinstance(element, BlankLine)):
             break
@@ -167,7 +167,7 @@ def fetch_all_links(
         return linked_leaves
 
     if isinstance(element, Link):
-        linked = fetch_linked_leaf(element, file_parent_directory, tree)
+        linked = fetch_leaf_from_href(element.dest, file_parent_directory, tree)
         if linked is not None:
             linked_leaves.append(linked)
 

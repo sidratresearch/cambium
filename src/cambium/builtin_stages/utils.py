@@ -247,7 +247,12 @@ class CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         )
 
 
-CambiumRenderingExtensions = MarkoExtension(renderer_mixins=[CambiumHTMLMixin])
+def wrap_with_div(html_string: str, tag_being_wrapped: str) -> str:
+    """Add a `div` around an HTML string with a Cambium-specific class.
+
+    Utility function to be imported and used by stages.
+    """
+    return CambiumHTMLMixin.wrap_anything(html_string, tag_being_wrapped)
 
 
 def is_external_link(dest: str) -> bool:
@@ -255,7 +260,7 @@ def is_external_link(dest: str) -> bool:
     return any(dest.startswith(prefix) for prefix in ["http:", "https:", "www."])
 
 
-def resolve_internal_link(
+def resolve_internal_path(
     link: Path, parent_directory: Path, build_directory: Path
 ) -> Path:
     """Resolve internal paths as they may appear in user files.
@@ -274,22 +279,22 @@ def resolve_internal_link(
         )
 
 
-def fetch_linked_leaf(
-    link_element: inline.Link, file_parent_directory: Path, tree: TreeSpan
+def fetch_leaf_from_href(
+    destination: str, file_parent_directory: Path, tree: TreeSpan
 ) -> str | None:
-    """Return the UUID of the leaf that a markdown link points to.
+    """Return the UUID of the leaf that a link points to.
 
-    Returns None if the link element does not point to a leaf (as identified
-    by initial paths), or points to somewhere in the current document.
+    Returns None if the link does not point to a leaf (as identified by initial
+    paths), or points to somewhere in the current document.
     """
-    if is_external_link(link_element.dest):
+    if is_external_link(destination):
         return
-    if link_element.dest.startswith("#"):
+    if destination.startswith("#"):
         return
 
     # go from link contents to a Path
-    resolved = resolve_internal_link(
-        link_element.dest, file_parent_directory, tree.build_directory
+    resolved = resolve_internal_path(
+        destination, file_parent_directory, tree.build_directory
     )
     if "#" in resolved.name:
         resolved = resolved.with_name(resolved.name[: resolved.name.index("#")])
@@ -313,7 +318,7 @@ def fetch_linked_leaf(
         return
 
 
-def get_raw_content(element: Element) -> str:
+def get_element_text(element: Element) -> str:
     """Get the pure text content of an element."""
     content = ""
     for child in element.children:
@@ -324,7 +329,7 @@ def get_raw_content(element: Element) -> str:
         elif isinstance(child, str):  # link titles, etc.
             content += child
         else:
-            content += get_raw_content(child)
+            content += get_element_text(child)
     return content
 
 
@@ -371,7 +376,7 @@ def add_heading_anchors(
         if hasattr(child, "id") and child.id is not None:
             continue
 
-        content = get_raw_content(child)
+        content = get_element_text(child)
         default_anchor = slugify(content)
         if len(default_anchor) == 0:
             # entirely HTML headings will result in empty anchors...
@@ -424,7 +429,7 @@ def apply_inline_attributes(element: Element) -> Element:
         and len(element.children) > 0
         and isinstance(element.children[-1], inline.RawText)
     ):
-        final_text = get_raw_content(element.children[-1])
+        final_text = get_element_text(element.children[-1])
 
         title_pattern = "(.*?)"  # non-greedily match everything
         attributes_pattern = r"(\{.*\})"  # capture including curlies
@@ -502,7 +507,7 @@ def update_link_dests(element: Element, file: Path, tree: TreeSpan) -> Element:
         return element
 
     if isinstance(element, inline.Link):
-        linked_leaf = fetch_linked_leaf(element, file.parent, tree)
+        linked_leaf = fetch_leaf_from_href(element.dest, file.parent, tree)
         if linked_leaf is not None:
             # would like to use dest_file.relative_to(parent_directory, walk_up=True)
             # but that's only available in 3.12+
@@ -532,7 +537,7 @@ def markdown_to_html(
     # WARNING: The Markdown class is not thread-safe.
     # Create a new instance for each thread.
     marko_object = Markdown(
-        extensions=["gfm", CambiumRenderingExtensions],
+        extensions=["gfm", MarkoExtension(renderer_mixins=[CambiumHTMLMixin])],
         renderer=HTMLRenderer,
     )
 

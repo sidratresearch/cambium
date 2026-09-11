@@ -12,7 +12,7 @@ from typing import Any
 
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
-from .utils import is_external_link, resolve_internal_link
+from .utils import is_external_link, resolve_internal_path
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +151,7 @@ class CheckLinks(Stage):
                 self.gave_absolute_links_warning = True
             return
 
-        dest_full = resolve_internal_link(
+        dest_full = resolve_internal_path(
             destination, file_directory, tree.build_directory
         )
 

@@ -11,7 +11,7 @@ from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
 from .utils import (
     add_heading_anchors,
-    get_raw_content,
+    get_element_text,
     markdown_to_html,
 )
 
@@ -62,7 +62,7 @@ class TransformMarkdown(Stage):
         doc = add_heading_anchors(md.parse(raw_data), self.config.heading_id_prefix)
 
         flat_toc = [
-            {"id": child.id, "text": get_raw_content(child), "level": child.level}
+            {"id": child.id, "text": get_element_text(child), "level": child.level}
             for child in doc.children
             if isinstance(child, Heading)
         ]
