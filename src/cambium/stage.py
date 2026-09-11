@@ -1,13 +1,16 @@
 """Definition and helper functions for the abstract Stage class."""
 
+from __future__ import annotations
+
 import importlib
 import logging
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel, ValidationError
 
-from .tree import TreeSpan
+if TYPE_CHECKING:
+    from .tree import TreeSpan
 
 """
 When adding a new built-in stage, add it to builtin_stages/__init__.py,
