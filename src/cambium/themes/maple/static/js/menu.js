@@ -38,26 +38,39 @@ export function attachMenuButtonListener() {
 export function themeToggle() {
   const toggle = document.getElementById("mode-toggle");
   const body = document.body;
-  const logo = document.getElementById("built-with-cambium");
+  const cambiumLogo = document.getElementById("built-with-cambium");
   const imageLight =
     "Built%20With%20Cambium%20-%20Green%20on%20Transparent.svg";
   const imageDark = "builtwithcambiumyellow.svg";
+  const siteLogo = document.getElementById("cambium-header-logo");
 
   toggle.addEventListener("change", function () {
     if (this.checked) {
       document.documentElement.setAttribute("data-theme", "dark");
       localStorage.setItem("theme", "dark");
       body.dataset.pfTheme = "dark";
-      // hange out the 'built with cambium' image
-      const basepath = getBasePathFromPath(logo.src);
-      logo.src = basepath + imageDark;
+      var siteLogoMeta = document.querySelector(
+        "meta[name='cambium-dark-logo-src']",
+      );
+      if (typeof siteLogoMeta != "undefined" && siteLogoMeta != null) {
+        siteLogo.src = siteLogoMeta.getAttribute("content");
+      }
+      // change out the 'built with cambium' image
+      const basepath = getBasePathFromPath(cambiumLogo.src);
+      cambiumLogo.src = basepath + imageDark;
     } else {
       document.documentElement.setAttribute("data-theme", "light");
       localStorage.setItem("theme", "light");
       body.dataset.pfTheme = "light";
+      var siteLogoMeta = document.querySelector(
+        "meta[name='cambium-light-logo-src']",
+      );
+      if (typeof siteLogoMeta != "undefined" && siteLogoMeta != null) {
+        siteLogo.src = siteLogoMeta.getAttribute("content");
+      }
       // change out the 'built with cambium' image
-      const basepath = getBasePathFromPath(logo.src);
-      logo.src = basepath + imageLight;
+      const basepath = getBasePathFromPath(cambiumLogo.src);
+      cambiumLogo.src = basepath + imageLight;
     }
   });
 
@@ -69,9 +82,15 @@ export function themeToggle() {
       document.documentElement.setAttribute("data-theme", "dark");
       toggle.checked = true;
       body.dataset.pfTheme = "dark";
+      var siteLogoMeta = document.querySelector(
+        "meta[name='cambium-dark-logo-src']",
+      );
+      if (typeof siteLogoMeta != "undefined" && siteLogoMeta != null) {
+        siteLogo.src = siteLogoMeta.getAttribute("content");
+      }
       // change out the 'built with cambium' image
-      const basepath = getBasePathFromPath(logo.src);
-      logo.src = basepath + imageDark;
+      const basepath = getBasePathFromPath(cambiumLogo.src);
+      cambiumLogo.src = basepath + imageDark;
     }
   });
 }
