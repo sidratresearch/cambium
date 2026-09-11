@@ -83,7 +83,7 @@ html[data-theme="dark"] {
   --warning-color: var(--cambium-hover-color-dark);
 
   body {
-    --pf-outline-focus: var(--cambium-accent-color-dark);
+    --pf-outline-focus: var(--cambium-hover-color-dark);
   }
 }
 
@@ -106,20 +106,8 @@ pre:has(> code) {
 
 /* Callout styling */
 blockquote.alert {
-  padding: 1em;
-  margin-top: 1em;
-  margin-bottom: 1em;
-  margin-inline-start: 2em;
-  margin-inline-end: 2em;
   background-color: var(--footer-color);
   border-left: 0.5em solid var(--border-color);
-  border-radius: 10px;
-
-  p {
-    &:first-child {
-      font-weight: 800;
-    }
-  }
 }
 
 blockquote.alert-caution,
@@ -192,7 +180,7 @@ div.menu-panel {
     margin-bottom: 0.2rem;
     margin-left: 2rem;
     background: var(--border-color);
-    border-radius: 10px;
+    border-radius: 5px;
     width: 200px;
     transition: all 0.8s;
     -webkit-transition: all 0.8s;
@@ -209,7 +197,7 @@ div.menu-panel {
     width: 50%;
     height: 100%;
     background: var(--accent-color);
-    border-radius: 10px;
+    border-radius: 5px;
     z-index: 1;
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
     -webkit-box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
