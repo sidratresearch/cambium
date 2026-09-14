@@ -68,10 +68,3 @@ class AddSitemap(Stage):
 
         sitemap_contents = sitemap_template.format(entries="\n\t  ".join(xml_entries))
         abs_leaf_path(tree, leaf_uuid).write_text(sitemap_contents)
-
-        p = Path("/tmp/touch")
-        if p.exists():
-            p.unlink()
-            raise RuntimeError("2nd dev")
-        if tree.config.dev_server:
-            p.touch()
