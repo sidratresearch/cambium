@@ -16,6 +16,8 @@ from rich.console import ConsoleRenderable
 from rich.logging import RichHandler
 from rich.text import Text
 
+warnings_captured = False
+
 
 class CambiumHandler(RichHandler):
     """Customizations to the Rich log handler which colourizes output."""
@@ -49,12 +51,15 @@ def init_logging(package: str) -> logging.Logger:
     root_logger = logging.getLogger(package)
     root_logger.addHandler(handler)
 
-    # also capture and format `warnings.warn()` calls
-    # these should not be used in Cambium, but may be used by dependencies
-    logging.captureWarnings(True)
-    warnings.formatwarning = formatwarning
-    warnings_logger = logging.getLogger("py.warnings")
-    warnings_logger.addHandler(handler)
+    global warnings_captured
+    if not warnings_captured:
+        # also capture and format `warnings.warn()` calls
+        # these should not be used in Cambium, but may be used by dependencies
+        logging.captureWarnings(True)
+        warnings.formatwarning = formatwarning
+        warnings_logger = logging.getLogger("py.warnings")
+        warnings_logger.addHandler(handler)
+        warnings_captured = True
 
     return root_logger
 
