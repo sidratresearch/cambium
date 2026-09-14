@@ -335,9 +335,13 @@ class TreeSpan:
     ) -> None:
         """Add additional context to leaf errors and decide whether to continue."""
         initial_path = self.leaves["initial_path"][leaf_uuid]
+        final_path = self.leaves["final_path"][leaf_uuid]
 
+        file_str = initial_path
+        if final_path != initial_path:
+            file_str = f"{initial_path} (to be built to {final_path})"
         new_exception = CambiumError(
-            f"running {hook_type[:-1]} for stage {stage_name} on file {initial_path}",
+            f"running {hook_type[:-1]} for stage {stage_name} on file {file_str}",
             cause=exception,
         )
         if self.config.fail_fast:
