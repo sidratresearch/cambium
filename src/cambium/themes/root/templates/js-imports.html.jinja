@@ -12,7 +12,7 @@
 
 {# Stage JS Files #}
 {% for  stage_metadata in metadata.stage_metadata.values() %}
-  {% if stage_metadata.cambium_js is not none %}
+  {% if stage_metadata.cambium_js is defined and stage_metadata.cambium_js is not none %}
     <script
       src="{{ relative_path_modifier }}{{ stage_metadata.cambium_js }}"
       type="module"

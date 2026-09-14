@@ -20,7 +20,7 @@
 
   {# Stage CSS Files #}
   {% for  stage_metadata in metadata.stage_metadata.values() %}
-    {% if stage_metadata.cambium_css is not none %}
+    {% if stage_metadata.cambium_css is defined and stage_metadata.cambium_css is not none %}
       <link href="{{ relative_path_modifier }}{{ stage_metadata.cambium_css }}" rel="stylesheet" />
     {% endif %}
   {% endfor %}
