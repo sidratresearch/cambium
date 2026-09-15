@@ -7,7 +7,7 @@ import re
 import urllib
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -17,6 +17,9 @@ if TYPE_CHECKING:
     from ..tree import TreeSpan
 
 logger = logging.getLogger(__name__)
+
+T = TypeVar("T")
+"""Generic class type, can be removed for Python 3.12."""
 
 
 def apply_to_leaves(tree: TreeSpan, function: Callable[[str, TreeSpan], None]) -> None:
@@ -100,3 +103,12 @@ def make_jinja_environment(tree: TreeSpan) -> Environment:
         trim_blocks=True,  # stops Jinja lines from being replaced with newlines
         # if not enabled, Marko doesn't recognize the table as being a single HTMLBlock
     )
+
+
+def get_all_subclasses(cls: T) -> set[T]:
+    """Fetch all subclasses of `cls` (not just immediate subclasses)."""
+    result = set()
+    for subclass in cls.__subclasses__():
+        result.add(subclass)
+        result.update(get_all_subclasses(subclass))
+    return result

@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel, ValidationError
 
+from .utils.other_utils import get_all_subclasses
+
 if TYPE_CHECKING:
     from .tree import TreeSpan
 
@@ -275,7 +277,7 @@ def populate_stage_dict(
     stage_dict: dict[str, Stage] = {}
 
     # Getting all subclasses of Stages
-    all_subclasses = Stage.__subclasses__()
+    all_subclasses = get_all_subclasses(Stage)
 
     # Adding stages to stage_dict if they're in the stage list:
     for tmp_stage in all_subclasses:
