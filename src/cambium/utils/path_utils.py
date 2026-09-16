@@ -237,3 +237,8 @@ def make_nested_filetree(
         _nested_dict_set(tree, keys, None, {})
 
     return tree
+
+
+def is_valid_index(path: Path) -> bool:
+    """Check if a path matches `index.html` or `index.htm` (case-sensitive)."""
+    return path.name in ("index.html", "index.htm")

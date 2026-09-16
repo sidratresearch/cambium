@@ -7,5 +7,21 @@
     {% include "header-centre.html.jinja" %}
     {% include "header-right.html.jinja" %}
   </div>
-  <nav class="menu-items">{{ menu }}</nav>
+  <nav class="menu-items">
+    {% if menu is defined %}
+      {{ menu }}
+    {% else %}
+      <ul>
+        {% if auto_menu_contents["has_index"] %}
+          <li><a href="{{ relative_path_modifier }}index.html">Home</a></li>
+        {% endif %}
+        {% for item in auto_menu_contents["links" ] %}
+          <li>
+            <a href="{{ relative_path_modifier }}{{ item['filename'] }}">{{ item['name'] }}</a>
+          </li>
+        {% endfor %}
+        <ul></ul>
+      </ul>
+    {% endif %}
+  </nav>
 </div>

@@ -3,6 +3,7 @@
 import datetime
 import logging
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -12,20 +13,26 @@ from ..stage import Stage
 from ..tree import TreeSpan
 from ..utils.md_html_utils import markdown_to_html
 from ..utils.other_utils import apply_to_leaves, make_jinja_environment
-from ..utils.path_utils import abs_leaf_path, get_relative_path_modifier
+from ..utils.path_utils import abs_leaf_path, get_relative_path_modifier, is_valid_index
 
 logger = logging.getLogger(__name__)
 
 
-class CambiumJinjaVariables(BaseModel, extra="forbid"):
+class CambiumGlobalJinjaVariables(BaseModel, extra="forbid"):
+    # sitewide items
     site_name: str
-    relative_path_modifier: str
     cambium_version: str
+    build_time_utc: datetime.datetime
+    dev_server: bool
+    auto_menu_contents: dict[str, bool | list[dict[str, str]]]
+
+
+class CambiumPageJinjaVariables(BaseModel, extra="forbid"):
+    # page specific items
+    relative_path_modifier: str
     initial_path: Path
     metadata: LeafMetadata
-    build_time_utc: datetime.datetime
     main_content: str
-    dev_server: bool
 
 
 class TemplateMarkdown(Stage):
@@ -40,7 +47,7 @@ class TemplateMarkdown(Stage):
         apply_to_leaves(tree, self._tree_hook_for_leaf)
 
         # Read in special files as Jinja variables
-        self.jinja_globals = self._read_jinja_globals(tree)
+        self.user_jinja_globals = self._get_user_jinja_globals(tree)
 
     def post_hook_initialize(self, tree: TreeSpan) -> None:
         # Initialize Jinja Environment
@@ -48,7 +55,10 @@ class TemplateMarkdown(Stage):
             f"Using Jinja template directories {[str(p) for p in tree.config.template_directories]}"
         )
         self.jinja_env = make_jinja_environment(tree)
-        self.jinja_env.globals = self.jinja_globals
+        self.jinja_env.globals = {
+            **self.user_jinja_globals,
+            **self._get_cambium_jinja_globals(tree),
+        }
 
     def post_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         self._create_page(leaf_uuid, tree)
@@ -69,7 +79,8 @@ class TemplateMarkdown(Stage):
 
         self._register_hook(leaf_uuid, tree, "post_hooks")
 
-    def _read_jinja_globals(self, tree: TreeSpan) -> dict[str, str]:
+    def _get_user_jinja_globals(self, tree: TreeSpan) -> dict[str, str]:
+        """Get user-created variables to load into Jinja globals (apply sitewide)."""
         search_path = tree.root_directory / ".cambium/jinja_variables"
         variable_paths = search_path.glob("**/*")
 
@@ -78,7 +89,10 @@ class TemplateMarkdown(Stage):
             logger.debug(f"Reading Jinja variables from {path}")
             globals_key = path.name.removesuffix(path.suffix)
 
-            if globals_key in CambiumJinjaVariables.model_fields:
+            if (
+                globals_key in CambiumPageJinjaVariables.model_fields
+                or globals_key in CambiumGlobalJinjaVariables.model_fields
+            ):
                 if globals_key != path.name:
                     msg = f"{globals_key} ({path.name})"
                 else:
@@ -97,6 +111,36 @@ class TemplateMarkdown(Stage):
             jinja_globals[globals_key] = variable
         return jinja_globals
 
+    def _get_cambium_jinja_globals(self, tree: TreeSpan) -> dict[str, Any]:
+        """Get Cambium-created variables to load into Jinja globals (apply sitewide)."""
+        jinja_globals = {
+            "cambium_version": __version__,
+            "site_name": tree.config.site_name,
+            "dev_server": tree.config.dev_server,
+            "build_time_utc": self.build_time_utc,
+        }
+
+        # Autogenerate the menu contents
+        auto_menu_contents = {"has_index": False, "links": []}
+        for leaf_uuid in tree.leaves["uuids"]:
+            title = self._get_leaf_metadata(
+                "title", leaf_uuid, tree, metadata_provider="cambium"
+            )
+            path = tree.leaves["final_path"][leaf_uuid]
+            is_top_level = len(path.parts) == 1 or (
+                len(path.parts) == 2 and is_valid_index(path)
+            )
+            is_homepage = len(path.parts) == 1 and is_valid_index(path)
+            if is_homepage:
+                auto_menu_contents["has_index"] = True
+            elif is_top_level and title is not None:
+                auto_menu_contents["links"].append(
+                    {"name": title, "filename": str(path)}
+                )
+        jinja_globals["auto_menu_contents"] = auto_menu_contents
+
+        return jinja_globals
+
     def _create_page(self, leaf_uuid: str, tree: TreeSpan) -> None:
         input_path = abs_leaf_path(tree, leaf_uuid)
 
@@ -108,18 +152,13 @@ class TemplateMarkdown(Stage):
         # Jinja does not complain in a variable is missing from the environment
         # Something to think about wrt potential stage-added items and custom themes
 
-        cambium_jinja_variables = CambiumJinjaVariables(
+        cambium_jinja_variables = CambiumPageJinjaVariables(
             # general Cambium utility items
-            cambium_version=__version__,
-            site_name=tree.config.site_name,
             relative_path_modifier=get_relative_path_modifier(
                 tree.leaves["final_path"][leaf_uuid]
             ),
             metadata=tree.leaves["metadata"][leaf_uuid],
             initial_path=tree.leaves["initial_path"][leaf_uuid],
-            dev_server=tree.config.dev_server,
-            # specialist variables created by this stage
-            build_time_utc=self.build_time_utc,
             # actual markdown content
             main_content=input_path.read_text(),
         )
