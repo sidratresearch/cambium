@@ -1,10 +1,7 @@
 {# Cambium Theme: Root #}
 
 <div class="header-left">
-  <a href="{{ relative_path_modifier }}index.html" class="header-link site-title">
-    {% if site_logo is defined %}
-      <img src="{{ site_logo }}" alt="Site logo" />
-    {% endif %}
-    {{ site_name }}
-  </a>
+  <button class="menu-open-button" id="menu-open-button" aria-label="Open site menu">
+    Menu<span></span>
+  </button>
 </div>

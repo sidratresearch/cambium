@@ -24,7 +24,8 @@ class CambiumGlobalJinjaVariables(BaseModel, extra="forbid"):
     cambium_version: str
     build_time_utc: datetime.datetime
     dev_server: bool
-    auto_menu_contents: dict[str, bool | list[dict[str, str]]]
+    auto_menu_contents: list[dict[str, str]]
+    homepage_filename: str | None
 
 
 class CambiumPageJinjaVariables(BaseModel, extra="forbid"):
@@ -113,15 +114,17 @@ class TemplateMarkdown(Stage):
 
     def _get_cambium_jinja_globals(self, tree: TreeSpan) -> dict[str, Any]:
         """Get Cambium-created variables to load into Jinja globals (apply sitewide)."""
-        jinja_globals = {
-            "cambium_version": __version__,
-            "site_name": tree.config.site_name,
-            "dev_server": tree.config.dev_server,
-            "build_time_utc": self.build_time_utc,
-        }
+        jinja_globals = CambiumGlobalJinjaVariables(
+            site_name=tree.config.site_name,
+            cambium_version=__version__,
+            build_time_utc=self.build_time_utc,
+            dev_server=tree.config.dev_server,
+            auto_menu_contents=[],
+            homepage_filename=None,
+        )
 
-        # Autogenerate the menu contents
-        auto_menu_contents = {"has_index": False, "links": []}
+        # Autogenerate the menu contents, and check for a homepage
+        auto_menu_contents = []
         for leaf_uuid in tree.leaves["uuids"]:
             title = self._get_leaf_metadata(
                 "title", leaf_uuid, tree, metadata_provider="cambium"
@@ -132,14 +135,14 @@ class TemplateMarkdown(Stage):
             )
             is_homepage = len(path.parts) == 1 and is_valid_index(path)
             if is_homepage:
-                auto_menu_contents["has_index"] = True
+                jinja_globals.homepage_filename = path.name
             elif is_top_level and title is not None:
-                auto_menu_contents["links"].append(
+                jinja_globals.auto_menu_contents.append(
                     {"name": title, "filename": str(path)}
                 )
-        jinja_globals["auto_menu_contents"] = auto_menu_contents
+        jinja_globals.auto_menu_contents = auto_menu_contents
 
-        return jinja_globals
+        return jinja_globals.model_dump()
 
     def _create_page(self, leaf_uuid: str, tree: TreeSpan) -> None:
         input_path = abs_leaf_path(tree, leaf_uuid)
