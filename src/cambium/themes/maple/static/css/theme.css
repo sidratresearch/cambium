@@ -8,8 +8,8 @@
   --cambium-font-color: #222222;
   --cambium-accent-color: #cc0000;
   --cambium-hover-color: #660000;
-  --cambium-header-bg-color: #444444;
-  --cambium-header-font-color: #f9f9f9;
+  --cambium-header-bg-color: #ffffff;
+  --cambium-header-font-color: #000000;
   --cambium-footer-bg-color: #eeeeee;
 
   /* Dark mode black*/
@@ -39,7 +39,8 @@
   --root-toggle-color: #cecece;
 
   /* Dark mode */
-  --root-border-color-dark: #444444;
+  --root-border-color-dark: #707070;
+  /* --root-border-color-dark: #444444; */
   --root-table-accent-color-dark: #383838;
 }
 
@@ -85,6 +86,13 @@ html[data-theme="dark"] {
   body {
     --pf-outline-focus: var(--cambium-hover-color-dark);
   }
+}
+
+/* pagefind */
+body {
+  --pf-border: #ffffff;
+  --pf-text-muted: #000000;
+  /* --pf-border-focus: #ffffff; */
 }
 
 h1 {
@@ -153,6 +161,7 @@ button.menu-button {
   }
 }
 
+/* Menu styling */
 div.menu-panel {
   background-color: var(--header-color);
   color: var(--header-font-color);
