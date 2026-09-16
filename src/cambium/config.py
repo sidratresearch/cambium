@@ -201,10 +201,12 @@ class WorkingConfiguration:
         # Determine the build directory which will always be ignored (on
         # build or on dev). This means that the build directory needs to be
         # valid, in order for the dev serve to run
-        build_to_ignore = self.check_output_directory(self.input_config.build_directory)
+        build_to_ignore = self.check_build_is_not_root(
+            self.input_config.build_directory
+        )
         self.build_dir = build_to_ignore
         if self.input_config.dev_server:
-            self.build_dir = self.check_output_directory(
+            self.build_dir = self.check_build_is_not_root(
                 self.input_config.dev_server_directory
             )
 
@@ -311,7 +313,7 @@ class WorkingConfiguration:
             if ext_str.startswith("."):
                 self.ignore_lists["extensions"][i] = ext_str[1:]
 
-    def check_output_directory(self, output_directory: str) -> Path:
+    def check_build_is_not_root(self, output_directory: str) -> Path:
         """Verify that the output directory (build or dev) isn't the same as root."""
         outdir = Path(output_directory)
         if not outdir.is_absolute():
