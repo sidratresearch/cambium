@@ -1,13 +1,13 @@
 function openMenu() {
   const menuPanel = document.getElementById("menu-panel");
-  menuPanel.classList.remove("hidden");
+  menuPanel.classList.add("menu-active");
   document.addEventListener("scroll", closeMenu);
   document.addEventListener("click", closeMenuIfClickedOutside);
 }
 
 function closeMenu() {
   const menuPanel = document.getElementById("menu-panel");
-  menuPanel.classList.add("hidden");
+  menuPanel.classList.remove("menu-active");
   document.removeEventListener("scroll", closeMenu);
   document.removeEventListener("click", closeMenuIfClickedOutside);
 }
@@ -21,8 +21,8 @@ function closeMenuIfClickedOutside(event) {
 }
 
 export function attachMenuButtonListener() {
-  const menuButtonOpen = document.getElementById("menu-button-open");
-  const menuButtonClose = document.getElementById("menu-button-close");
+  const menuButtonOpen = document.getElementById("menu-open-button");
+  const menuButtonClose = document.getElementById("menu-close-button");
 
   menuButtonOpen.addEventListener("click", () => {
     openMenu();

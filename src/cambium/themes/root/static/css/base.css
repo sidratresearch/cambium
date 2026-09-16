@@ -10,6 +10,10 @@
   --root-accent-color: #cc0000;
   --root-hover-color: #660000;
   --root-header-color: #444444;
+  /* Added to make menu work temporarily */
+  --font-color: var(--root-font-color);
+  --accent-color: var(--root-accent-color);
+  --bg-color: var(--root-bg-color);
 }
 
 /* Utility Styling */
@@ -144,47 +148,117 @@ div.main-content {
 header {
   background-color: var(--root-header-color);
   margin-bottom: 0.25rem;
-}
 
-div.header-bar {
-  /* Used in both header and div.menu-panel */
-  font-weight: 700;
-  color: var(--root-bg-color);
-  font-size: 1rem;
-  padding: 0.75rem 2rem;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-
-  a {
-    text-decoration: none;
+  div.header-bar {
+    font-weight: 700;
     color: var(--root-bg-color);
-    margin-top: auto;
-    margin-bottom: auto;
-  }
-  > div {
+    font-size: 1rem;
+    padding: 0.75rem 2rem;
     display: flex;
-  }
+    flex-direction: row;
+    justify-content: space-between;
 
-  div.header-left {
-    flex: 0 1 15%;
-    justify-content: start;
+    a {
+      text-decoration: none;
+      color: var(--root-bg-color);
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+    > div {
+      display: flex;
+    }
 
-    .site-title {
-      text-transform: uppercase;
-      font-size: 1.2rem;
+    div.header-left {
+      flex: 0 1 15%;
+      justify-content: start;
+    }
+
+    div.header-centre {
+      flex: 1 0 auto;
+      justify-content: center;
+      text-align: center;
+    }
+
+    div.header-right {
+      flex: 0 1 15%;
+      justify-content: end;
     }
   }
 
-  div.header-centre {
-    flex: 1 0 auto;
+  /* Menu Styling */
+  button.menu-button {
+    display: flex;
+    align-items: center;
     justify-content: center;
-    text-align: center;
+    background-color: unset;
+    border: none;
+
+    &.menu-open-button {
+      span,
+      span::before,
+      span::after {
+        position: absolute;
+        content: "";
+        width: 28px;
+        height: 2.5px;
+        background: var(--font-color);
+        border-radius: 20px;
+      }
+
+      span::before {
+        top: -8px;
+      }
+
+      span::after {
+        top: 8px;
+      }
+    }
+
+    &.menu-close-button {
+      span,
+      span::after {
+        position: absolute;
+        content: "";
+        width: 20px;
+        height: 1.5px;
+        background: var(--font-color);
+        border-radius: 20px;
+      }
+
+      span {
+        transform: rotate(-225deg);
+      }
+
+      span::after {
+        top: 0px;
+        transform: rotate(90deg);
+      }
+    }
   }
 
-  div.header-right {
-    flex: 0 1 15%;
-    justify-content: end;
+  div.menu-panel {
+    position: fixed;
+    margin: 0;
+    padding: 1em 2em;
+    top: 0;
+    bottom: 0;
+    width: 800px;
+    background-color: var(--bg-color);
+    border-right: 1px black solid;
+    z-index: 200;
+    border-left: 5px var(--accent-color);
+    transition: all ease-out 0.2s;
+    left: -2000px;
+    visibility: hidden;
+
+    display: grid;
+    grid-template-rows: 2rem auto 2.5rem;
+    row-gap: 1rem;
+
+    &.menu-active {
+      transform: translateX(2000px);
+      visibility: visible;
+    }
   }
 }
 
@@ -198,87 +272,6 @@ footer {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-  }
-}
-
-/* Menu Styling */
-button.menu-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: unset;
-  border: none;
-
-  &:hover svg {
-    fill: var(--root-accent-color);
-  }
-
-  svg {
-    width: 2rem;
-    height: 2rem;
-    fill: var(--root-bg-color);
-    transition: fill 0.25s;
-
-    &.menu-icon-inactive {
-      opacity: 0;
-    }
-  }
-}
-
-div.menu-panel {
-  max-height: 50vh;
-  position: fixed;
-  right: 0;
-  left: 0;
-  top: 0;
-
-  background-color: var(--root-header-color);
-  color: var(--root-bg-color);
-
-  transition: all 0.25s;
-
-  button.menu-button,
-  a {
-    color: var(--root-bg-color);
-  }
-
-  nav {
-    padding: 1.5rem 2rem 1.5rem;
-    padding-top: 0;
-    padding-bottom: 0;
-    min-height: 15vh; /* Expect this to get overriden, but use to show the menu location since with a new repo the menu is empty */
-
-    ul {
-      width: 100%;
-      display: flex;
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
-      flex-wrap: wrap;
-
-      li {
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
-        padding-top: 0.75rem;
-        padding-bottom: 0.75rem;
-        &:first-child {
-          padding-left: 0;
-        }
-        &:last-child {
-          padding-right: 0;
-        }
-
-        a {
-          text-decoration: none;
-          font-size: 1rem;
-          transform: all 0.25s;
-          &:hover {
-            color: var(--root-accent-color);
-            text-decoration: underline;
-          }
-        }
-      }
-    }
   }
 }
 

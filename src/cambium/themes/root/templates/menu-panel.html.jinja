@@ -2,7 +2,11 @@
 
 <div class="menu-panel" id="menu-panel">
   <div class="menu-header">
-    <button aria-label="Close site menu" id="menu-close-button" class="menu-close-button">
+    <button
+      aria-label="Close site menu"
+      id="menu-close-button"
+      class="menu-button menu-close-button"
+    >
       <span></span>
     </button>
   </div>
@@ -14,7 +18,7 @@
         {% if homepage_filename is not none %}
           <li><a href="{{ relative_path_modifier }}index.html">Home</a></li>
         {% endif %}
-        {% for item in auto_menu_contents["links" ] %}
+        {% for item in auto_menu_contents %}
           <li>
             <a href="{{ relative_path_modifier }}{{ item['filename'] }}">{{ item['name'] }}</a>
           </li>
