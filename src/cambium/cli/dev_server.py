@@ -59,7 +59,7 @@ def run_dev_server(
                     raise KeyboardInterrupt
 
                 if files_changed:
-                    tree.config.tmp_dir_obj.cleanup()  # clean up old tree
+                    tree.config.cleanup()  # clean up old tree
                     tree.config.setup_tmp_dir()  # start a new tmpdir
                     tree = TreeSpan(config.current_config)  # make new tree
                     logger.info("Re-running Cambium")

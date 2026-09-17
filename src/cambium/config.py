@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import atexit
 import importlib
 import inspect
 import logging
+import shutil
 import tempfile
 from pathlib import Path
 from typing import Any, Literal, Optional, TypedDict
@@ -260,18 +262,39 @@ class WorkingConfiguration:
         """Prefix attached to initial paths for leaves created by stages. Helps
         ensure that stage-created leaves don't collide with user-greated ones."""
 
-    def __del__(self) -> None:
+    def cleanup(self) -> None:
         """Clean up All Lingering Directories."""
         if hasattr(self, "tmp_dir_obj"):
-            self.tmp_dir_obj.cleanup()
+            try:
+                shutil.rmtree(self.tmp_dir)
+                logger.debug(f"Cleaned up temporary directory {self.tmp_dir}")
+            except FileNotFoundError:
+                logger.warning(
+                    "Temporary directory has already been removed - nothing to cleanup"
+                )
 
     def __repr__(self) -> str:
         return f"""Cambium Working Configuration:\nTemporary Directory Path: {self.tmp_dir}"""
 
     def setup_tmp_dir(self) -> None:
-        """Create and save references to a temporary directory."""
-        self.tmp_dir_obj = tempfile.TemporaryDirectory(prefix="cambium_")
-        self.tmp_dir = Path(self.tmp_dir_obj.name)
+        """Create and save reference to a temporary directory."""
+        prefix = "cambium_"
+        tmp_root = tempfile.gettempdir()
+        existing_tmp_dirs = list(Path(tmp_root).glob(f"{prefix}*"))
+        n_pre = len(existing_tmp_dirs)
+        if n_pre > 0:
+            logger.warning(
+                f"There are {n_pre} temporary Cambium directories in {tmp_root}. "
+                "If no other instances of Cambium are running, these may be left over from poorly terminated jobs. "
+                "You may wish to remove these directories manually. "
+                "A new temporary directory will be created for this run. "
+                "Pre-existing directories: "
+                + ", ".join(str(p) for p in existing_tmp_dirs)
+            )
+
+        self.tmp_dir = Path(tempfile.mkdtemp(prefix=prefix))
+        atexit.register(self.cleanup)
+        logger.debug(f"Created temporary directory at {self.tmp_dir}.")
 
     def populate_ignore_lists(self, build_to_ignore: Path) -> None:
         """Combining ignore lists and putting in appropriate dictionary."""
