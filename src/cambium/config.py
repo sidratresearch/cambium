@@ -180,9 +180,6 @@ class WorkingConfiguration:
             except (ImportError, ModuleNotFoundError) as e:
                 ImportError(f"Error importing extensions: {e}")
 
-        # Setting Temporary Directory
-        self.setup_tmp_dir()
-
         # Creating Path object for root directory and testing
         self.root_dir = Path(self.input_config.root_directory)
         assert (
@@ -262,9 +259,12 @@ class WorkingConfiguration:
         """Prefix attached to initial paths for leaves created by stages. Helps
         ensure that stage-created leaves don't collide with user-greated ones."""
 
+        # Setting Temporary Directory
+        self.setup_tmp_dir()
+
     def cleanup(self) -> None:
         """Clean up All Lingering Directories."""
-        if hasattr(self, "tmp_dir_obj"):
+        if hasattr(self, "tmp_dir"):
             try:
                 shutil.rmtree(self.tmp_dir)
                 logger.debug(f"Cleaned up temporary directory {self.tmp_dir}")
