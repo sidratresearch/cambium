@@ -4,10 +4,12 @@
 
 ### Changed
 
-- Moved incomplete documentation into a hidden folder
+- Move incomplete documentation into a hidden folder
 - Stages should add new leaves with `Stage.add_leaf()` rather than the (now renamed) `TreeSpan.add_leaf()`
 - Exceptions are now mostly handled in a two-step process, where `TreeSpan` raises a `CambiumError`, which `cli.py` converts into a `ClickException`, hiding traceback
 - Error messages are not duplicated in the log
+- Several theme elements (header, footer, default font) have been moved from root to maple
+- Reorganize utility functions
 
 ### Added
 
@@ -18,14 +20,17 @@
 - Add syntax for parsing HTML comments in Markdown as attributes to apply to rendered HTML
 - Add syntax for parsing specially formatted text inside Markdown links, images, and fenced code blocks as attributes to apply to rendered HTML
 - Add documentation page with a table of supported Markdown features
-- Add (not fully implemented, and liable to change) theme variables for `site_logo` and `site_logo_dark`
+- Add Maple theme variable `footer_text`
 - Add `extensions` configuration entry to list Python modules that Cambium should load
+- Add warning on startup if there may be unremoved temporary directories
+- Add default menu content
 
 ### Fixed
 
 - Fix for broken functionality in `AddSitemap`
 - Fix dev server not cleaning up after itself all the time
 - Fix issues where Windows paths were not correctly handled due to backslashes
+- Fix unreliable temporary directory cleanup
 
 ## [0.6.0] - 2026-08-20
 
