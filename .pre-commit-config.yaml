@@ -38,7 +38,7 @@ repos:
       - id: pytest
         name: pytest
         entry: pytest
-        types: [python]
+        types_or: [python, jinja]
         language: system
         pass_filenames: false
         stages: [pre-push]

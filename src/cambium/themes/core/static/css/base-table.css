@@ -1,0 +1,75 @@
+/* Basic Formatting for Cambium Tables */
+
+.cambium-table-holder {
+  position: relative;
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+
+  font-size: 0.8rem;
+
+  table {
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+
+    /* cell alignment from marko-added attributes */
+    th,
+    td {
+      &[align="left"] {
+        text-align: left;
+      }
+      &[align="center"] {
+        text-align: center;
+      }
+      &[align="right"] {
+        text-align: right;
+      }
+    }
+
+    th {
+      padding: 0.5rem;
+      max-width: 20rem;
+      vertical-align: bottom;
+      border-bottom: 1px solid var(--cw-border-colour);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--cw-primary-colour);
+      position: sticky;
+      top: 0;
+      background-color: var(--cw-background-colour);
+
+      &.ascending::after {
+        content: " \25BE";
+      }
+      &.descending::after {
+        content: " \25B4";
+      }
+    }
+
+    td {
+      text-align: center;
+      line-height: 1.05;
+      padding: 0.5rem;
+      max-width: 20rem;
+      vertical-align: top;
+
+      & > div.cambium-img-holder {
+        min-width: 15rem;
+        margin: 0;
+      }
+    }
+
+    tr:last-of-type td {
+      border-bottom: 1px solid var(--cw-secondary-colour);
+    }
+
+    tr:nth-child(even) {
+      background-color: var(--cw-secondary-colour);
+    }
+  }
+}
