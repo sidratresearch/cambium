@@ -1,0 +1,21 @@
+:root {
+  --cambium-font-size: 16pt;
+  --cambium-tablet-font-size: calc(var(--cambium-font-size) - 2pt);
+  --cambium-mobile-font-size: calc(var(--cambium-font-size) - 4pt);
+  --cambium-font-family: sans-serif;
+  --cambium-font-weight: 400;
+  --cambium-light-primary-colour: #587054;
+  --cambium-dark-primary-colour: oklch(
+    from var(--cambium-light-primary-colour) 75% calc(c * 0.8) h
+  );
+  --cambium-light-secondary-colour: #e8cf9e;
+  --cambium-dark-secondary-colour: #e8cf9e;
+  --cambium-light-background: white;
+  --cambium-dark-background: #222222;
+  --cambium-light-font: black;
+  --cambium-dark-font: #f9f9f9;
+
+  --cambium-border-colour: #999;
+  --cambium-tablet-breakpoint: 1000px;
+  --cambium-mobile-breakpoint: 600px;
+}
