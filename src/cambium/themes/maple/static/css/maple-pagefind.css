@@ -4,3 +4,9 @@ body {
   --pf-border-focus: var(--cw-background-colour);
   --pf-outline-focus: var(--cw-primary-colour);
 }
+
+/* Make the icon larger in header */
+:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-icon {
+  height: 1rem;
+  width: 1rem;
+}
