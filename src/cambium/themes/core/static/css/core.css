@@ -41,6 +41,15 @@ html[data-theme="dark"] {
 }
 
 /* Setting Actual Status */
+
+/* Utility Styles */
+.container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Main body styling */
 html {
   font-size: var(--cw-font-size);
   font-family: var(--cambium-font-family);
@@ -54,6 +63,15 @@ body {
   color: var(--cw-font-colour);
   min-height: 100vh;
   line-height: 1.4;
+}
+
+.main-content {
+  width: 37em;
+  padding-top: 2rem;
+  font-size: 1rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  box-sizing: border-box;
 }
 
 /* Basic text elements */
@@ -187,4 +205,12 @@ blockquote.alert-caution {
 
 blockquote.alert-warning {
   border-left: 0.5em solid #db7007;
+}
+
+/* Mobile styling */
+@media (max-width: var(--cw-mobile-breakpoint)) {
+  blockquote.alert {
+    margin-inline-start: 0rem;
+    margin-inline-end: 0rem;
+  }
 }
