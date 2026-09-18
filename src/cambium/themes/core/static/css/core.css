@@ -201,10 +201,20 @@ blockquote.alert {
 
 blockquote.alert-caution {
   border-left: 0.5em solid red;
+  p {
+    &:first-child {
+      color: red;
+    }
+  }
 }
 
 blockquote.alert-warning {
   border-left: 0.5em solid #db7007;
+  p {
+    &:first-child {
+      color: #db7007;
+    }
+  }
 }
 
 /* Mobile styling */
