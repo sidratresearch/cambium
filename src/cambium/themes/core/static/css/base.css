@@ -6,7 +6,6 @@
 
 html {
   /* Light Colours */
-
   --cw-background-colour: var(--cambium-light-background-colour);
   --cw-font-colour: var(--cambium-light-font-colour);
   --cw-primary-colour: var(--cambium-light-primary-colour);
@@ -147,6 +146,11 @@ ul {
   }
 }
 
+:is(dir, dl, menu, ol, ul) ul,
+ol {
+  margin-top: 0;
+}
+
 ul {
   list-style-type: square;
 }
@@ -160,7 +164,7 @@ ol {
 hr {
   margin-top: 1em;
   margin-bottom: 2.5em;
-  border: 1px solid var(--cw-primary-colour);
+  border: 1.5px solid var(--cw-primary-colour);
 }
 
 blockquote {
@@ -169,8 +173,9 @@ blockquote {
   font-weight: 300;
   margin-top: 2rem;
   margin-bottom: 2rem;
-  border-top: 2px solid var(--accent-color);
-  border-bottom: 2px solid var(--accent-color);
+  font-style: italic;
+  border-top: 2px solid var(--cw-primary-colour);
+  border-bottom: 2px solid var(--cw-primary-colour);
 }
 
 blockquote.alert {
@@ -181,6 +186,7 @@ blockquote.alert {
   margin-inline-end: 2em;
   font-size: 1rem;
   font-weight: 400;
+  font-style: unset;
 
   border-top: 0em;
   border-bottom: 0em;
