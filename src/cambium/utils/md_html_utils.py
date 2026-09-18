@@ -76,6 +76,21 @@ class _ElementAttributeSet:
 
         return result
 
+    @classmethod
+    def from_element(cls, element: Element) -> "_ElementAttributeSet":
+        result = _ElementAttributeSet()
+
+        if hasattr(element, "classes"):
+            result.classes = element.classes
+        if hasattr(element, "id"):
+            result.id = element.id
+        if hasattr(element, "simple_attrs"):
+            result.simple_attrs = element.simple_attrs
+        if hasattr(element, "keyval_attrs"):
+            result.keyval_attrs = element.keyval_attrs
+
+        return result
+
     def apply_to_element(self, element: Element) -> None:
         """Attach attributes to an element for rendering."""
         if not hasattr(element, "classes"):
@@ -100,7 +115,7 @@ class _CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
     def wrap_anything(cls, html_string: str, tag: str) -> str:
         """Wrap a string in a Cambium holder div."""
         css_class = cls.wrapper_class_template.format(tag=tag)
-        return f'<div class="{css_class}">{html_string}</div>'
+        return f'<div class="{css_class}">{html_string}</div>\n'
 
     @staticmethod
     def wrap_as(tag_name: str) -> Callable[..., str]:
@@ -215,8 +230,8 @@ class _CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         element.keyval_attrs.append(("href", f'"{self.escape_url(element.dest)}"'))
         return self.render_with_closing(element, "a")
 
+    # no wrap_as decorator as the use of a wrapping div is conditional
     @render_dispatch(HTMLRenderer)
-    @wrap_as("img")
     def render_image(self, element: inline.Image) -> str:
         """Use custom system for applying attributes to render images."""
         self.ensure_attributes(element)
@@ -231,7 +246,12 @@ class _CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):
         self.render = original_renderer
 
         element.keyval_attrs.append(("alt", f'"{alt}"'))
-        return self.render_self_closing(element, "img")
+
+        img = self.render_self_closing(element, "img")
+
+        if hasattr(element, "no_cambium_wrap") and element.no_cambium_wrap:
+            return img
+        return wrap_with_div(img, "img")
 
     @render_dispatch(HTMLRenderer)
     @wrap_as("table")
@@ -330,6 +350,8 @@ def markdown_to_html(
 
     document = _apply_comment_attributes(document)
     document = _apply_inline_attributes(document)
+
+    document.children = _unwrap_images(document.children)
 
     if heading_id_prefix is not None:
         document = add_heading_anchors(document, heading_id_prefix)
@@ -457,6 +479,59 @@ def _apply_comment_attributes(document: block.Document) -> block.Document:
     new_document.children.append(document.children[-1])
 
     return new_document
+
+
+def _add_no_wrap(element: Element) -> Element:
+    """Add `no_cambium_wrap` attributes to all Image elements.
+
+    Indicates to the HTMLRenderer not to include a wrapping `div`
+    """
+    if isinstance(element, (str, inline.RawText)) or not hasattr(element, "children"):
+        return element
+
+    if isinstance(element, inline.Image):
+        element.no_cambium_wrap = True
+        return element
+
+    for child in element.children:
+        child = _add_no_wrap(child)
+
+    return element
+
+
+def _unwrap_images(elements: list[Element]) -> list[Element]:
+    """Check for paragraphs that contain only images and remove the outer paragraph."""
+    new_list = []
+
+    for element in elements:
+        # print(element)
+        if (
+            isinstance(element, (str, inline.RawText))
+            or not hasattr(element, "children")
+            or isinstance(element.children, str)  # children of codespans are str
+        ):
+            new_list.append(element)
+
+        elif isinstance(element, block.Paragraph):
+            if all(
+                isinstance(child, (inline.Image, inline.LineBreak))
+                for child in element.children
+            ):
+                # do the unwrapping for an image-only paragraph
+                attrs = _ElementAttributeSet.from_element(element)
+                for child in element.children:
+                    if isinstance(child, inline.Image):
+                        attrs.apply_to_element(child)
+                    new_list.append(child)
+            else:
+                # not an image-only paragraph - add the no-wrap tag to any images
+                new_list.append(_add_no_wrap(element))
+
+        else:
+            element.children = _unwrap_images(element.children)
+            new_list.append(element)
+
+    return new_list
 
 
 def _update_link_dests(element: Element, file: Path, tree: TreeSpan) -> Element:
