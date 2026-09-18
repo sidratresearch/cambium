@@ -79,7 +79,7 @@ def test_parse_str_as_attrs(
         ),
         (
             '<!-- {data-sortable="false"} -->\n| C1  | C2  |\n| --- | --- |\n| A   | B   |\n| C   | D   |',
-            '<div class="cambium-table-holder"><table data-sortable="false">\n<thead>\n<tr>\n<th>C1</th>\n<th>C2</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>A</td>\n<td>B</td>\n</tr>\n<tr>\n<td>C</td>\n<td>D</td>\n</tr>\n</tbody></table></div>',
+            '<div class="cambium-table-holder"><table data-sortable="false">\n<thead>\n<tr>\n<th>C1</th>\n<th>C2</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>A</td>\n<td>B</td>\n</tr>\n<tr>\n<td>C</td>\n<td>D</td>\n</tr>\n</tbody></table></div>\n',
         ),
         # inline for links
         (
@@ -101,7 +101,7 @@ def test_parse_str_as_attrs(
         # inline for images
         (
             "![alt text {.image-with-alt .png}](fake.png)",
-            '<p><div class="cambium-img-holder"><img class="image-with-alt png" src="fake.png" alt="alt text" /></div></p>\n',
+            '<div class="cambium-img-holder"><img class="image-with-alt png" src="fake.png" alt="alt text" /></div>\n',
         ),
         # fenced code blocks
         (
