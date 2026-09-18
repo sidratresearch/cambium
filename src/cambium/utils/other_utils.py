@@ -11,7 +11,11 @@ from typing import TYPE_CHECKING, TypeVar
 
 from jinja2 import Environment, FileSystemLoader
 
-from ..utils.path_utils import get_leaf_from_path, resolve_internal_path
+from .path_utils import (
+    absolute_to_relative_path,
+    get_leaf_from_path,
+    resolve_internal_path,
+)
 
 if TYPE_CHECKING:
     from ..tree import TreeSpan
@@ -49,6 +53,11 @@ def fetch_leaf_from_href(
         return
     if destination.startswith("#"):
         return
+
+    if destination.startswith("/"):
+        destination = absolute_to_relative_path(destination, tree)
+        if destination is None:
+            return
 
     # go from link contents to a Path
     resolved = resolve_internal_path(

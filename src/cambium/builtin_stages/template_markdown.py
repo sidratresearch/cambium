@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from .. import __version__
 from ..metadata import LeafMetadata
-from ..stage import Stage
+from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
 from ..utils.md_html_utils import markdown_to_html
 from ..utils.other_utils import apply_to_leaves, make_jinja_environment
@@ -38,6 +38,12 @@ class CambiumPageJinjaVariables(BaseModel, extra="forbid"):
 
 class TemplateMarkdown(Stage):
     # Primary Hook Functions
+
+    def __init__(self, config_dict: dict[str, Any]) -> None:
+        self.config = StageConfig.model_validate(config_dict)
+        self.requires = []
+        self.runs_after = []
+        self.runs_before = ["CheckLinks"]
 
     def tree_hook(self, tree: TreeSpan) -> None:
 
