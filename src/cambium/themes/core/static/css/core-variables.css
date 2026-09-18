@@ -1,21 +1,29 @@
 :root {
+  /* Fonts */
   --cambium-font-size: 16pt;
   --cambium-tablet-font-size: calc(var(--cambium-font-size) - 2pt);
   --cambium-mobile-font-size: calc(var(--cambium-font-size) - 4pt);
   --cambium-font-family: sans-serif;
   --cambium-font-weight: 400;
+
+  /* Colours */
   --cambium-light-primary-colour: #587054;
   --cambium-dark-primary-colour: oklch(
     from var(--cambium-light-primary-colour) 75% calc(c * 0.8) h
   );
   --cambium-light-secondary-colour: #e8cf9e;
   --cambium-dark-secondary-colour: #e8cf9e;
-  --cambium-light-background: white;
-  --cambium-dark-background: #222222;
-  --cambium-light-font: black;
-  --cambium-dark-font: #f9f9f9;
-
+  --cambium-light-background-colour: white;
+  --cambium-dark-background-colour: #222222;
+  --cambium-light-font-colour: black;
+  --cambium-dark-font-colour: #f9f9f9;
+  --cambium-light-toggle-colour: #999;
+  --cambium-dark-toggle-colour: #a9a9a9;
+  --cambium-light-footer-colour: #595959;
+  --cambium-dark-footer-colour: #a9a9a9;
   --cambium-border-colour: #999;
+
+  /* Breakpoints */
   --cambium-tablet-breakpoint: 1000px;
   --cambium-mobile-breakpoint: 600px;
 }

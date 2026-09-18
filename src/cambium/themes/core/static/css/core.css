@@ -1,3 +1,190 @@
 @import url("core-variables.css");
 @import url("core-image.css");
 @import url("core-code.css");
+
+/* Setting Cambium Working Variables */
+
+html {
+  /* Light Colours */
+
+  --cw-background-colour: var(--cambium-light-background-colour);
+  --cw-font-colour: var(--cambium-light-font-colour);
+  --cw-primary-colour: var(--cambium-light-primary-colour);
+  --cw-secondary-colour: var(--cambium-light-secondary-colour);
+  --cw-footer-colour: var(--cambium-light-footer-colour);
+  --cw-toggle-colour: var(--cambium-light-toggle-colour);
+  --cw-border-colour: var(--cambium-border-colour);
+
+  /* Desktop Variables */
+  --cw-font-size: var(--cambium-font-size);
+
+  /* Tablet Variables */
+  @media (max-width: var(--cambium-tablet-breakpoint)) {
+    --cw-font-size: var(--cambium-tablet-font-size);
+  }
+
+  /* Mobile Variables */
+  @media (max-width: var(--cambium-mobile-breakpoint)) {
+    --cw-font-size: var(--cambium-mobile-font-size);
+  }
+}
+
+/* Dark Colours */
+html[data-theme="dark"] {
+  --cw-background-colour: var(--cambium-dark-background-colour);
+  --cw-font-colour: var(--cambium-dark-font-colour);
+  --cw-primary-colour: var(--cambium-dark-primary-colour);
+  --cw-secondary-colour: var(--cambium-dark-secondary-colour);
+  --cw-footer-colour: var(--cambium-dark-footer-colour);
+  --cw-toggle-colour: var(--cambium-dark-toggle-colour);
+  --cw-border-colour: var(--cambium-border-colour);
+}
+
+/* Setting Actual Status */
+html {
+  font-size: var(--cw-font-size);
+  font-family: var(--cambium-font-family);
+  font-weight: var(--cambiumt-font-weight);
+}
+
+body {
+  padding: 0em;
+  margin: 0em;
+  background-color: var(--cw-background-colour);
+  color: var(--cw-font-colour);
+  min-height: 100vh;
+  line-height: 1.4;
+}
+
+/* Basic text elements */
+
+a {
+  text-decoration: none;
+  color: var(--cw-primary-colour);
+  transition: all 0.25s;
+  &:hover {
+    color: var(--cw-secondary-colour);
+  }
+}
+
+h1 {
+  font-weight: 300;
+  font-size: 3.5rem;
+  margin-top: 0rem;
+  margin-bottom: 1rem;
+  line-height: 1.1;
+}
+
+h2 {
+  font-weight: 400;
+  font-size: 1.6rem;
+  margin-top: 0rem;
+  margin-bottom: 0.5rem;
+}
+
+h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 350;
+  text-transform: uppercase;
+}
+
+h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+}
+
+h5 {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+}
+
+h6 {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-top: 0;
+  margin-bottom: 0.3rem;
+}
+
+p {
+  margin-top: 0rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Lists */
+
+ol,
+ul {
+  margin-top: 0.25rem;
+  margin-bottom: 0.75rem;
+  padding-left: 1.75rem;
+  li {
+    padding-bottom: 0.25rem;
+    padding-left: 0.25rem;
+  }
+}
+
+ul {
+  list-style-type: square;
+}
+
+ol {
+  list-style-type: decimal;
+}
+
+/* Other design elements */
+
+hr {
+  margin-top: 1em;
+  margin-bottom: 2.5em;
+  border: 1px solid var(--cw-primary-colour);
+}
+
+blockquote {
+  padding: 1em 0em;
+  font-size: 1.1rem;
+  font-weight: 300;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  border-top: 2px solid var(--accent-color);
+  border-bottom: 2px solid var(--accent-color);
+}
+
+blockquote.alert {
+  padding: 1em;
+  margin-top: 2em;
+  margin-bottom: 2em;
+  margin-inline-start: 2em;
+  margin-inline-end: 2em;
+  font-size: 1rem;
+  font-weight: 400;
+
+  border-top: 0em;
+  border-bottom: 0em;
+  border-left: 0.5em solid var(--cw-primary-colour);
+
+  p {
+    &:first-child {
+      font-weight: 800;
+      color: var(--cw-primary-colour);
+      text-transform: uppercase;
+    }
+
+    &:last-child {
+      margin-bottom: 0em;
+    }
+  }
+}
+
+blockquote.alert-caution {
+  border-left: 0.5em solid red;
+}
+
+blockquote.alert-warning {
+  border-left: 0.5em solid #db7007;
+}

@@ -1,0 +1,7 @@
+@import url(core-variables.css);
+
+pre:has(> code) {
+  background-color: var(--cw-footer-colour);
+  scrollbar-color: var(--cw-border-colour) var(--cw-footer-colour);
+  border-radius: 10px;
+}
