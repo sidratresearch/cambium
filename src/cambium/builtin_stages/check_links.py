@@ -15,6 +15,7 @@ from ..tree import TreeSpan
 from ..utils.other_utils import apply_to_leaves, is_external_link
 from ..utils.path_utils import (
     abs_leaf_path,
+    absolute_to_relative_path,
     get_leaf_from_path,
     leaf_final_paths,
     resolve_internal_path,
@@ -148,14 +149,12 @@ class CheckLinks(Stage):
         tree: TreeSpan,
     ) -> str | None:
         """Verify that an internal link points to a location in final paths."""
-        # TODO: hack for current issue w/ menu
         if destination.startswith("/"):
-            if not self.gave_absolute_links_warning:
-                logger.warning(
-                    "Link checks for absolute links are not yet implemented."
-                )
-                self.gave_absolute_links_warning = True
-            return
+            new_destination = absolute_to_relative_path(destination, tree)
+            if new_destination is None:
+                logger.warning(f"Skipping link check for {destination}")
+                return
+            destination = new_destination
 
         dest_full = resolve_internal_path(
             destination, file_directory, tree.build_directory
