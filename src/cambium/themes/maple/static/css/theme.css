@@ -1,6 +1,8 @@
 /* Maple-specific styling */
 @import url(../fonts/source-sans-3VF.css);
 
-:root {
-  --root-font: "Source Sans 3 VF", sans-serif;
-}
+/* Import styling */
+@import url("maple-menu.css");
+@import url("maple-header-footer.css");
+@import url("maple-light-dark-toggle.css");
+@import url("maple-pagefind.css");

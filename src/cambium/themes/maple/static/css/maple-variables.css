@@ -1,0 +1,15 @@
+:root {
+  --cambium-font-family: "Source Sans 3 VF", sans-serif;
+
+  /* Colours */
+  --cambium-light-primary-colour: indianred;
+  --cambium-dark-primary-colour: oklch(
+    from var(--cambium-light-primary-colour) 75% calc(c * 0.8) h
+  );
+  --cambium-light-secondary-colour: oklch(
+    from var(--cambium-light-primary-colour) 65% calc(c * 1.1) h
+  );
+  --cambium-dark-secondary-colour: oklch(
+    from var(--cambium-dark-primary-colour) 80% calc(c * 0.9) h
+  );
+}

@@ -1,0 +1,125 @@
+/* Menu Body Styling */
+menu {
+  position: fixed;
+  margin: 0;
+  padding: 1em 2em;
+  top: 0;
+  bottom: 0;
+  width: 800px;
+  background-color: var(--cw-background-colour);
+  border-right: 1px var(--cw-font-colour) solid;
+  z-index: 200;
+  border-left: 5px var(--cw-primary-colour);
+  transition: all ease-out 0.2s;
+  left: -2000px;
+  visibility: hidden;
+
+  display: grid;
+  grid-template-rows: 2rem auto 2.5rem;
+  row-gap: 1rem;
+
+  .site-title {
+    display: none;
+  }
+
+  .menu-items {
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-color: var(--cw-border-colour) var(--cw-background-colour);
+
+    ul {
+      padding: 0rem 1rem;
+      list-style-type: none;
+
+      li {
+        margin-bottom: 1.75rem;
+        font-size: 2rem;
+        line-height: 0.99;
+        font-weight: 300;
+
+        &:hover {
+          color: var(--cw-primary-colour);
+          transition: all 0.2s;
+        }
+      }
+
+      li:last-of-type {
+        margin-bottom: 2em;
+      }
+    }
+  }
+
+  .menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+
+  .menu-footer {
+    padding-top: 0.5em;
+  }
+}
+
+/* Menu Close Button Styling */
+.menu-close-button {
+  position: relative;
+  height: 20px;
+  width: 20px;
+  outline: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-width: 0px;
+  text-align: left;
+  padding: 0;
+  background-color: unset;
+
+  span,
+  span::after {
+    position: absolute;
+    content: "";
+    width: 20px;
+    height: 1.5px;
+    background: var(--cw-font-colour);
+    border-radius: 20px;
+  }
+
+  span {
+    transform: rotate(-225deg);
+  }
+
+  span::after {
+    top: 0px;
+    transform: rotate(90deg);
+  }
+}
+
+/* Screen Styling */
+.screen-shade {
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px) saturate(75%);
+  transition: all ease-in-out 0.1s;
+  visibility: hidden;
+  opacity: 0;
+}
+
+/* Active styles */
+
+.screen-shade-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.menu-active {
+  transform: translateX(2000px);
+  visibility: visible;
+}

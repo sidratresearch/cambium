@@ -1,0 +1,6 @@
+body {
+  --pf-border: var(--cw-background-colour);
+  --pf-text-muted: var(--cw-font-colour);
+  --pf-border-focus: var(--cw-background-colour);
+  --pf-outline-focus: var(--cw-primary-colour);
+}
