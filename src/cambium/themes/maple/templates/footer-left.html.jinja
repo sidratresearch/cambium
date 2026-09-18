@@ -1,3 +1,9 @@
 {# Cambium Theme: Maple #}
 
-<div class="footer-left">{{ site_name }} {{ build_time_utc.year }}</div>
+<div class="footer-left">
+  {% if footer_text is defined %}
+    {{ footer_text }}
+  {% else %}
+    {{ site_name ~ " " ~ build_time_utc.year }}
+  {% endif %}
+</div>
