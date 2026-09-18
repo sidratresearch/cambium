@@ -226,6 +226,9 @@ blockquote.alert-warning {
 
 /* Mobile styling */
 @media (max-width: var(--cw-mobile-breakpoint)) {
+  .main-content {
+    max-width: 90vw;
+  }
   blockquote.alert {
     margin-inline-start: 0rem;
     margin-inline-end: 0rem;
