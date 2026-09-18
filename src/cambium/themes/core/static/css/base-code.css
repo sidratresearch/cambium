@@ -1,4 +1,4 @@
-@import url(core-variables.css);
+@import url(base-variables.css);
 
 pre:has(> code) {
   background-color: var(--cw-footer-colour);
