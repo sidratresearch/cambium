@@ -1,0 +1,5 @@
+{% if footer_text is defined %}
+  {{ footer_text }}
+{% else %}
+  {{ site_name ~ " " ~ build_time_utc.year }}
+{% endif %}

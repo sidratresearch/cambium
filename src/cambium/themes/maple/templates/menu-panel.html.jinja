@@ -31,6 +31,6 @@
       <span data-light class="light-mode-icon"> {% include "icon-light-mode.html.jinja" %} </span>
       <span data-dark class="dark-mode-icon">{% include "icon-dark-mode.html.jinja" %}</span>
     </button>
-    <div class="menu-copyright">Copyright {{ build_time_utc.year }}</div>
+    <div class="menu-copyright">{% include "copyright-text.html.jinja" %}</div>
   </div>
 </div>
