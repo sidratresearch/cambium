@@ -35,6 +35,8 @@ builtin_paths_to_ignore: list[str] = [
 ]
 """Built-in Cambium Directories to Ignore"""
 
+underlying_theme_name = "core"
+"""Theme files which are always used (unless overridden)."""
 
 current_config: Optional[WorkingConfiguration] = None
 """Globally importable reference to the mutable runtime configuration."""
@@ -224,6 +226,10 @@ class WorkingConfiguration:
         )
 
         # Save lists of theme directories
+        if self.input_config.theme == underlying_theme_name:
+            logger.warning(
+                f"Selected theme is {underlying_theme_name}. This is a minimal styleset not intended for use as a full theme."
+            )
         builtin_themes_directory = Path(__file__).parent / "themes"
         selected_theme_directory = builtin_themes_directory / self.input_config.theme
         # TODO: allow for installed themes
@@ -367,7 +373,7 @@ class WorkingConfiguration:
             self.template_directories.append(selected_theme)
 
         self.template_directories.append(
-            builtin_themes_directory / "root" / "templates"
+            builtin_themes_directory / underlying_theme_name / "templates"
         )
 
         for stage_name, stage_instance in self.stage_dict.items():
@@ -392,7 +398,7 @@ class WorkingConfiguration:
 
         # Set theme-based static dirs
         self.static_directories["theme"].append(
-            (builtin_themes_directory / "root" / "static", dest)
+            (builtin_themes_directory / underlying_theme_name / "static", dest)
         )
 
         theme_static_dir = selected_theme_directory / "static"
