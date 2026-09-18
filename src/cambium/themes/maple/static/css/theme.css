@@ -1,1 +1,6 @@
 /* Maple-specific styling */
+@import url(../fonts/source-sans-3VF.css);
+
+:root {
+  --root-font: "Source Sans 3 VF", sans-serif;
+}

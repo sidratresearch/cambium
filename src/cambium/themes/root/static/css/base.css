@@ -1,9 +1,7 @@
 /* Default Styles for Cambium */
 
-@import url(../fonts/source-sans-3VF.css);
-
 :root {
-  --root-font: "Source Sans 3 VF", sans-serif;
+  --root-font: sans-serif;
   --root-bg-color: #f9f9f9;
   --root-font-color: #222222;
   --root-font-size: 14pt;
