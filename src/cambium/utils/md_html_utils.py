@@ -504,7 +504,6 @@ def _unwrap_images(elements: list[Element]) -> list[Element]:
     new_list = []
 
     for element in elements:
-        # print(element)
         if (
             isinstance(element, (str, inline.RawText))
             or not hasattr(element, "children")

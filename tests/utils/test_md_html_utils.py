@@ -99,14 +99,7 @@ def test_img_wrapping(markdown: str, expected: str) -> None:
     surrounding text, in a <p>; while images which should be separate from
     text get a <div> instead.
     """
-    actual = markdown_to_html(markdown, heading_id_prefix="")
-    print("\n\nInput")
-    print(markdown)
-    print("---\nActual")
-    print(actual)
-    print("---\n Expected")
-    print(expected)
-    assert actual == expected
+    assert markdown_to_html(markdown, heading_id_prefix="") == expected
 
 
 @pytest.mark.parametrize(
