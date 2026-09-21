@@ -94,13 +94,13 @@ class _ElementAttributeSet:
     def apply_to_element(self, element: Element) -> None:
         """Attach attributes to an element for rendering."""
         if not hasattr(element, "classes"):
-            element.classes = self.classes
+            element.classes = self.classes.copy()
         if not hasattr(element, "id"):
             element.id = self.id
         if not hasattr(element, "simple_attrs"):
-            element.simple_attrs = self.simple_attrs
+            element.simple_attrs = self.simple_attrs.copy()
         if not hasattr(element, "keyval_attrs"):
-            element.keyval_attrs = self.keyval_attrs
+            element.keyval_attrs = self.keyval_attrs.copy()
 
 
 class _CambiumHTMLMixin(gfm.renderer.GFMRendererMixin):

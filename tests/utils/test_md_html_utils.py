@@ -60,6 +60,58 @@ def test_parse_str_as_attrs(
 @pytest.mark.parametrize(
     ("markdown", "expected"),
     [
+        (
+            # image on its own gets wrapped
+            "![alt](./image.png)",
+            '<div class="cambium-img-holder"><img src="./image.png" alt="alt" /></div>\n',
+        ),
+        (
+            # image bounded by blank lines (no text) gets wrapped
+            "\n![alt](./image.png)\n",
+            '<div class="cambium-img-holder"><img src="./image.png" alt="alt" /></div>\n',
+        ),
+        (
+            # multiple images bounded by blank lines (no text) get wrapped
+            "\n![alt](./image.png)![alt2](./image2.png)\n",
+            '<div class="cambium-img-holder"><img src="./image.png" alt="alt" /></div>\n<div class="cambium-img-holder"><img src="./image2.png" alt="alt2" /></div>\n',
+        ),
+        (
+            # image bounded by paragraphs (with blank lines) gets wrapped
+            "p1\n\n![alt](./image.png)\n\np2",
+            '<p>p1</p>\n<div class="cambium-img-holder"><img src="./image.png" alt="alt" /></div>\n<p>p2</p>\n',
+        ),
+        (
+            # inline image does not get wrapped
+            "pre text ![alt](./image.png) post text",
+            '<p>pre text <img src="./image.png" alt="alt" /> post text</p>\n',
+        ),
+        (
+            # inline image with single line break does not get wrapped
+            "pre text\n![alt](./image.png)\npost text",
+            '<p>pre text\n<img src="./image.png" alt="alt" />\npost text</p>\n',
+        ),
+    ],
+)
+def test_img_wrapping(markdown: str, expected: str) -> None:
+    """Whether or not img tags get wrapped with a div or p depends on their placement.
+
+    We want to ensure that inline-type images get wrapped, with their
+    surrounding text, in a <p>; while images which should be separate from
+    text get a <div> instead.
+    """
+    actual = markdown_to_html(markdown, heading_id_prefix="")
+    print("\n\nInput")
+    print(markdown)
+    print("---\nActual")
+    print(actual)
+    print("---\n Expected")
+    print(expected)
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    ("markdown", "expected"),
+    [
         # preceding comments
         (
             "<!-- {#custom-header-id} -->\n## Header with a custom ID",
