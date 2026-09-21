@@ -13,3 +13,8 @@ body[data-pf-theme="dark"] {
   height: 28px;
   width: 28px;
 }
+
+/* Border radius of the entire search results modal */
+:is(*, #\#):is(*, #\#):is(*, #\#) dialog.pf-modal {
+  border-radius: var(--pf-border-radius);
+}
