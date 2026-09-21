@@ -7,7 +7,7 @@ import re
 import urllib
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Literal, TypeVar
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -39,50 +39,6 @@ def apply_to_leaves(tree: TreeSpan, function: Callable[[str, TreeSpan], None]) -
 def is_external_link(dest: str) -> bool:
     """Check if a link points to an external URL."""
     return any(dest.startswith(prefix) for prefix in ["http:", "https:", "www."])
-
-
-def fetch_leaf_from_href(
-    destination: str, file_parent_directory: Path, tree: TreeSpan
-) -> str | None:
-    """Return the UUID of the leaf that a link points to.
-
-    Returns None if the link does not point to a leaf (as identified by initial
-    paths), or points to somewhere in the current document.
-    """
-    if is_external_link(destination):
-        return
-    if destination.startswith("#"):
-        return
-
-    if destination.startswith("/"):
-        destination = absolute_to_relative_path(destination, tree)
-        if destination is None:
-            return
-
-    # go from link contents to a Path
-    resolved = resolve_internal_path(
-        destination, file_parent_directory, tree.build_directory
-    )
-    if "#" in resolved.name:
-        resolved = resolved.with_name(resolved.name[: resolved.name.index("#")])
-    resolved = Path(urllib.parse.unquote_plus(str(resolved)))
-
-    # skip links to static files
-    if resolved.parts[0] == "static":
-        return
-
-    # skip links to directories
-    # TODO: if you link to a directory, should we:
-    # fail, warn, warn + return index.html
-    # if resolved in tree.directories_in_build:
-    #     return
-    # breaks link resolution for previews
-
-    try:
-        return get_leaf_from_path(tree, resolved, "initial_path")
-    except RuntimeError:
-        # Previewer stages need to link to the downloadable file by the final path
-        return
 
 
 def split_respecting_quotes(string: str, split_char: str) -> list[str]:
@@ -121,3 +77,57 @@ def get_all_subclasses(cls: T) -> set[T]:
         result.add(subclass)
         result.update(get_all_subclasses(subclass))
     return result
+
+
+def _get_path_from_href(
+    destination: str, file_parent_directory: Path, tree: TreeSpan
+) -> Path:
+    """Convert a string which references another file into a root-relative Path."""
+    # HACK? "../index.html" and "..\index.html" become "..%5Cindex.html" when
+    # parsing UTF-8 files on Windows. So just convert all of them to "/"
+    destination = destination.replace("%5C", "/")
+    resolved = resolve_internal_path(
+        destination, file_parent_directory, tree.build_directory
+    )
+    if "#" in resolved.name:
+        resolved = resolved.with_name(resolved.name[: resolved.name.index("#")])
+    return Path(urllib.parse.unquote_plus(str(resolved)))
+
+
+def get_href_destination(
+    href: str,
+    href_type: Literal["initial_path", "final_path"],
+    source_uuid: str,
+    tree: TreeSpan,
+) -> tuple[Literal["external", "static", "unknown absolute", "internal"], str | None]:
+    """Identify where a given href-like string leads."""
+    href = href.split("#", maxsplit=1)[0]
+
+    if href == "":
+        return "internal", source_uuid
+
+    if is_external_link(href):
+        return "external", None
+
+    destination = href
+    if destination.startswith("/"):
+        destination = absolute_to_relative_path(destination, tree)
+        if destination is None:
+            return "unknown absolute", None
+
+    # go from link contents to a Path
+    source_directory = tree.leaves["final_path"][source_uuid].parent
+    resolved = _get_path_from_href(destination, source_directory, tree)
+
+    # skip links to static files
+    if len(resolved.parts) > 0 and resolved.parts[0] == "static":
+        return "static", None
+
+    try:
+        uuid = get_leaf_from_path(tree, resolved, href_type)
+    except RuntimeError as e:
+        logger.debug(
+            f"Resolved path {resolved} could not be identified as a path of type {href_type}. Error: {e}"
+        )
+        uuid = None
+    return "internal", uuid
