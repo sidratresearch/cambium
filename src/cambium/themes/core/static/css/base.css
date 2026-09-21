@@ -7,12 +7,15 @@
 
 html {
   /* Light Colours */
-  --cw-background-colour: var(--cambium-light-background-colour);
-  --cw-font-colour: var(--cambium-light-font-colour);
-  --cw-primary-colour: var(--cambium-light-primary-colour);
-  --cw-secondary-colour: var(--cambium-light-secondary-colour);
-  --cw-footer-colour: var(--cambium-light-footer-colour);
-  --cw-border-colour: var(--cambium-border-colour);
+  --cw-background-colour: var(--cambium-background-colour-light);
+  --cw-secondary-background-colour: var(
+    --cambium-secondary-background-colour-light
+  );
+  --cw-font-colour: var(--cambium-font-colour-light);
+  --cw-primary-colour: var(--cambium-primary-colour-light);
+  --cw-secondary-colour: var(--cambium-secondary-colour-light);
+  --cw-secondary-font-colour: var(--cambium-secondary-font-colour-light);
+  --cw-border-colour: var(--cambium-border-colour-light);
 
   /* Desktop Variables */
   --cw-font-size: var(--cambium-font-size);
@@ -30,12 +33,15 @@ html {
 
 /* Dark Colours */
 html[data-theme="dark"] {
-  --cw-background-colour: var(--cambium-dark-background-colour);
-  --cw-font-colour: var(--cambium-dark-font-colour);
-  --cw-primary-colour: var(--cambium-dark-primary-colour);
-  --cw-secondary-colour: var(--cambium-dark-secondary-colour);
-  --cw-footer-colour: var(--cambium-dark-footer-colour);
-  --cw-border-colour: var(--cambium-border-colour);
+  --cw-background-colour: var(--cambium-background-colour-dark);
+  --cw-secondary-background-colour: var(
+    --cambium-secondary-background-colour-dark
+  );
+  --cw-font-colour: var(--cambium-font-colour-dark);
+  --cw-primary-colour: var(--cambium-primary-colour-dark);
+  --cw-secondary-colour: var(--cambium-secondary-colour-dark);
+  --cw-secondary-font-colour: var(--cambium-secondary-font-colour-dark);
+  --cw-border-colour: var(--cambium-border-colour-dark);
 }
 
 /* Setting Actual Status */

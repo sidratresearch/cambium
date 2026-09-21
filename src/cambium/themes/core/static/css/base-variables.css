@@ -36,10 +36,6 @@
   --cambium-caution-colour-light: red;
   --cambium-caution-colour-dark: red;
 
-  /* Move these to Maple  */
-  --cambium-toggle-colour-light: #999;
-  --cambium-toggle-colour-dark: #a9a9a9;
-
   /* Breakpoints */
   --cambium-tablet-breakpoint: 1000px;
   --cambium-mobile-breakpoint: 600px;

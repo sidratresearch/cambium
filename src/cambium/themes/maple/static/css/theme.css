@@ -10,10 +10,10 @@
 
 /* Light Colours */
 html {
-  --cw-toggle-colour: var(--cambium-light-toggle-colour);
+  --cw-toggle-colour: var(--cambium-toggle-colour-light);
 }
 
 /* Dark Colours */
 html[data-theme="dark"] {
-  --cw-toggle-colour: var(--cambium-dark-toggle-colour);
+  --cw-toggle-colour: var(--cambium-toggle-colour-dark);
 }

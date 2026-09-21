@@ -1,20 +1,32 @@
 body,
 body[data-pf-theme="dark"] {
+  --pf-font: var(--cambium-font-family);
   --pf-border: var(--cw-background-colour);
   --pf-text-muted: var(--cw-font-colour);
   --pf-border-focus: var(--cw-background-colour);
   --pf-outline-focus: var(--cw-primary-colour);
   --pf-background: var(--cw-background-colour);
   --pf-border-radius: 0px;
+  --pf-input-font-size: 0.9rem;
+  --pf-results-gap: 1rem;
+  --pf-result-title-font-size: 1rem;
+  --pf-result-excerpt-font-size: 0.8rem;
 }
 
 /* Make the icon larger in header */
 :is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-icon {
-  height: 28px;
-  width: 28px;
+  height: 25px;
+  width: 25px;
 }
 
 /* Border radius of the entire search results modal */
 :is(*, #\#):is(*, #\#):is(*, #\#) dialog.pf-modal {
   border-radius: var(--pf-border-radius);
+}
+
+@media (max-width: 600px) {
+  body,
+  body[data-pf-theme="dark"] {
+    --pf-input-font-size: 16px;
+  }
 }

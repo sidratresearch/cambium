@@ -1,8 +1,8 @@
 @import url(base-variables.css);
 
 pre:has(> code) {
-  background-color: var(--cw-footer-colour);
-  scrollbar-color: var(--cw-border-colour) var(--cw-footer-colour);
+  background-color: var(--cw-secondary-background-colour);
+  scrollbar-color: var(--cw-border-colour) var(--cw-secondary-font-colour);
   padding: 1rem 1rem 0.2rem;
   overflow-x: scroll;
 }

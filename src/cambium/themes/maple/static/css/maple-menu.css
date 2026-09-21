@@ -60,7 +60,7 @@
     padding-top: 0.5em;
     align-items: center;
     font-size: 0.7rem;
-    color: var(--cw-footer-colour);
+    color: var(--cw-secondary-font-colour);
     padding-left: 1rem;
     justify-content: start;
   }
@@ -85,9 +85,9 @@
     position: absolute;
     content: "";
     width: 20px;
-    height: 1.5px;
+    height: 2.5px;
     background: var(--cw-font-colour);
-    border-radius: 20px;
+    /* border-radius: 20px; */
   }
 
   span {
@@ -97,6 +97,13 @@
   span::after {
     top: 0px;
     transform: rotate(90deg);
+  }
+
+  &:hover {
+    span,
+    span::after {
+      background: var(--cw-primary-colour);
+    }
   }
 }
 

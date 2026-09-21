@@ -68,7 +68,7 @@
     width: 28px;
     height: 2.5px;
     background: var(--cw-font-colour);
-    border-radius: 20px;
+    /* border-radius: 20px; */
   }
 
   span::before {
@@ -78,6 +78,14 @@
   span::after {
     top: 8px;
   }
+
+  &:hover {
+    span,
+    span::before,
+    span::after {
+      background: var(--cw-primary-colour);
+    }
+  }
 }
 
 /* Footer */
@@ -85,7 +93,7 @@ footer {
   padding: 1rem 2em;
   margin-top: 5rem;
   border-top: 1px var(--cw-border-colour) solid;
-  color: var(--cw-footer-colour);
+  color: var(--cw-secondary-font-colour);
   border-bottom: 7px var(--cw-primary-colour) solid;
 
   .footer-container {
@@ -96,7 +104,7 @@ footer {
     margin-left: auto;
     margin-right: auto;
     font-size: 0.8rem;
-    gap: 3rem;
+    gap: 5rem;
   }
 
   img {
@@ -116,6 +124,7 @@ footer {
     align-items: center;
     min-width: 7rem;
     white-space: nowrap;
+    cursor: pointer;
 
     svg {
       height: 1rem;

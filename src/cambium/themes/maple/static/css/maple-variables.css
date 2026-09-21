@@ -2,17 +2,17 @@
   --cambium-font-family: "Source Sans 3 VF", sans-serif;
 
   /* Colours */
-  --cambium-light-primary-colour: indianred;
-  --cambium-dark-primary-colour: oklch(
-    from var(--cambium-light-primary-colour) 75% calc(c * 0.8) h
+  --cambium-primary-colour-light: indianred;
+  --cambium-primary-colour-dark: oklch(
+    from var(--cambium-primary-colour-light) 75% calc(c * 0.8) h
   );
-  --cambium-light-secondary-colour: oklch(
-    from var(--cambium-light-primary-colour) 65% calc(c * 1.1) h
+  --cambium-secondary-colour-light: oklch(
+    from var(--cambium-primary-colour-light) 45% calc(c * 1.1) h
   );
-  --cambium-dark-secondary-colour: oklch(
-    from var(--cambium-dark-primary-colour) 85% calc(c * 0.8) h
+  --cambium-secondary-colour-dark: oklch(
+    from var(--cambium-primary-colour-dark) 85% calc(c * 0.8) h
   );
 
-  --cambium-light-toggle-colour: #999;
-  --cambium-dark-toggle-colour: #a9a9a9;
+  --cambium-toggle-colour-light: #999;
+  --cambium-toggle-colour-dark: #a9a9a9;
 }
