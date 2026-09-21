@@ -42,7 +42,7 @@ class _ElementAttributeSet:
     keyval_attrs: list[tuple[str, str]] = field(default_factory=list)
 
     @classmethod
-    def from_str(cls, string: str) -> "_ElementAttributeSet":
+    def from_str(cls, string: str) -> _ElementAttributeSet:
         """Parse the contents of curly braces into an `ElementAttributeSet`."""
         items = split_respecting_quotes(string, r"\s")
         ids, result = [], _ElementAttributeSet()
@@ -77,7 +77,7 @@ class _ElementAttributeSet:
         return result
 
     @classmethod
-    def from_element(cls, element: Element) -> "_ElementAttributeSet":
+    def from_element(cls, element: Element) -> _ElementAttributeSet:
         result = _ElementAttributeSet()
 
         if hasattr(element, "classes"):

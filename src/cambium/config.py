@@ -438,8 +438,7 @@ class WorkingConfiguration:
 
         if self.input_config.subpath is not None:
             subpath = self.input_config.subpath.strip("/")
-            if len(subpath) > 0:
-                self.hosting["subpath"] = subpath
+            self.hosting["subpath"] = subpath
 
         if self.input_config.domain_name is not None:
             self.hosting["domain_name"] = str(self.input_config.domain_name).strip("/")
@@ -450,6 +449,12 @@ class WorkingConfiguration:
                 self.hosting["url"] = urljoin(
                     self.hosting["domain_name"], self.hosting["subpath"]
                 )
+
+        if self.hosting["subpath"] is None:
+            # TODO: set this to info? default logging config means that won't be seen
+            logger.warning(
+                "Subpath is unset, Cambium will not update or verify absolute links."
+            )
 
 
 def initialize_configuration(
