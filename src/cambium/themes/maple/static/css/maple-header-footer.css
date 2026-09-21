@@ -136,7 +136,7 @@ footer {
   }
 }
 
-@media (max-width: var(--cambium-tablet-breakpoint)) {
+@media (max-width: 1000px) {
   .header-centre {
     visibility: hidden;
     overflow: hidden;

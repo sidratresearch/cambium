@@ -130,8 +130,8 @@
 }
 
 /* Mobile Styling */
-@media (max-width: var(--cambium-tablet-breakpoint)) {
-  menu {
+@media (max-width: 1000px) {
+  .menu-panel {
     width: 100vw;
     border: none;
     box-sizing: border-box;
@@ -144,6 +144,7 @@
       overflow-x: hidden;
       text-overflow: ellipsis;
       padding-left: 1rem;
+      white-space: nowrap;
     }
   }
 }

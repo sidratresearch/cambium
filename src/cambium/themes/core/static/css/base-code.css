@@ -3,5 +3,6 @@
 pre:has(> code) {
   background-color: var(--cw-footer-colour);
   scrollbar-color: var(--cw-border-colour) var(--cw-footer-colour);
-  border-radius: 10px;
+  padding: 1rem 1rem 0.2rem;
+  overflow-x: scroll;
 }
