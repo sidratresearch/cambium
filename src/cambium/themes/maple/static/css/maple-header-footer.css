@@ -29,6 +29,9 @@
 
   .header-centre {
     text-align: center;
+    a {
+      color: var(--cw-font-colour);
+    }
   }
 
   .header-right {
@@ -76,7 +79,6 @@ footer {
   margin-top: 5rem;
   border-top: 1px var(--cw-border-colour) solid;
   color: var(--cw-footer-colour);
-  font-size: 1.25rem;
   border-bottom: 7px var(--cw-primary-colour) solid;
 
   .footer-container {

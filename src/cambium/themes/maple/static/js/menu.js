@@ -1,23 +1,16 @@
+const menuPanel = document.getElementById("menu-panel");
+const screenShadeDiv = document.getElementById("screen-shade");
+
 function openMenu() {
-  const menuPanel = document.getElementById("menu-panel");
-  menuPanel.classList.add("menu-active");
-  document.addEventListener("scroll", closeMenu);
-  document.addEventListener("click", closeMenuIfClickedOutside);
+  menuPanel.classList.toggle("menu-active");
+  screenShadeDiv.classList.toggle("screen-shade-active");
+  screenShadeDiv.addEventListener("click", closeMenu);
 }
 
 function closeMenu() {
-  const menuPanel = document.getElementById("menu-panel");
-  menuPanel.classList.remove("menu-active");
-  document.removeEventListener("scroll", closeMenu);
-  document.removeEventListener("click", closeMenuIfClickedOutside);
-}
-
-function closeMenuIfClickedOutside(event) {
-  const header = document.getElementsByTagName("header")[0];
-  const menuPanel = document.getElementById("menu-panel");
-  if (!menuPanel.contains(event.target) & !header.contains(event.target)) {
-    closeMenu();
-  }
+  menuPanel.classList.toggle("menu-active");
+  screenShadeDiv.classList.toggle("screen-shade-active");
+  screenShadeDiv.removeEventListener("click", closeMenu);
 }
 
 export function attachMenuButtonListener() {

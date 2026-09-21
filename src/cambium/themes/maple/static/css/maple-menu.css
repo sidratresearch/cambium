@@ -1,5 +1,5 @@
 /* Menu Body Styling */
-menu {
+.menu-panel {
   position: fixed;
   margin: 0;
   padding: 1em 2em;
@@ -58,6 +58,11 @@ menu {
 
   .menu-footer {
     padding-top: 0.5em;
+    align-items: center;
+    font-size: 0.7rem;
+    color: var(--cw-footer-colour);
+    padding-left: 1rem;
+    justify-content: start;
   }
 }
 
