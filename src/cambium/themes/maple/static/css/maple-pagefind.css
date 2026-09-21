@@ -1,12 +1,14 @@
-body {
+body,
+body[data-pf-theme="dark"] {
   --pf-border: var(--cw-background-colour);
   --pf-text-muted: var(--cw-font-colour);
   --pf-border-focus: var(--cw-background-colour);
   --pf-outline-focus: var(--cw-primary-colour);
+  --pf-background: var(--cw-background-colour);
 }
 
 /* Make the icon larger in header */
 :is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-icon {
-  height: 1rem;
-  width: 1rem;
+  height: 28px;
+  width: 28px;
 }

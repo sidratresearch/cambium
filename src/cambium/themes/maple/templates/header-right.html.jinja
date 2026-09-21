@@ -1,6 +1,6 @@
 {# Cambium Theme: Maple #}
 <div class="header-right">
-  <button href="#" class="menu-button" aria-label="Open site search">
-    {% include "icon-search.html.jinja" %}
-  </button>
+  {% if metadata.stage_metadata.PagefindSearch is defined %}
+    {% include "PagefindSearch-search-component.html.jinja" %}
+  {% endif %}
 </div>

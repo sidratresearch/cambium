@@ -147,10 +147,10 @@ ul {
   }
 }
 
-:is(dir, dl, menu, ol, ul) ul,
+/* :is(dir, dl, menu, ol, ul) ul,
 ol {
-  margin-top: 0;
-}
+  margin-top: 0.15rem;
+} */
 
 ul {
   list-style-type: square;

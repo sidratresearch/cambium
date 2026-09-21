@@ -13,3 +13,18 @@ addSortingFunctionToAllTables();
 attachMenuButtonListener();
 
 lightDarkToggle();
+
+// Back to top button
+function backToTop() {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function attachBackToTopListener() {
+  const button = document.getElementById("back-to-top-button");
+
+  button.addEventListener("click", () => {
+    backToTop();
+  });
+}
+
+attachBackToTopListener();
