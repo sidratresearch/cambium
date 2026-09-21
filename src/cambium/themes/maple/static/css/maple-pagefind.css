@@ -5,6 +5,7 @@ body[data-pf-theme="dark"] {
   --pf-border-focus: var(--cw-background-colour);
   --pf-outline-focus: var(--cw-primary-colour);
   --pf-background: var(--cw-background-colour);
+  --pf-border-radius: 0px;
 }
 
 /* Make the icon larger in header */

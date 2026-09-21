@@ -83,7 +83,7 @@ class TransformMarkdown(Stage):
         html = markdown_to_html(
             markdown,
             tree=tree,
-            file=final_path,
+            leaf_uuid=leaf_uuid,
             heading_id_prefix=self.config.heading_id_prefix,
         )
         html_path.write_text(html)

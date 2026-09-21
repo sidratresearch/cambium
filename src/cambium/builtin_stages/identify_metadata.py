@@ -12,11 +12,8 @@ from slugify import slugify
 
 from ..stage import Stage
 from ..tree import TreeSpan
-from ..utils.md_html_utils import (
-    fetch_leaf_from_href,
-    get_element_text,
-)
-from ..utils.other_utils import apply_to_leaves
+from ..utils.md_html_utils import get_element_text
+from ..utils.other_utils import apply_to_leaves, get_href_destination
 from ..utils.path_utils import abs_leaf_path, get_leaf_from_path
 
 
@@ -149,7 +146,7 @@ def extract_md_metadata(input_path: Path, leaf_uuid: str, tree: TreeSpan) -> Non
 
     # extract links
     parent_directory = tree.leaves["final_path"][leaf_uuid].parent
-    linked_leaves = fetch_all_links(doc, parent_directory, tree)
+    linked_leaves = fetch_all_links(doc, leaf_uuid, parent_directory, tree)
     linked_leaves = list(set(linked_leaves))
     tree.leaves["metadata"][leaf_uuid].links_to = linked_leaves
     for uuid in linked_leaves:
@@ -157,7 +154,7 @@ def extract_md_metadata(input_path: Path, leaf_uuid: str, tree: TreeSpan) -> Non
 
 
 def fetch_all_links(
-    element: Element, file_parent_directory: Path, tree: TreeSpan
+    element: Element, leaf_uuid: str, file_parent_directory: Path, tree: TreeSpan
 ) -> list[str]:
     """Get the UUIDs for all leaves that this element links to.
 
@@ -169,11 +166,13 @@ def fetch_all_links(
         return linked_leaves
 
     if isinstance(element, Link):
-        linked = fetch_leaf_from_href(element.dest, file_parent_directory, tree)
-        if linked is not None:
-            linked_leaves.append(linked)
+        href_type, linked_uuid = get_href_destination(
+            element.dest, "initial_path", leaf_uuid, tree
+        )
+        if href_type == "internal" and linked_uuid is not None:
+            linked_leaves.append(linked_uuid)
 
     for child in element.children:
-        linked_leaves += fetch_all_links(child, file_parent_directory, tree)
+        linked_leaves += fetch_all_links(child, leaf_uuid, file_parent_directory, tree)
 
     return linked_leaves

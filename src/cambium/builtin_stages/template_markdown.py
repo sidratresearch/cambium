@@ -13,7 +13,11 @@ from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
 from ..utils.md_html_utils import markdown_to_html
 from ..utils.other_utils import apply_to_leaves, make_jinja_environment
-from ..utils.path_utils import abs_leaf_path, get_relative_path_modifier, is_valid_index
+from ..utils.path_utils import (
+    abs_leaf_path,
+    get_relative_path_modifier,
+    is_valid_index_html,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -137,9 +141,9 @@ class TemplateMarkdown(Stage):
             )
             path = tree.leaves["final_path"][leaf_uuid]
             is_top_level = len(path.parts) == 1 or (
-                len(path.parts) == 2 and is_valid_index(path)
+                len(path.parts) == 2 and is_valid_index_html(path)
             )
-            is_homepage = len(path.parts) == 1 and is_valid_index(path)
+            is_homepage = len(path.parts) == 1 and is_valid_index_html(path)
             if is_homepage:
                 jinja_globals.homepage_filename = path.name
             elif is_top_level and title is not None:

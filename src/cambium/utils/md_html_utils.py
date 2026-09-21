@@ -20,7 +20,7 @@ from marko.helpers import render_dispatch
 from marko.html_renderer import HTMLRenderer
 from slugify import slugify
 
-from .other_utils import fetch_leaf_from_href, split_respecting_quotes
+from .other_utils import get_href_destination, split_respecting_quotes
 
 if TYPE_CHECKING:
     from ..tree import TreeSpan
@@ -42,7 +42,7 @@ class _ElementAttributeSet:
     keyval_attrs: list[tuple[str, str]] = field(default_factory=list)
 
     @classmethod
-    def from_str(cls, string: str) -> "_ElementAttributeSet":
+    def from_str(cls, string: str) -> _ElementAttributeSet:
         """Parse the contents of curly braces into an `ElementAttributeSet`."""
         items = split_respecting_quotes(string, r"\s")
         ids, result = [], _ElementAttributeSet()
@@ -77,7 +77,7 @@ class _ElementAttributeSet:
         return result
 
     @classmethod
-    def from_element(cls, element: Element) -> "_ElementAttributeSet":
+    def from_element(cls, element: Element) -> _ElementAttributeSet:
         result = _ElementAttributeSet()
 
         if hasattr(element, "classes"):
@@ -331,7 +331,7 @@ def add_heading_anchors(
 def markdown_to_html(
     markdown: str,
     tree: TreeSpan | None = None,
-    file: Path | None = None,
+    leaf_uuid: str | None = None,
     heading_id_prefix: str | None = None,
 ) -> str:
     """Main function of the TransformMarkdown stage."""
@@ -356,8 +356,9 @@ def markdown_to_html(
     if heading_id_prefix is not None:
         document = add_heading_anchors(document, heading_id_prefix)
 
-    if file is not None:
-        document = _update_link_dests(document, file, tree)
+    if leaf_uuid is not None:
+        final_path = tree.leaves["final_path"][leaf_uuid]
+        document = _update_link_dests(document, leaf_uuid, final_path, tree)
 
     return marko_object.render(document)
 
@@ -504,7 +505,6 @@ def _unwrap_images(elements: list[Element]) -> list[Element]:
     new_list = []
 
     for element in elements:
-        # print(element)
         if (
             isinstance(element, (str, inline.RawText))
             or not hasattr(element, "children")
@@ -534,27 +534,33 @@ def _unwrap_images(elements: list[Element]) -> list[Element]:
     return new_list
 
 
-def _update_link_dests(element: Element, file: Path, tree: TreeSpan) -> Element:
+def _update_link_dests(
+    element: Element, leaf_uuid: str, final_path: Path, tree: TreeSpan
+) -> Element:
     """Look for links in `element`, and ensure they point to the correct final path."""
     if isinstance(element, str):
         return element
 
     if isinstance(element, inline.Link):
-        linked_leaf = fetch_leaf_from_href(element.dest, file.parent, tree)
-        if linked_leaf is not None:
+        href_type, linked_leaf = get_href_destination(
+            element.dest, "initial_path", leaf_uuid, tree
+        )
+        if href_type == "internal" and linked_leaf is not None:
             # would like to use dest_file.relative_to(parent_directory, walk_up=True)
             # but that's only available in 3.12+
             new_dest = os.path.relpath(
                 tree.leaves["final_path"][linked_leaf],
-                start=file.parent,
+                start=final_path.parent,
             )
             if "#" in element.dest:
                 new_dest += element.dest[element.dest.index("#") :]
 
-            logger.debug(f"Updating link in {file} from {element.dest} to {new_dest}")
+            logger.debug(
+                f"Updating link in {final_path} from {element.dest} to {new_dest}"
+            )
             element.dest = new_dest
 
     for child in element.children:
-        child = _update_link_dests(child, file, tree)
+        child = _update_link_dests(child, leaf_uuid, final_path, tree)
 
     return element

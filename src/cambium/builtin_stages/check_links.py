@@ -4,22 +4,14 @@ Currently only checks internal links, discarding anchors.
 """
 
 import logging
-import urllib
 from collections import defaultdict
 from html.parser import HTMLParser
-from pathlib import Path
 from typing import Any
 
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
-from ..utils.other_utils import apply_to_leaves, is_external_link
-from ..utils.path_utils import (
-    abs_leaf_path,
-    absolute_to_relative_path,
-    get_leaf_from_path,
-    leaf_final_paths,
-    resolve_internal_path,
-)
+from ..utils.other_utils import apply_to_leaves, get_href_destination, is_external_link
+from ..utils.path_utils import abs_leaf_path, leaf_final_paths
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +43,6 @@ class CheckLinksConfig(StageConfig):
 
 
 class CheckLinks(Stage):
-    gave_absolute_links_warning = False
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.config = CheckLinksConfig.model_validate(config_dict)
@@ -93,98 +84,44 @@ class CheckLinks(Stage):
         links = self.all_links[leaf_uuid]
         internal_links = [i for i in links if not is_external_link(i[2])]
 
-        directory = tree.leaves["final_path"][leaf_uuid].parent
+        source_file = tree.leaves["initial_path"][leaf_uuid]
 
         for tag, attr, original_dest in internal_links:
-            self._check_internal_link(original_dest, directory, leaf_uuid, tree)
+            if original_dest in self.config.links_to_ignore:
+                continue
 
-    def _check_internal_link(
-        self,
-        destination: str,
-        file_directory: Path,
-        leaf_uuid: str,
-        tree: TreeSpan,
-    ) -> None:
-
-        # HACK? "../index.html" and "..\index.html" become "..%5Cindex.html" when
-        # parsing UTF-8 files on Windows. So just convert all of them to "/"
-        destination = destination.replace("%5C", "/")
-
-        # split anchor from page
-        if "#" in destination:
-            page_destination, anchor = destination.split("#")
-        else:
-            page_destination, anchor = destination, ""
-
-        # validate the page existence
-        if len(page_destination) == 0 or page_destination == "/":
-            destination_uuid = leaf_uuid
-        else:
-            destination_uuid = self._check_internal_link_no_anchor(
-                page_destination, file_directory, leaf_uuid, tree
+            # for each link, get its type (and which file it points to, if relevant)
+            href_type, linked_uuid = get_href_destination(
+                original_dest, "final_path", leaf_uuid, tree
             )
 
-        # don't check anchor if page failed, or there is no anchor
-        if destination_uuid is None or len(anchor) == 0:
-            return
+            if href_type in ["external", "static"]:
+                continue
+            if href_type == "unknown absolute":
+                logger.warning(
+                    f"Could not verify absolute link {original_dest} in {source_file}"
+                )
+                continue
 
-        self._check_anchor_link(destination_uuid, anchor, leaf_uuid, tree)
+            # only remaining option is internal link
+            if linked_uuid is None:
+                logger.warning(
+                    f"{source_file} contains a link to {original_dest} which is not a known file"
+                )
+                continue
+            if "#" in original_dest:
+                anchor = original_dest.split("#", maxsplit=1)[-1]
+                self._check_anchor_link(linked_uuid, anchor, leaf_uuid, tree)
 
     def _check_anchor_link(
         self, destination_uuid: str, anchor: str, leaf_uuid: str, tree: TreeSpan
     ) -> None:
         """Check that an internal anchor link points to an HTML id that exists."""
+        if anchor == "":
+            return
         if anchor not in self.all_anchors[destination_uuid]:
             initial_path = tree.leaves["initial_path"][leaf_uuid]
             destination_path = tree.leaves["final_path"][destination_uuid]
             logger.warning(
-                f"{initial_path} contains a link to #{anchor} which can't be found on page {destination_path}."
+                f"{initial_path} contains a link to #{anchor} which can't be found on page {destination_path}"
             )
-
-    def _check_internal_link_no_anchor(
-        self,
-        destination: str,
-        file_directory: Path,
-        leaf_uuid: str,
-        tree: TreeSpan,
-    ) -> str | None:
-        """Verify that an internal link points to a location in final paths."""
-        if destination.startswith("/"):
-            new_destination = absolute_to_relative_path(destination, tree)
-            if new_destination is None:
-                logger.warning(f"Skipping link check for {destination}")
-                return
-            destination = new_destination
-
-        dest_full = resolve_internal_path(
-            destination, file_directory, tree.build_directory
-        )
-
-        dest_full = Path(urllib.parse.unquote_plus(str(dest_full)))
-
-        if str(dest_full) in self.config.links_to_ignore:
-            return
-
-        initial_path = tree.leaves["initial_path"][leaf_uuid]
-        if dest_full.parts[0] == "static":
-            logger.debug(
-                f"Not checking link to static file {dest_full} in {initial_path}"
-            )
-            return
-
-        if (
-            dest_full not in self.leaf_final_paths
-            and dest_full not in tree.directories_in_build
-        ):
-            logger.warning(
-                f"{initial_path} contains a link to {dest_full} which is not a known file."
-            )
-            return
-
-        # check if linking to a directory
-        # TODO: if you link to a directory, should the checker:
-        # fail, warn, warn + return index.html
-        if dest_full in tree.directories_in_build:
-            return
-
-        return get_leaf_from_path(tree, dest_full, "final_path")

@@ -30,11 +30,11 @@
   --cambium-border-colour-light: #999;
   --cambium-border-colour-dark: #999;
 
-  --cambium-warning-colour-light: #999;
-  --cambium-warning-colour-dark: #999;
+  --cambium-warning-colour-light: #db7007;
+  --cambium-warning-colour-dark: #db7007;
 
-  --cambium-caution-colour-light: #999;
-  --cambium-caution-colour-dark: #999;
+  --cambium-caution-colour-light: red;
+  --cambium-caution-colour-dark: red;
 
   /* Move these to Maple  */
   --cambium-toggle-colour-light: #999;

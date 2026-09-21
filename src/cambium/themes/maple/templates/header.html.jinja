@@ -4,9 +4,29 @@
 
 <header>
   <div class="header-bar">
-    {% include "header-left.html.jinja" %}
-    {% include "header-centre.html.jinja" %}
-    {% include "header-right.html.jinja" %}
+    <div class="header-left">
+      <button
+        class="menu-button menu-open-button"
+        id="menu-open-button"
+        aria-label="Open site menu"
+      >
+        <span></span>
+      </button>
+    </div>
+
+    <div class="header-centre">
+      {% if homepage_filename is not none %}
+        <a href="{{ relative_path_modifier }}index.html" class="header-link site-title">
+          {{ site_name }}
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="header-right">
+      {% if metadata.stage_metadata.PagefindSearch is defined %}
+        {% include "PagefindSearch-search-component.html.jinja" %}
+      {% endif %}
+    </div>
   </div>
   {% include "menu-panel.html.jinja" %}
   <div id="screen-shade" class="screen-shade"></div>

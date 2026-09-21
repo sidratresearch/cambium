@@ -239,7 +239,7 @@ def make_nested_filetree(
     return tree
 
 
-def is_valid_index(path: Path) -> bool:
+def is_valid_index_html(path: Path) -> bool:
     """Check if a path matches `index.html` or `index.htm` (case-sensitive)."""
     return path.name in ("index.html", "index.htm")
 
@@ -254,7 +254,7 @@ def absolute_to_relative_path(destination: str, tree: TreeSpan) -> str | None:
 
     # subpath undefined
     if subpath is None:
-        logger.info(
+        logger.debug(
             f"Not resolving absolute link to {destination} because `subpath` is not set in config."
         )
         return

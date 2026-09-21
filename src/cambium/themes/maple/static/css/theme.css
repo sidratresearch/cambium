@@ -6,3 +6,14 @@
 @import url("maple-header-footer.css");
 @import url("maple-light-dark-toggle.css");
 @import url("maple-pagefind.css");
+@import url("maple-variables.css");
+
+/* Light Colours */
+html {
+  --cw-toggle-colour: var(--cambium-light-toggle-colour);
+}
+
+/* Dark Colours */
+html[data-theme="dark"] {
+  --cw-toggle-colour: var(--cambium-dark-toggle-colour);
+}
