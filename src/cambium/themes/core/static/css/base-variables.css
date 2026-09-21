@@ -7,21 +7,38 @@
   --cambium-font-weight: 400;
 
   /* Colours */
-  --cambium-light-primary-colour: #587054;
-  --cambium-dark-primary-colour: oklch(
+  --cambium-primary-colour-light: #587054;
+  --cambium-primary-colour-dark: oklch(
     from var(--cambium-light-primary-colour) 75% calc(c * 0.8) h
   );
-  --cambium-light-secondary-colour: #e8cf9e;
-  --cambium-dark-secondary-colour: #e8cf9e;
-  --cambium-light-background-colour: white;
-  --cambium-dark-background-colour: #222222;
-  --cambium-light-font-colour: black;
-  --cambium-dark-font-colour: #f9f9f9;
-  --cambium-light-toggle-colour: #999;
-  --cambium-dark-toggle-colour: #a9a9a9;
-  --cambium-light-footer-colour: #595959;
-  --cambium-dark-footer-colour: #a9a9a9;
-  --cambium-border-colour: #999;
+
+  --cambium-secondary-colour-light: #e8cf9e;
+  --cambium-secondary-colour-dark: #e8cf9e;
+
+  --cambium-background-colour-light: white;
+  --cambium-background-colour-dark: #222222;
+
+  --cambium-alternate-background-colour-light: white;
+  --cambium-alternate-background-colour-dark: #222222;
+
+  --cambium-font-colour-light: black;
+  --cambium-font-colour-dark: #f9f9f9;
+
+  --cambium-secondary-font-colour-light: #595959;
+  --cambium-secondary-font-colour-dark: #a9a9a9;
+
+  --cambium-border-colour-light: #999;
+  --cambium-border-colour-dark: #999;
+
+  --cambium-warning-colour-light: #999;
+  --cambium-warning-colour-dark: #999;
+
+  --cambium-caution-colour-light: #999;
+  --cambium-caution-colour-dark: #999;
+
+  /* Move these to Maple  */
+  --cambium-toggle-colour-light: #999;
+  --cambium-toggle-colour-dark: #a9a9a9;
 
   /* Breakpoints */
   --cambium-tablet-breakpoint: 1000px;
