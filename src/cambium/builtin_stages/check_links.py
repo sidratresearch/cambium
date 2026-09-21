@@ -43,7 +43,6 @@ class CheckLinksConfig(StageConfig):
 
 
 class CheckLinks(Stage):
-    gave_absolute_links_warning = False
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
         self.config = CheckLinksConfig.model_validate(config_dict)
@@ -88,29 +87,31 @@ class CheckLinks(Stage):
         source_file = tree.leaves["initial_path"][leaf_uuid]
 
         for tag, attr, original_dest in internal_links:
+            if original_dest in self.config.links_to_ignore:
+                continue
+
+            # for each link, get its type (and which file it points to, if relevant)
             href_type, linked_uuid = get_href_destination(
                 original_dest, "final_path", leaf_uuid, tree
             )
 
             if href_type in ["external", "static"]:
                 continue
-
             if href_type == "unknown absolute":
                 logger.warning(
                     f"Could not verify absolute link {original_dest} in {source_file}"
                 )
                 continue
 
-            if href_type == "internal":
-                if linked_uuid is None:
-                    logger.warning(
-                        f"{source_file} contains a link to {original_dest} which is not a known file"
-                    )
-                    continue
-
-                if "#" in original_dest:
-                    anchor = original_dest.split("#", maxsplit=1)[-1]
-                    self._check_anchor_link(linked_uuid, anchor, leaf_uuid, tree)
+            # only remaining option is internal link
+            if linked_uuid is None:
+                logger.warning(
+                    f"{source_file} contains a link to {original_dest} which is not a known file"
+                )
+                continue
+            if "#" in original_dest:
+                anchor = original_dest.split("#", maxsplit=1)[-1]
+                self._check_anchor_link(linked_uuid, anchor, leaf_uuid, tree)
 
     def _check_anchor_link(
         self, destination_uuid: str, anchor: str, leaf_uuid: str, tree: TreeSpan
