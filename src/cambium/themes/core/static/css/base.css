@@ -16,6 +16,8 @@ html {
   --cw-secondary-colour: var(--cambium-secondary-colour-light);
   --cw-secondary-font-colour: var(--cambium-secondary-font-colour-light);
   --cw-border-colour: var(--cambium-border-colour-light);
+  --cw-warning-colour: var(--cambium-warning-colour-light);
+  --cw-caution-colour: var(--cambium-caution-colour-light);
 
   /* Desktop Variables */
   --cw-font-size: var(--cambium-font-size);
@@ -42,6 +44,8 @@ html[data-theme="dark"] {
   --cw-secondary-colour: var(--cambium-secondary-colour-dark);
   --cw-secondary-font-colour: var(--cambium-secondary-font-colour-dark);
   --cw-border-colour: var(--cambium-border-colour-dark);
+  --cw-warning-colour: var(--cambium-warning-colour-dark);
+  --cw-caution-colour: var(--cambium-caution-colour-dark);
 }
 
 /* Setting Actual Status */
@@ -211,19 +215,19 @@ blockquote.alert {
 }
 
 blockquote.alert-caution {
-  border-left: 0.5em solid red;
+  border-left: 0.5em solid var(--cw-caution-colour);
   p {
     &:first-child {
-      color: red;
+      color: var(--cw-caution-colour);
     }
   }
 }
 
 blockquote.alert-warning {
-  border-left: 0.5em solid #db7007;
+  border-left: 0.5em solid var(--cw-warning-colour);
   p {
     &:first-child {
-      color: #db7007;
+      color: var(--cw-warning-colour);
     }
   }
 }
