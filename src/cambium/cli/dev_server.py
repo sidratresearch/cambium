@@ -67,7 +67,10 @@ def run_dev_server(
     except (KeyboardInterrupt, Exception) as e:
         logger.info("Closing dev server and deleting development files")
         server_process.terminate()  # prints "Process Process-1" to sys.stderr
-        shutil.rmtree(tree.build_directory)
+        try:
+            shutil.rmtree(tree.build_directory)
+        except FileNotFoundError:
+            pass
 
         if not isinstance(e, KeyboardInterrupt):
             raise e
