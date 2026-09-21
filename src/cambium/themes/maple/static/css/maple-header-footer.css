@@ -104,11 +104,11 @@ footer {
     margin-right: auto;
     font-size: 0.8rem;
     gap: 5rem;
-  }
 
-  img {
-    height: 3rem;
-    width: auto;
+    img {
+      height: 3rem;
+      width: auto;
+    }
   }
 
   #back-to-top-button {

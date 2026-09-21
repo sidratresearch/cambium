@@ -8,8 +8,8 @@
 html {
   /* Light Colours */
   --cw-background-colour: var(--cambium-background-colour-light);
-  --cw-secondary-background-colour: var(
-    --cambium-secondary-background-colour-light
+  --cw-alternate-background-colour: var(
+    --cambium-alternate-background-colour-light
   );
   --cw-font-colour: var(--cambium-font-colour-light);
   --cw-primary-colour: var(--cambium-primary-colour-light);
@@ -36,8 +36,8 @@ html {
 /* Dark Colours */
 html[data-theme="dark"] {
   --cw-background-colour: var(--cambium-background-colour-dark);
-  --cw-secondary-background-colour: var(
-    --cambium-secondary-background-colour-dark
+  --cw-alternate-background-colour: var(
+    --cambium-alternate-background-colour-dark
   );
   --cw-font-colour: var(--cambium-font-colour-dark);
   --cw-primary-colour: var(--cambium-primary-colour-dark);
@@ -80,6 +80,7 @@ body {
   padding-left: 2rem;
   padding-right: 2rem;
   box-sizing: border-box;
+  min-height: 90vh;
 }
 
 /* Basic text elements */
