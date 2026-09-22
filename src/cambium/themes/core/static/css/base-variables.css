@@ -9,7 +9,7 @@
   /* Colours */
   --cambium-primary-colour-light: #587054;
   --cambium-primary-colour-dark: oklch(
-    from var(--cambium-light-primary-colour) 75% calc(c * 0.8) h
+    from var(--cambium-primary-colour-light) 75% calc(c * 0.8) h
   );
 
   --cambium-secondary-colour-light: #e8cf9e;

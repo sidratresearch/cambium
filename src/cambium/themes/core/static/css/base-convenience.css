@@ -1,0 +1,37 @@
+/* Convenience Classes */
+
+.cambium-background-colour {
+  background-color: var(--cw-background-colour);
+}
+
+.cambium-alternate-background-colour {
+  background-color: var(--cw-alternate-background-colour);
+}
+
+.cambium-font-colour {
+  color: var(--cw-font-colour);
+}
+
+.cambium-primary-colour {
+  color: var(--cw-primary-colour);
+}
+
+.cambium-secondary-colour {
+  color: var(--cw-secondary-colour);
+}
+
+.cambium-secondary-font-colour {
+  color: var(--cw-secondary-font-colour);
+}
+
+.cambium-border-colour {
+  border-color: var(--cw-border-colour);
+}
+
+.cambium-warning-colour {
+  color: var(--cw-warning-colour);
+}
+
+.cambium-caution-colour {
+  color: var(--cw-caution-colour);
+}
