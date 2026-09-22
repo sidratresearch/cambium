@@ -36,7 +36,10 @@
   --cambium-caution-colour-light: red;
   --cambium-caution-colour-dark: red;
 
-  /* Breakpoints */
+  /* Breakpoints and Content Width */
   --cambium-tablet-breakpoint: 1000px;
   --cambium-mobile-breakpoint: 600px;
+  --cambium-desktop-max-width: 1200px;
+  --cambium-tablet-max-width: 90vw;
+  --cambium-mobile-max-width: 95vw;
 }

@@ -53,7 +53,7 @@ html[data-theme="dark"] {
 
 /* Utility Styles */
 .container {
-  max-width: 1200px;
+  max-width: var(--cambium-desktop-max-width);
   margin-left: auto;
   margin-right: auto;
 }
@@ -237,7 +237,7 @@ blockquote.alert-warning {
 /* Tablet styling */
 @media (max-width: 1000px) or (min-width: 601px) {
   .main-content {
-    max-width: 90vw;
+    max-width: var(--cambium-tablet-max-width);
   }
   h1 {
     font-size: 3rem;
@@ -247,7 +247,7 @@ blockquote.alert-warning {
 /* Mobile styling */
 @media (max-width: 600px) {
   .main-content {
-    max-width: 95vw;
+    max-width: var(--cambium-mobile-max-width);
   }
 
   h1 {

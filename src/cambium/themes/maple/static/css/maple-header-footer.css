@@ -133,7 +133,7 @@ footer {
         border-right: 2px solid var(--cw-primary-colour);
         transform: rotate(225deg);
         margin: -1px;
-        animation: 3s infinite arrows-move;
+        animation: 2.5s infinite arrows-move;
       }
 
       span:nth-child(2) {
@@ -174,14 +174,14 @@ footer {
 @keyframes arrows-move {
   0% {
     opacity: 0;
-    transform: rotate(225deg) translate(-5px, -5px);
+    transform: rotate(225deg) translate(-3px, -3px);
   }
   50% {
     opacity: 0.8;
   }
   100% {
     opacity: 0;
-    transform: rotate(225deg) translate(5px, 5px);
+    transform: rotate(225deg) translate(3px, 3px);
   }
 }
 
