@@ -294,7 +294,7 @@ def get_element_text(element: Element) -> str:
 
 
 def add_heading_anchors(
-    document: block.Document, heading_id_prefix: str
+    document: block.Document, heading_id_prefix: str = ""
 ) -> block.Document:
     """Add GitHub-style slugs as `id` attributes on `Heading` elements.
 
@@ -332,7 +332,6 @@ def markdown_to_html(
     markdown: str,
     tree: TreeSpan | None = None,
     leaf_uuid: str | None = None,
-    heading_id_prefix: str | None = None,
 ) -> str:
     """Main function of the TransformMarkdown stage."""
     # WARNING: The Markdown class is not thread-safe.
@@ -353,8 +352,7 @@ def markdown_to_html(
 
     document.children = _unwrap_images(document.children)
 
-    if heading_id_prefix is not None:
-        document = add_heading_anchors(document, heading_id_prefix)
+    document = add_heading_anchors(document)
 
     if leaf_uuid is not None:
         final_path = tree.leaves["final_path"][leaf_uuid]
