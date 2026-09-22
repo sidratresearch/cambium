@@ -104,11 +104,6 @@ footer {
     margin-right: auto;
     font-size: 0.8rem;
     gap: 5rem;
-
-    img {
-      height: 3rem;
-      width: auto;
-    }
   }
 
   #back-to-top-button {
@@ -141,6 +136,13 @@ footer {
 
   .footer-centre {
     text-align: center;
+  }
+
+  .footer-right {
+    svg {
+      color: var(--cw-primary-colour);
+      height: 3rem;
+    }
   }
 }
 
