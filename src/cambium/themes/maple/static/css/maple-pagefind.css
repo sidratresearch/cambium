@@ -13,6 +13,11 @@ body[data-pf-theme="dark"] {
   --pf-result-excerpt-font-size: 0.8rem;
 }
 
+/* Get rid of padding around search icon */
+:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-btn {
+  padding: 0;
+}
+
 /* Make the icon larger in header */
 :is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-icon {
   height: 25px;

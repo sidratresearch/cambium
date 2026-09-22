@@ -193,9 +193,14 @@ footer {
 
   footer {
     .footer-container {
+      margin-top: 1rem;
       flex-direction: column;
       justify-content: center;
       gap: 1rem;
+
+      #back-to-top-button {
+        margin-left: 1.55rem;
+      }
     }
   }
 }
