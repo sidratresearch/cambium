@@ -142,12 +142,25 @@ function createDevServerIndicator() {
   document.body.appendChild(indicator);
   indicator.style.backgroundColor = "#4c7e97";
   indicator.style.color = "white";
+  indicator.style.textAlign = "center";
   indicator.style.width = "fit-content";
   indicator.style.padding = "0.5em";
   indicator.style.position = "fixed";
   indicator.style.bottom = 0;
   indicator.style.left = "50%";
   indicator.style.transform = "translate(-50%)";
+
+  // Disappear on hover, then re-appear after a brief delay
+  indicator.addEventListener("mouseenter", () => {
+    indicator.style.opacity = "0%";
+    indicator.style.transition = "0.5s";
+  });
+  indicator.addEventListener("mouseleave", () => {
+    indicator.style.transition = "1.5s";
+    setTimeout(() => {
+      indicator.style.opacity = "100%";
+    }, 1500);
+  });
   return indicator;
 }
 
