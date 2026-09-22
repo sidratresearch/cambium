@@ -5,14 +5,14 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from marko import Markdown
-from marko.block import BlankLine, Heading, HTMLBlock
+from marko.block import BlankLine, Document, Heading, HTMLBlock
 from marko.element import Element
 from marko.inline import Link
 from slugify import slugify
 
 from ..stage import Stage
 from ..tree import TreeSpan
-from ..utils.md_html_utils import get_element_text
+from ..utils.md_html_utils import add_heading_anchors, get_element_text
 from ..utils.other_utils import apply_to_leaves, get_href_destination
 from ..utils.path_utils import abs_leaf_path, get_leaf_from_path
 
@@ -41,9 +41,17 @@ class TitleParser(HTMLParser):
 
 class IdentifyMetadata(Stage):
     def tree_hook(self, tree: TreeSpan) -> None:
-
-        # Get all pages that should have metadata extracted
         apply_to_leaves(tree, self._tree_hook_for_leaf)
+
+    def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
+        if tree.leaves["final_path"][leaf_uuid].suffix.lower() not in (
+            ".md",
+            ".html",
+            ".htm",
+        ):
+            return
+
+        self._register_hook(leaf_uuid, tree, "pre_hooks")
 
     def pre_hook(self, leaf_uuid: str, tree: TreeSpan) -> None:
         extract_generic_metadata(leaf_uuid, tree)
@@ -79,18 +87,6 @@ class IdentifyMetadata(Stage):
             pass
 
         tree.config.site_name = default_site_name
-
-    # Utility Functions
-
-    def _tree_hook_for_leaf(self, leaf_uuid: str, tree: TreeSpan) -> None:
-        if tree.leaves["final_path"][leaf_uuid].suffix.lower() not in (
-            ".md",
-            ".html",
-            ".htm",
-        ):
-            return
-
-        self._register_hook(leaf_uuid, tree, "pre_hooks")
 
 
 def extract_generic_metadata(leaf_uuid: str, tree: TreeSpan) -> None:
@@ -146,14 +142,17 @@ def extract_md_metadata(input_path: Path, leaf_uuid: str, tree: TreeSpan) -> Non
 
     # extract links
     parent_directory = tree.leaves["final_path"][leaf_uuid].parent
-    linked_leaves = fetch_all_links(doc, leaf_uuid, parent_directory, tree)
+    linked_leaves = _get_linked_leaves(doc, leaf_uuid, parent_directory, tree)
     linked_leaves = list(set(linked_leaves))
     tree.leaves["metadata"][leaf_uuid].links_to = linked_leaves
     for uuid in linked_leaves:
         tree.leaves["metadata"][uuid].linked_from.append(leaf_uuid)
 
+    # extract a table of contents
+    tree.leaves["metadata"][leaf_uuid].table_of_contents = _get_markdown_toc(doc)
 
-def fetch_all_links(
+
+def _get_linked_leaves(
     element: Element, leaf_uuid: str, file_parent_directory: Path, tree: TreeSpan
 ) -> list[str]:
     """Get the UUIDs for all leaves that this element links to.
@@ -173,6 +172,71 @@ def fetch_all_links(
             linked_leaves.append(linked_uuid)
 
     for child in element.children:
-        linked_leaves += fetch_all_links(child, leaf_uuid, file_parent_directory, tree)
+        linked_leaves += _get_linked_leaves(
+            child, leaf_uuid, file_parent_directory, tree
+        )
 
     return linked_leaves
+
+
+def _get_markdown_toc(document: Document) -> str:
+    """Extract a table of contents from markdown and render it to an HTML string."""
+    document = add_heading_anchors(document)
+
+    flat_toc = [
+        {"id": child.id, "text": get_element_text(child), "level": child.level}
+        for child in document.children
+        if isinstance(child, Heading)
+    ]
+
+    return _render_toc(flat_toc, mindepth=2)
+
+
+def _render_toc(
+    headings: list[dict[str, str | int]], mindepth: int = 1, maxdepth: int | None = None
+) -> str:
+    """Render a set of dictionaries as a nested <ul>.
+
+    `mindepth = X` means "Only show items with heading level >= X"
+
+    In future may want to port this whole thing to Jinja, but currently we
+    don't need that level of customizability.
+    Modification of marko's TocRenderMixin.render_toc
+    """
+    first_level = None
+    last_level = None
+    rv = []
+
+    opening, closing = '<ul class="toc-level-{level}">\n', "</ul>\n"
+    item_format = '<li><a href="#{slug}">{text}</a></li>'
+
+    for heading in headings:
+        level, slug, text = heading["level"], heading["id"], heading["text"]
+
+        if level < mindepth or (maxdepth is not None and level > maxdepth):
+            continue
+
+        # initialize
+        if first_level is None:
+            first_level = mindepth
+            last_level = level
+            rv.append(opening.format(level=level))
+
+        # step in
+        if last_level == level - 1:
+            rv.append("\t" * last_level + opening.format(level=level))
+            last_level = level
+
+        # step out
+        while last_level > level:
+            rv.append("\t" * level + closing)
+            last_level -= 1
+        rv.append("\t" * level + item_format.format(slug=slug, text=text) + "\n")
+
+    if first_level is None or last_level is None:
+        return ""
+
+    for _ in range(first_level, last_level + 1):
+        rv.append(closing)
+
+    return "".join(rv).strip()
