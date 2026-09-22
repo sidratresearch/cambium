@@ -18,8 +18,14 @@ class PagefindSearchConfig(StageConfig):
     exclude_selectors: list[str] = []
     force_lanuage: str | None = None
     include_characters: str = "._"
-    keep_index_url: bool = False  # ?
-    write_playground: bool = True  # false for prod
+    keep_index_url: bool = False
+    root_selector: str = "main"
+    """Which HTML tag to treat as the content that should be indexed. May
+    change depending on your theme. Most themes should use `main`."""
+    write_playground: bool | None = None
+    """Whether to write the Pagefind Playground to
+    static/_cambium/PagefindSearch/playground. `None` defaults to `True`
+    on dev server, `False` on build."""
 
 
 class PagefindSearch(Stage):
@@ -36,13 +42,7 @@ class PagefindSearch(Stage):
     """
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
-        validated_config = PagefindSearchConfig.model_validate(config_dict)
-        pagefind_config = IndexConfig(
-            **validated_config.model_dump(),
-            root_selector="html",
-        )
-
-        self.pagefind_config = pagefind_config
+        self.config = PagefindSearchConfig.model_validate(config_dict)
         self.requires = ["TemplateMarkdown"]  # to have somewhere to put the search box
         self.runs_after = []
         self.runs_before = []
@@ -51,6 +51,11 @@ class PagefindSearch(Stage):
         self.js_path = Path("pagefind-component-ui.js")
 
     def tree_hook(self, tree: TreeSpan) -> None:
+
+        if self.config.write_playground is None:
+            self.config.write_playground = tree.config.dev_server
+        self.pagefind_config = IndexConfig(**self.config.model_dump())
+
         for uuid in tree.leaves["uuids"]:
             if tree.leaves["final_path"][uuid].suffix == ".html":
                 self._register_hook(uuid, tree, "post_hooks")
