@@ -24,6 +24,16 @@ body[data-pf-theme="dark"] {
   border-radius: var(--pf-border-radius);
 }
 
+/* Make the focus border primary colour within results modal */
+:is(*, #\#):is(*, #\#):is(*, #\#) .pf-results {
+  --pf-border-focus: var(--cw-primary-colour);
+}
+
+/* Decrease spacing between results and sub-results */
+:is(*, #\#):is(*, #\#):is(*, #\#) .pf-result {
+  gap: 0.1rem;
+}
+
 @media (max-width: 600px) {
   body,
   body[data-pf-theme="dark"] {
