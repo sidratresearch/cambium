@@ -251,13 +251,13 @@ class WorkingConfiguration:
         self.populate_hosting_options()
 
         # Exposing Simple Parameters (that require no additional processing)
-        self.fail_fast = self.input_config.fail_fast
-        self.max_leaves = self.input_config.max_leaves
+        self.fail_fast: bool = self.input_config.fail_fast
+        self.max_leaves: int = self.input_config.max_leaves
         self.logging_level = self.input_config.logging_level
         self.site_name = self.input_config.site_name
-        self.dev_server = self.input_config.dev_server
-        self.dev_server_port = self.input_config.dev_server_port
-        self.dev_server_interval = self.input_config.dev_server_interval
+        self.dev_server: bool = self.input_config.dev_server
+        self.dev_server_port: int = self.input_config.dev_server_port
+        self.dev_server_interval: float = self.input_config.dev_server_interval
 
         # whether to re-extract the name from index.html on subsequent dev server runs
         self.extract_site_name = self.site_name is None
