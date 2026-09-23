@@ -132,12 +132,14 @@ class TemplateMarkdown(Stage):
         )
 
         # Autogenerate the menu contents, and check for a homepage
-        auto_menu_contents = []
         for leaf_uuid in tree.leaves["uuids"]:
             title = self._get_leaf_metadata(
                 "title", leaf_uuid, tree, metadata_provider="cambium"
             )
             path = tree.leaves["final_path"][leaf_uuid]
+            if path.suffix not in (".htm", ".html"):
+                continue
+
             is_top_level = len(path.parts) == 1 or (
                 len(path.parts) == 2 and is_valid_index_html(path)
             )
@@ -148,7 +150,6 @@ class TemplateMarkdown(Stage):
                 jinja_globals.auto_menu_contents.append(
                     {"name": title, "filename": str(path)}
                 )
-        jinja_globals.auto_menu_contents = auto_menu_contents
 
         return jinja_globals.model_dump()
 
