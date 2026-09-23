@@ -197,10 +197,6 @@ footer {
       flex-direction: column;
       justify-content: center;
       gap: 1rem;
-
-      #back-to-top-button {
-        margin-left: 1.55rem;
-      }
     }
   }
 }
