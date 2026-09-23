@@ -207,6 +207,7 @@ def main(
     except typer.BadParameter:
         raise
     except Exception as error:
+        # TODO: if there's an error, should we remove _build?
         if show_traceback:
             raise
         raise ClickException(str(error))
