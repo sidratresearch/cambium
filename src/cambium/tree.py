@@ -574,4 +574,4 @@ class TreeSpan:
             logger.debug(f"Copying static file {initial_path} to {final_path}")
             shutil.copy(initial_path, final_path)
             # ensure the file is writable in case it will be overwritten
-            final_path.chmod(stat.S_IWUSR)
+            final_path.chmod(stat.S_IWUSR | stat.S_IRUSR | initial_path.stat().st_mode)
