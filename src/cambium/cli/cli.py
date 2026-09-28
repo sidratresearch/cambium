@@ -1,4 +1,5 @@
 import json
+import shutil
 import signal
 from pathlib import Path
 from typing import Annotated, Any
@@ -207,7 +208,11 @@ def main(
     except typer.BadParameter:
         raise
     except Exception as error:
-        # TODO: if there's an error, should we remove _build?
+        if (
+            hasattr(config.current_config, "build_dir")
+            and config.current_config.build_dir.exists()
+        ):
+            shutil.rmtree(config.current_config.build_dir)
         if show_traceback:
             raise
         raise ClickException(str(error))
