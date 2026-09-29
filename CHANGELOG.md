@@ -24,6 +24,7 @@
 - Add `extensions` configuration entry to list Python modules that Cambium should load
 - Add warning on startup if there may be unremoved temporary directories
 - Add default menu content
+- Add default favicon
 
 ### Fixed
 
