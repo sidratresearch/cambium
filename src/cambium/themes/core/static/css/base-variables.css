@@ -4,6 +4,7 @@
   --cambium-tablet-font-size: calc(var(--cambium-font-size) - 2pt);
   --cambium-mobile-font-size: calc(var(--cambium-font-size) - 4pt);
   --cambium-font-family: sans-serif;
+  --cambium-monospace-font-family: monospace;
   --cambium-font-weight: 400;
 
   /* Colours */

@@ -1,5 +1,6 @@
 :root {
   --cambium-font-family: "Source Sans 3 VF", sans-serif;
+  --cambium-monospace-font-family: "Intel One Mono VF", monospace;
 
   /* Colours */
   --cambium-primary-colour-light: indianred;

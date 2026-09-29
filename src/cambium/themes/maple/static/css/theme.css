@@ -1,5 +1,6 @@
 /* Maple-specific styling */
-@import url(../fonts/source-sans-3VF.css);
+@import url(../fonts/source-sans-3/source-sans-3VF.css);
+@import url(../fonts/intel-one-mono/intel-one-monoVF.css);
 
 /* Import styling */
 @import url("maple-menu.css");

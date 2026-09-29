@@ -1,0 +1,15 @@
+@font-face {
+  font-family: "Intel One Mono VF";
+  font-weight: 200 900;
+  font-style: normal;
+  font-stretch: normal;
+  src: url("IntelOneMono-VariableFont_wght.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Intel One Mono VF";
+  font-weight: 200 900;
+  font-style: italic;
+  font-stretch: normal;
+  src: url("IntelOneMono-Italic-VariableFont_wght.woff2") format("woff2");
+}

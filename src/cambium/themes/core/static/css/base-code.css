@@ -6,3 +6,7 @@ pre:has(> code) {
   padding: 1rem 1rem 0.2rem;
   overflow-x: scroll;
 }
+
+code {
+  font-family: var(--cambium-monospace-font-family);
+}
