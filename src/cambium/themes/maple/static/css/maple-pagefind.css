@@ -29,6 +29,10 @@ body[data-pf-theme="dark"] {
   border-radius: var(--pf-border-radius);
 }
 
+:is(*, #\#):is(*, #\#):is(*, #\#) .pf-heading-chip {
+  border-radius: var(--pf-border-radius);
+}
+
 /* Make the focus border primary colour within results modal */
 :is(*, #\#):is(*, #\#):is(*, #\#) .pf-results {
   --pf-border-focus: var(--cw-primary-colour);
@@ -37,6 +41,12 @@ body[data-pf-theme="dark"] {
 /* Decrease spacing between results and sub-results */
 :is(*, #\#):is(*, #\#):is(*, #\#) .pf-result {
   gap: 0.1rem;
+}
+
+/* Remove Number Sign before sub-results */
+:is(*, #\#):is(*, #\#):is(*, #\#) .pf-heading-link::before {
+  content: "";
+  margin-inline-end: 0;
 }
 
 @media (max-width: 600px) {
