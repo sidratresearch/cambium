@@ -1,4 +1,5 @@
 table.cambium-preview-csv {
+  min-width: 100%;
   caption div {
     display: flex;
     justify-content: space-between;
