@@ -65,7 +65,7 @@
     }
 
     tr:last-of-type td {
-      border-bottom: 1px solid var(--cw-secondary-colour);
+      border-bottom: 2px solid var(--cw-border-colour);
     }
 
     tr:nth-child(even) {
