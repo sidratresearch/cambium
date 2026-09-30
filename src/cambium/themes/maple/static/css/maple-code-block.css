@@ -1,0 +1,17 @@
+pre {
+  font-family: "Intel One Mono VF", monospace;
+  font-size: 0.75em;
+  border-top-color: var(--cw-primary-colour);
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-bottom-color: var(--cw-primary-colour);
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  margin-top: 1.75em;
+  margin-bottom: 1.75em;
+}
+
+pre:has(> code) {
+  padding-left: 0;
+  padding-right: 0;
+}
