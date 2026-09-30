@@ -10,6 +10,7 @@
 - Error messages are not duplicated in the log
 - Several theme elements (header, footer, default font) have been moved from root to maple
 - Reorganize utility functions
+- Namespace custom Jinja globals (removed `.cambium/jinja_variables`), with some predefined top-level options, and the rest moved into theme folders
 
 ### Added
 

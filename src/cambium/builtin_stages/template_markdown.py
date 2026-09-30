@@ -24,8 +24,12 @@ from ..utils.path_utils import (
 logger = logging.getLogger(__name__)
 
 
-class CambiumGlobalJinjaVariables(BaseModel, extra="forbid"):
-    # sitewide items
+class GlobalJinjaVariables(BaseModel, extra="forbid"):
+    """Jinja variables set in-code that apply to all pages.
+
+    Fields cannot have any overlap with PageJinjaVariables or UserCambiumJinjaVariables.
+    """
+
     site_name: str
     cambium_version: str
     build_time_utc: datetime.datetime
@@ -34,15 +38,34 @@ class CambiumGlobalJinjaVariables(BaseModel, extra="forbid"):
     homepage_filename: str | None
 
 
-class CambiumPageJinjaVariables(BaseModel, extra="forbid"):
-    # page specific items
+class PageJinjaVariables(BaseModel, extra="forbid"):
+    """Jinja variables set in-code that are page-specific.
+
+    Fields cannot have any overlap with GlobalJinjaVariables or
+    UserCambiumJinjaVariables.
+    """
+
     relative_path_modifier: str
     initial_path: Path
     metadata: LeafMetadata
     main_content: str
 
 
+class UserCambiumJinjaVariables(BaseModel, extra="forbid"):
+    """Jinja variables that can be set with files in `.cambium`.
+
+    Themes can also not have these names.
+
+    Fields cannot have any overlap with GlobalJinjaVariables or PageJinjaVariables.
+    """
+
+    menu: str | None = None
+    footer_content: str | None = None
+
+
 class TemplateMarkdownConfig(StageConfig):
+    """Configuration for the stage."""
+
     enable_paths: list[str] = ["*.md", "*.MD"]
     disable_paths: list[str] = []
 
@@ -104,39 +127,46 @@ class TemplateMarkdown(Stage):
 
     def _get_user_jinja_globals(self, tree: TreeSpan) -> dict[str, str]:
         """Get user-created variables to load into Jinja globals (apply sitewide)."""
-        search_path = tree.root_directory / ".cambium/jinja_variables"
-        variable_paths = search_path.glob("**/*")
-
+        search_path = tree.root_directory / ".cambium"
         jinja_globals: dict[str, str] = {}
-        for path in variable_paths:
-            logger.debug(f"Reading Jinja variables from {path}")
-            globals_key = path.name.removesuffix(path.suffix)
+        if not search_path.exists():
+            return jinja_globals
 
-            if (
-                globals_key in CambiumPageJinjaVariables.model_fields
-                or globals_key in CambiumGlobalJinjaVariables.model_fields
-            ):
-                if globals_key != path.name:
-                    msg = f"{globals_key} ({path.name})"
-                else:
-                    msg = path.name
-                msg += f" is a reserved name and cannot be used in {search_path}."
-                raise RuntimeError(msg)
-            if globals_key in jinja_globals:
-                raise RuntimeError(
-                    f"Multiple files which resolve to {globals_key} in {search_path}."
+        # grab the non theme-specific entries
+        allowed_filenames = UserCambiumJinjaVariables.model_fields.keys()
+        for path in [f for f in search_path.iterdir() if f.is_file()]:
+            key = path.stem
+            if key not in allowed_filenames:
+                logger.debug(
+                    f"Ignoring file {path} as it is not a valid custom Jinja global"
                 )
+                continue
+            if key in jinja_globals:
+                raise RuntimeError(
+                    f"Multiple files which resolve to {key} in {search_path}."
+                )
+            logger.debug(f"Reading {path} as a custom Jinja global")
+            jinja_globals[key] = parse_user_globals_content(path)
 
-            variable = path.read_text()
-            if path.suffix == ".md":
-                # TODO: should this actually be a part of transform markdown somehow?
-                variable = markdown_to_html(variable)
-            jinja_globals[globals_key] = variable
+        # grab theme-specific entries
+        theme_globals = {}
+        search_path = search_path / tree.config.theme_name
+        if search_path.exists():
+            for path in [f for f in search_path.iterdir() if f.is_file()]:
+                key = path.stem
+                if key in theme_globals:
+                    raise RuntimeError(
+                        f"Multiple files which resolve to {key} in {search_path}."
+                    )
+                theme_globals[key] = parse_user_globals_content(path)
+                logger.debug(f"Reading {path} as a theme-specific custom Jinja global")
+        jinja_globals[tree.config.theme_name] = theme_globals
+
         return jinja_globals
 
     def _get_cambium_jinja_globals(self, tree: TreeSpan) -> dict[str, Any]:
         """Get Cambium-created variables to load into Jinja globals (apply sitewide)."""
-        jinja_globals = CambiumGlobalJinjaVariables(
+        jinja_globals = GlobalJinjaVariables(
             site_name=tree.config.site_name,
             cambium_version=__version__,
             build_time_utc=self.build_time_utc,
@@ -178,7 +208,7 @@ class TemplateMarkdown(Stage):
         # Jinja does not complain in a variable is missing from the environment
         # Something to think about wrt potential stage-added items and custom themes
 
-        cambium_jinja_variables = CambiumPageJinjaVariables(
+        cambium_jinja_variables = PageJinjaVariables(
             # general Cambium utility items
             relative_path_modifier=get_relative_path_modifier(
                 tree.leaves["final_path"][leaf_uuid]
@@ -192,3 +222,13 @@ class TemplateMarkdown(Stage):
         main_template = self.jinja_env.get_template(template_name)
         output_html = main_template.render(**cambium_jinja_variables.model_dump())
         input_path.write_text(output_html.strip())
+
+
+def parse_user_globals_content(path: Path) -> str:
+    """Process the content from a file in .cambium into something passed to Jinja."""
+    variable = path.read_text()
+    if path.suffix.lower() == ".md":
+        # TODO: should this actually be a part of transform markdown somehow?
+        variable = markdown_to_html(variable)
+
+    return variable

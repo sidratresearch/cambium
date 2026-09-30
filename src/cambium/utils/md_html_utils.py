@@ -437,6 +437,9 @@ def _apply_inline_attributes(element: Element) -> Element:
 
 def _apply_comment_attributes(document: block.Document) -> block.Document:
     """Parse HTML comments into attributes applied to the next block-level item."""
+    if len(document.children) == 0:
+        return document
+
     new_document = copy.deepcopy(document)
     new_document.children = []
 
