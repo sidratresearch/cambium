@@ -19,8 +19,8 @@
   --cambium-background-colour-light: white;
   --cambium-background-colour-dark: #222222;
 
-  --cambium-alternate-background-colour-light: white;
-  --cambium-alternate-background-colour-dark: #222222;
+  --cambium-alternate-background-colour-light: rgb(230, 230, 230);
+  --cambium-alternate-background-colour-dark: #333333;
 
   --cambium-font-colour-light: black;
   --cambium-font-colour-dark: #f9f9f9;

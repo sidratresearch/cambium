@@ -14,6 +14,9 @@
     from var(--cambium-primary-colour-dark) 85% calc(c * 0.8) h
   );
 
+  --cambium-alternate-background-colour-light: #fff5f5;
+  --cambium-alternate-background-colour-dark: #302323;
+
   --cambium-toggle-colour-light: #999;
   --cambium-toggle-colour-dark: #a9a9a9;
 }
