@@ -49,6 +49,10 @@ body[data-pf-theme="dark"] {
   margin-inline-end: 0;
 }
 
+:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-icon:hover {
+  background: var(--cw-primary-colour);
+}
+
 @media (max-width: 600px) {
   body,
   body[data-pf-theme="dark"] {
