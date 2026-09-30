@@ -11,6 +11,7 @@ body[data-pf-theme="dark"] {
   --pf-results-gap: 1rem;
   --pf-result-title-font-size: 1rem;
   --pf-result-excerpt-font-size: 0.8rem;
+  --pf-modal-backdrop: rgba(0, 0, 0, 0.55);
 }
 
 /* Get rid of padding around search icon */
@@ -49,8 +50,14 @@ body[data-pf-theme="dark"] {
   margin-inline-end: 0;
 }
 
+/* Add hover colour change to search icon */
 :is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-icon:hover {
   background: var(--cw-primary-colour);
+}
+
+/* Blur background when search modal is up */
+:is(*, #\#):is(*, #\#):is(*, #\#) dialog.pf-modal::backdrop {
+  backdrop-filter: blur(4px) saturate(75%);
 }
 
 @media (max-width: 600px) {
