@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from .. import __version__
 from ..metadata import LeafMetadata
-from ..stage import Stage
+from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
 from ..utils.md_html_utils import markdown_to_html
 from ..utils.other_utils import apply_to_leaves, make_jinja_environment
@@ -17,6 +17,8 @@ from ..utils.path_utils import (
     abs_leaf_path,
     get_relative_path_modifier,
     is_valid_index_html,
+    path_matches_patterns,
+    sort_user_paths,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,12 +42,22 @@ class CambiumPageJinjaVariables(BaseModel, extra="forbid"):
     main_content: str
 
 
+class TemplateMarkdownConfig(StageConfig):
+    enable_paths: list[str] = ["*.md", "*.MD"]
+    disable_paths: list[str] = []
+
+
 class TemplateMarkdown(Stage):
     # Primary Hook Functions
 
     def __init__(self, config_dict: dict[str, Any]) -> None:
-        super().__init__(config_dict)
+        self.config = TemplateMarkdownConfig.model_validate(config_dict)
+        self.enable_patterns = sort_user_paths(self.config.enable_paths)
+        self.disable_patterns = sort_user_paths(self.config.disable_paths)
+
+        self.requires = []
         self.runs_before = ["CheckLinks"]
+        self.runs_after = []
 
     def tree_hook(self, tree: TreeSpan) -> None:
 
@@ -83,10 +95,12 @@ class TemplateMarkdown(Stage):
         We can't filter on initial path since preview pages start with
         non-markdown suffixes.
         """
-        if tree.leaves["latest_path"][leaf_uuid].suffix.lower() != ".md":
-            return
+        latest_path = tree.leaves["latest_path"][leaf_uuid]
 
-        self._register_hook(leaf_uuid, tree, "post_hooks")
+        if path_matches_patterns(
+            latest_path, self.enable_patterns
+        ) and not path_matches_patterns(latest_path, self.disable_patterns):
+            self._register_hook(leaf_uuid, tree, "post_hooks")
 
     def _get_user_jinja_globals(self, tree: TreeSpan) -> dict[str, str]:
         """Get user-created variables to load into Jinja globals (apply sitewide)."""
