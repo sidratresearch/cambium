@@ -4,9 +4,10 @@
 
   /* Colours */
   --cambium-primary-colour-light: indianred;
-  --cambium-primary-colour-dark: oklch(
+  --cambium-primary-colour-dark: #cba6a6;
+  /* --cambium-primary-colour-dark: oklch(
     from var(--cambium-primary-colour-light) 75% calc(c * 0.8) h
-  );
+  ); */
   --cambium-secondary-colour-light: oklch(
     from var(--cambium-primary-colour-light) 45% calc(c * 1.1) h
   );
@@ -15,7 +16,7 @@
   );
 
   --cambium-alternate-background-colour-light: #fff5f5;
-  --cambium-alternate-background-colour-dark: #302323;
+  --cambium-alternate-background-colour-dark: #382e2e;
 
   --cambium-toggle-colour-light: #999;
   --cambium-toggle-colour-dark: #a9a9a9;
