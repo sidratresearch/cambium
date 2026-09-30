@@ -50,12 +50,14 @@
     transition: left 0.3s ease;
     opacity: 80%;
   }
+}
 
-  .toggle-input:checked + .toggle-label::after {
+html[data-theme="dark"] {
+  .toggle-input + .toggle-label::after {
     left: 21px;
   }
 
-  .toggle-input:checked + .toggle-label {
+  .toggle-input + .toggle-label {
     background-color: var(--cw-toggle-colour);
     .dark-icon {
       visibility: hidden;

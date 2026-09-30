@@ -1,28 +1,27 @@
 // Light/Dark Mode Switching
-export function cambiumToggleLightDark(mode = null) {
-  //   Swaps Light and/or dark
+export function cambiumToggleLightDark(mode, setLocalStorage = true) {
+  //   Swaps Light and/or dark mode, destination is whatever was passed
   const body = document.body;
-  if (!mode) {
-    const mode = document.documentElement.getAttribute("data-theme");
-  }
 
-  if (mode == "dark") {
-    // Swap to light
-    document.documentElement.setAttribute("data-theme", "light");
-    localStorage.setItem("theme", "light");
-    body.dataset.pfTheme = "light";
-  } else if (mode == "light") {
-    // Swap to dark
-    document.documentElement.setAttribute("data-theme", "dark");
-    body.dataset.pfTheme = "dark";
-    localStorage.setItem("theme", "dark");
+  document.documentElement.setAttribute("data-theme", mode);
+  body.dataset.pfTheme = mode; // set the theme for Pagefind
+
+  // on the first load, don't save a user preference
+  // but save that preference when the theme changes from a user action
+  if (setLocalStorage) {
+    localStorage.setItem("theme", mode);
   }
 }
 
 export function cambiumInitializeLightDark() {
-  const body = document.body;
   // Reads info from local storage about light/dark
-  const theme = localStorage.getItem("theme");
-  // Swaps theme
-  cambiumToggleLightDark(theme);
+  let theme = localStorage.getItem("theme");
+
+  // use the website default if nothing in localstorage
+  if (!theme) {
+    theme = document.documentElement.getAttribute("data-theme");
+  }
+
+  // Swaps theme, but since this is the first load, don't set localstorage
+  cambiumToggleLightDark(theme, false);
 }

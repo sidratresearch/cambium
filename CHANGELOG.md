@@ -26,6 +26,7 @@
 - Add warning on startup if there may be unremoved temporary directories
 - Add default menu content
 - Add default favicon
+- Add shared and theme-specific entries in the config file
 
 ### Fixed
 

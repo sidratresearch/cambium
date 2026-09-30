@@ -8,6 +8,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from .. import __version__
+from ..config import ThemeConfig
 from ..metadata import LeafMetadata
 from ..stage import Stage, StageConfig
 from ..tree import TreeSpan
@@ -36,6 +37,7 @@ class GlobalJinjaVariables(BaseModel, extra="forbid"):
     dev_server: bool
     auto_menu_contents: list[dict[str, str]]
     homepage_filename: str | None
+    theme_config: ThemeConfig
 
 
 class PageJinjaVariables(BaseModel, extra="forbid"):
@@ -173,6 +175,7 @@ class TemplateMarkdown(Stage):
             dev_server=tree.config.dev_server,
             auto_menu_contents=[],
             homepage_filename=None,
+            theme_config=tree.config.theme_config,
         )
 
         # Autogenerate the menu contents, and check for a homepage

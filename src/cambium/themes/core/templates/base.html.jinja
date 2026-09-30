@@ -10,8 +10,15 @@
   {% endif %}
 {% endset %}
 
+{# Set default colour mode for the theme overall, for Core this is light mode #}
+{% set default_colour_mode = "light" %}
+{# Override that colour mode if requested by the site creator #}
+{% if theme_config.default_colour_mode != None %}
+  {% set default_colour_mode = theme_config.default_colour_mode %}
+{% endif %}
+
 <!DOCTYPE html>
-<html lang="en" id="cambium-page-{{ metadata.page_id }}">
+<html lang="en" id="cambium-page-{{ metadata.page_id }}" data-theme="{{ default_colour_mode }}">
   {% include "head.html.jinja" %}
 
   <body>

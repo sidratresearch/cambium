@@ -58,6 +58,16 @@ class HostingOptions(TypedDict):
     url: Optional[HttpUrl]
 
 
+class ThemeConfig(BaseModel, extra="allow"):
+    default_colour_mode: Literal["light", "dark"] | None = None
+    """Whether to set a preference for light or dark mode."""
+
+    # outer dict is just the existence of extra entries
+    # inner dict is what those entries actually get validated to
+    __pydantic_extra__: dict[str, dict[str, Any]] = {}
+    """Other keys should be theme-specific dicts."""
+
+
 class CLIConfiguration(BaseModel):
     """Validation for config options that can be set on the command line.
 
@@ -139,6 +149,9 @@ class FileConfiguration(BaseModel):
     """Subpath of the domain where the site will be hosted (e.g. 'science'
     to host at your-domain.com/science)
     """
+
+    theme_config: Optional[ThemeConfig] = ThemeConfig()
+    """Configuration entries for the theme."""
 
 
 class MergedConfiguration(FileConfiguration, CLIConfiguration):
@@ -237,7 +250,6 @@ class WorkingConfiguration:
             selected_theme_directory.exists()
         ), f"Unknown theme '{self.input_config.theme}'"
 
-        self.theme_name = self.input_config.theme
         self.populate_static_directories(
             builtin_themes_directory, selected_theme_directory
         )
@@ -248,6 +260,17 @@ class WorkingConfiguration:
             Path("static") / p for p in ("css/custom.css", "js/custom.js")
         ]
         """Static files that can only be provided by the user."""
+
+        self.theme_name = self.input_config.theme
+        shared_keys = ThemeConfig.model_fields.keys()
+        # remove config items for not-in-use themes
+        self.theme_config = ThemeConfig(
+            **{
+                k: v
+                for k, v in self.input_config.theme_config.model_dump().items()
+                if k == self.theme_name or k in shared_keys
+            }
+        )
 
         # Hosting options
         self.populate_hosting_options()
