@@ -236,6 +236,8 @@ class WorkingConfiguration:
         assert (
             selected_theme_directory.exists()
         ), f"Unknown theme '{self.input_config.theme}'"
+
+        self.theme_name = self.input_config.theme
         self.populate_static_directories(
             builtin_themes_directory, selected_theme_directory
         )
