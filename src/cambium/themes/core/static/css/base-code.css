@@ -3,7 +3,7 @@
 pre:has(> code) {
   background-color: var(--cw-alternate-background-colour);
   scrollbar-color: var(--cw-border-colour) var(--cw-secondary-font-colour);
-  padding: 1rem 1rem 0.2rem;
+  padding: 0.5rem 0.2rem;
   overflow-x: auto;
 }
 
