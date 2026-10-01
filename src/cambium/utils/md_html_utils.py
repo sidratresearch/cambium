@@ -20,6 +20,7 @@ from marko.helpers import render_dispatch
 from marko.html_renderer import HTMLRenderer
 from slugify import slugify
 
+from ..macros.markdown_macro_utils import apply_markdown_macros
 from .other_utils import get_href_destination, split_respecting_quotes
 
 if TYPE_CHECKING:
@@ -343,9 +344,8 @@ def markdown_to_html(
 
     document = marko_object.parse(markdown)
 
-    # a macro that happens here should give back an HTML string that we can maybe
-    # wrap into a Marko HTML block
-    # to prevent macros from calling other macros we could have a sentinel value
+    if leaf_uuid is not None:
+        document = apply_markdown_macros(document, leaf_uuid, tree, markdown)
 
     document = _apply_comment_attributes(document)
     document = _apply_inline_attributes(document)

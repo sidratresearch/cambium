@@ -27,6 +27,7 @@
 - Add default menu content
 - Add default favicon
 - Add shared and theme-specific entries in the config file
+- Add custom macro functionality, with some builtin options for macros usable in markdown documents
 
 ### Fixed
 

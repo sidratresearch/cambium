@@ -10,6 +10,7 @@ from marko.element import Element
 from marko.inline import Link
 from slugify import slugify
 
+from ..metadata import TableOfContentsEntry
 from ..stage import Stage
 from ..tree import TreeSpan
 from ..utils.md_html_utils import add_heading_anchors, get_element_text
@@ -179,64 +180,16 @@ def _get_linked_leaves(
     return linked_leaves
 
 
-def _get_markdown_toc(document: Document) -> str:
+def _get_markdown_toc(document: Document) -> list[TableOfContentsEntry]:
     """Extract a table of contents from markdown and render it to an HTML string."""
     document = add_heading_anchors(document)
 
     flat_toc = [
-        {"id": child.id, "text": get_element_text(child), "level": child.level}
+        TableOfContentsEntry(
+            id=child.id, text=get_element_text(child), level=child.level
+        )
         for child in document.children
         if isinstance(child, Heading)
     ]
 
-    return _render_toc(flat_toc, mindepth=2)
-
-
-def _render_toc(
-    headings: list[dict[str, str | int]], mindepth: int = 1, maxdepth: int | None = None
-) -> str:
-    """Render a set of dictionaries as a nested <ul>.
-
-    `mindepth = X` means "Only show items with heading level >= X"
-
-    In future may want to port this whole thing to Jinja, but currently we
-    don't need that level of customizability.
-    Modification of marko's TocRenderMixin.render_toc
-    """
-    first_level = None
-    last_level = None
-    rv = []
-
-    opening, closing = '<ul class="toc-level-{level}">\n', "</ul>\n"
-    item_format = '<li><a href="#{slug}">{text}</a></li>'
-
-    for heading in headings:
-        level, slug, text = heading["level"], heading["id"], heading["text"]
-
-        if level < mindepth or (maxdepth is not None and level > maxdepth):
-            continue
-
-        # initialize
-        if first_level is None:
-            first_level = mindepth
-            last_level = level
-            rv.append(opening.format(level=level))
-
-        # step in
-        if last_level == level - 1:
-            rv.append("\t" * last_level + opening.format(level=level))
-            last_level = level
-
-        # step out
-        while last_level > level:
-            rv.append("\t" * level + closing)
-            last_level -= 1
-        rv.append("\t" * level + item_format.format(slug=slug, text=text) + "\n")
-
-    if first_level is None or last_level is None:
-        return ""
-
-    for _ in range(first_level, last_level + 1):
-        rv.append(closing)
-
-    return "".join(rv).strip()
+    return flat_toc

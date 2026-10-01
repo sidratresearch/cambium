@@ -25,13 +25,6 @@
     {% include 'header.html.jinja' %}
 
     <div class="main-content container">
-      {# If `table_of_contents` is not a valid key for `metadata`, Jinja
-      returns an undefined obj (first test); which is different from the
-      value being assigned the Python constant None (written none) #}
-      {% if metadata.table_of_contents is defined and metadata.table_of_contents != none and metadata.table_of_contents|length > 0 %}
-        <nav>{{ metadata.table_of_contents }}</nav>
-      {% endif %}
-
       <main>{{ main_content }}</main>
     </div>
 

@@ -8,10 +8,21 @@ from collections import defaultdict
 from typing import Any, Optional
 
 from pydantic import BaseModel
+from typing_extensions import (
+    TypedDict,  # import from typing in 3.12 https://pydantic.dev/docs/validation/latest/errors/usage_errors/#typed-dict-version
+)
 
 logger = logging.getLogger(__name__)
 
 StageMetadata = defaultdict(lambda: None)
+
+
+class TableOfContentsEntry(TypedDict):
+    """Information about a single entry in a TOC."""
+
+    id: str
+    text: str
+    level: int
 
 
 class LeafMetadata(BaseModel):
@@ -29,8 +40,8 @@ class LeafMetadata(BaseModel):
     modification_time: Optional[str] = None
     """Modification time of original file, as UTC ISO string"""
 
-    table_of_contents: Optional[str] = None
-    """HTML string with headings, only defined for markdown files"""
+    table_of_contents: Optional[list[TableOfContentsEntry]] = None
+    """Flat listing of entries to put into a TOC, only defined for markdown files"""
 
     page_id: Optional[str] = None
     """String used as an HTML ID unique to this page"""
