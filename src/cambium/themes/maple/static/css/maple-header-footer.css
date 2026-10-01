@@ -30,9 +30,10 @@
   .header-centre {
     overflow: hidden;
     text-align: center;
+    display: flex;
+    justify-content: center;
     .site-title {
       color: var(--cw-font-colour);
-      display: block;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
