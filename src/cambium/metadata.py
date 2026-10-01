@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import logging
 from collections import defaultdict
 from typing import Any, Optional
@@ -47,4 +48,6 @@ class LeafMetadata(BaseModel):
     # if a stage wants to rewrite one of the default items, it should instead create
     # its own copy within it's dictionary
 
-    stage_metadata: dict[str, dict[str, Any]] = defaultdict(lambda: StageMetadata)
+    stage_metadata: dict[str, dict[str, Any]] = defaultdict(
+        lambda: copy.copy(StageMetadata)
+    )
