@@ -16,6 +16,7 @@ import yaml
 from pydantic import BaseModel, HttpUrl, PositiveInt
 
 from . import __version__
+from .macros.macro_utils import get_available_macros
 from .stage import populate_stage_dict
 from .utils.path_utils import sort_user_paths
 
@@ -193,7 +194,7 @@ class WorkingConfiguration:
             try:
                 importlib.import_module(import_string)
             except (ImportError, ModuleNotFoundError) as e:
-                ImportError(f"Error importing extensions: {e}")
+                raise ImportError(f"Error importing extensions: {e}")
 
         # Creating Path object for root directory and testing
         self.root_dir = Path(self.input_config.root_directory)
@@ -271,6 +272,8 @@ class WorkingConfiguration:
                 if k == self.theme_name or k in shared_keys
             }
         )
+
+        self.macros = get_available_macros()
 
         # Hosting options
         self.populate_hosting_options()

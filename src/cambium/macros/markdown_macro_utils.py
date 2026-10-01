@@ -9,7 +9,6 @@ from marko import block
 from marko.element import Element
 
 from ..tree import TreeSpan
-from . import REGISTERED_MACROS
 from .macro_utils import (
     MACRO_ACTIONS,
     MacroArgs,
@@ -21,7 +20,10 @@ from .macro_utils import (
 
 
 def apply_markdown_macros(
-    document: block.Document, leaf_uuid: str, tree: TreeSpan, original_text: str
+    document: block.Document,
+    leaf_uuid: str,
+    tree: TreeSpan,
+    original_text: str,
 ) -> block.Document:
     """Apply macros to a markdown document."""
     new_document = copy.deepcopy(document)
@@ -33,7 +35,6 @@ def apply_markdown_macros(
         parse_macro_params=_parse_macro_params_markdown,
         unwrap_content=functools.partial(_unwrap_content_markdown, original_text),
         wrap_result=_wrap_result_markdown,
-        registered_macros=REGISTERED_MACROS,
     )
     return new_document
 

@@ -11,6 +11,7 @@ from typing_extensions import (
 )
 
 from ..tree import TreeSpan
+from ..utils.other_utils import get_all_subclasses
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +60,28 @@ class MacroCommand(TypedDict):
     original_str: str
 
 
+def get_available_macros() -> dict[str, type[Macro]]:
+    """Get the set of available macros.
+
+    Must be run after WorkingConfiguration imports external packages.
+    """
+    from . import builtin_macros
+
+    macros = {cls.__name__: cls for cls in get_all_subclasses(Macro)}
+
+    registered_macros = {}
+
+    for name, cls in macros.items():
+        module = cls.__module__.split(".", maxsplit=1)[0]
+        if module == "cambium":
+            registered_macros[name] = cls
+        else:
+            # prepend external macros with the package name, same as stages
+            registered_macros[f"{module}.{name}"] = cls
+
+    return registered_macros
+
+
 def _apply_macros(
     elements: Iterable[T],
     leaf_uuid: str,
@@ -67,7 +90,6 @@ def _apply_macros(
     parse_macro_params: Callable[[T], tuple[MacroArgs, MacroKwargs]],
     unwrap_content: Callable[[list[T]], str],
     wrap_result: Callable[[str], T],
-    registered_macros: dict[str, Macro],
 ) -> Iterable[T]:
     """Generic (non-language-specific) function to apply macros to content.
 
@@ -78,19 +100,20 @@ def _apply_macros(
     new_elements = []
 
     element_indexes = list(range(len(elements)))
+    available_macros = tree.config.macros
 
     for i in element_indexes:
         element = elements[i]
 
         # check if this element is a macro command, and if so, get the details
-        requested_macro = get_requested_macro(element, registered_macros.keys())
+        requested_macro = get_requested_macro(element, available_macros.keys())
 
         if requested_macro is None:
             new_elements.append(element)
             continue
 
         # grab the actual class definition from the macro name
-        macro_class = registered_macros[requested_macro["macro_name"]]
+        macro_class = available_macros[requested_macro["macro_name"]]
 
         # parse the macro command into args and kwargs
         try:
@@ -114,7 +137,7 @@ def _apply_macros(
                 content_elements.append(elements[k])
 
                 # check if it's the stop item
-                rqm = get_requested_macro(elements[k], registered_macros.keys())
+                rqm = get_requested_macro(elements[k], available_macros.keys())
                 if rqm is None:
                     continue
                 if rqm["macro_name"] != requested_macro["macro_name"]:
