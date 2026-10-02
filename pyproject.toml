@@ -42,6 +42,7 @@ dependencies = [
 ]
 urls.Homepage = "https://www.buildwithcambium.org/"
 urls.Issues = "https://github.com/sidratresearch/cambium/issues"
+urls.Repository = "https://github.com/sidratresearch/cambium"
 scripts.cambium = "cambium.cli.cli:app"
 
 [dependency-groups]
@@ -55,10 +56,10 @@ dev = [
 ]
 
 [tool.poetry]
+version = "0.0.0"
 requires-plugins.poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [
   "plugin",
 ] }
-version = "0.0.0"
 
 [tool.poetry-dynamic-versioning]
 enable = true
