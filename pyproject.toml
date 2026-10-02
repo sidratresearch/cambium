@@ -40,7 +40,7 @@ dependencies = [
   "pyyaml>=6.0.3,<7",
   "typer>=0.25.1,<0.26",
 ]
-urls.Homepage = "https://github.com/sidratresearch/cambium"
+urls.Homepage = "https://www.buildwithcambium.org/"
 urls.Issues = "https://github.com/sidratresearch/cambium/issues"
 scripts.cambium = "cambium.cli.cli:app"
 
