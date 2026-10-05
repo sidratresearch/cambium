@@ -30,13 +30,17 @@ class TitleParser(HTMLParser):
     def handle_starttag(self, tag: str, _) -> None:
         if tag.lower() == "title":
             self.in_title = True
+        if tag.lower() == "h1":
+            self.in_title = True
 
     def handle_endtag(self, tag: str) -> None:
         if tag.lower() == "title":
             self.in_title = False
+        if tag.lower() == "h1" and self.title is None:
+            self.in_title = False
 
     def handle_data(self, data: str) -> None:
-        if self.in_title:
+        if self.in_title and self.title is None:
             self.title = data.strip()
 
 
@@ -138,6 +142,12 @@ def extract_md_metadata(input_path: Path, leaf_uuid: str, tree: TreeSpan) -> Non
         if isinstance(element, Heading) and (element.level == 1):
             tree.leaves["metadata"][leaf_uuid].title = get_element_text(element)
             break
+        elif isinstance(element, HTMLBlock):
+            html_parser = TitleParser()
+            html_parser.feed(element.body)
+            if html_parser.title is not None:
+                tree.leaves["metadata"][leaf_uuid].title = html_parser.title
+                break
         elif not (is_comment(element) or isinstance(element, BlankLine)):
             break
 
