@@ -1,6 +1,6 @@
 <p align="center">
-    <a href="https://github.com/sidratresearch/cambium">
-        <img src="https://raw.githubusercontent.com/sidratresearch/cambium/main/docs/assets/cambiumlogo.png" width="200" height="200">
+    <a href="https://buildwithcambium.org">
+        <img src="https://raw.githubusercontent.com/sidratresearch/cambium/main/docs/assets/cambiumlogo.png" width="200" height="200" alt="Cambium logo">
     </a>
 </p>
 
@@ -8,10 +8,13 @@
 <p align="center">A Light Touch Markdown Static Site Generator</p>
 <br />
 
-![Static Badge](https://img.shields.io/badge/status-pre--alpha-orange)
-![PyPI - Version](https://img.shields.io/pypi/v/cambium)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/cambium)
-![PyPI - License](https://img.shields.io/pypi/l/cambium)
+<div>
+    <img src="https://img.shields.io/badge/status-pre--alpha-orange" alt="status: pre-alpha"/>
+    <img src="https://img.shields.io/pypi/v/cambium" alt="Currently available on PyPI"/>
+    <img src="https://img.shields.io/pypi/pyversions/cambium" alt="List of compatible Python versions"/>
+    <img src="https://img.shields.io/pypi/l/cambium" alt="MIT licensed"/>
+</div>
+<br />
 
 A Python-based static site generator for repositories of organized markdown pages.
 
