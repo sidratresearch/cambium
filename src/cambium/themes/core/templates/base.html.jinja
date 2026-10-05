@@ -3,7 +3,9 @@
 
 {% set title %}
   {# set the tab title based on whether or not the specific page has a title #}
-  {% if metadata.title %}
+  {% if metadata.title and metadata.page_id == "index" %}
+    {{ metadata.title|trim }}
+  {% elif metadata.title %}
     {{ metadata.title|trim ~ " - " ~ site_name |trim }}
   {% else %}
     {{ site_name|trim }}
