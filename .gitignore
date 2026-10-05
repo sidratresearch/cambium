@@ -226,6 +226,7 @@ __marimo__/
 # Temporary Files and Local Builds
 tmp/
 _build
+/.cambium-dev
 
 # Custom local-only file for running tests
 /run-multiplatform-tests.sh
