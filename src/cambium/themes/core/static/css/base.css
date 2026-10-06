@@ -157,10 +157,15 @@ ul {
   }
 }
 
-/* :is(dir, dl, menu, ol, ul) ul,
-ol {
-  margin-top: 0.15rem;
-} */
+/* Remove vertical space from sublists */
+li > ul,
+li > ol {
+  margin-bottom: 0;
+  margin-top: 0;
+  > li:last-of-type {
+    padding-bottom: 0;
+  }
+}
 
 ul {
   list-style-type: square;
