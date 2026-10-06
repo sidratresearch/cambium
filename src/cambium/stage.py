@@ -268,6 +268,11 @@ def populate_stage_dict(
                     f"Error importing requested stage {stage_name}: {e}"
                 )
 
+            # convert `package.Stage` to `Stage` in stage config
+            if stage_name in stage_config:
+                stage_config[new_name] = stage_config[stage_name]
+                del stage_config[stage_name]
+
         else:
             raise RuntimeError(
                 f"Requested stage `{stage_name}` is not a Cambium builtin. "
