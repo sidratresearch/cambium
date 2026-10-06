@@ -11,7 +11,7 @@
   <table class="cambium-preview-csv">
     <caption>
       <div>
-        <a href="./{{ download_filename }}">
+        <a href="./{{ download_filename }}" download="{{ download_filename }}">
           {% include "icon-download.html.jinja" %}
           {{ download_filename }}
           ({{ csv_filesize|filesizeformat }})</a
