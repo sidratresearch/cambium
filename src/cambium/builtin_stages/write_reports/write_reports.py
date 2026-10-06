@@ -10,9 +10,9 @@ a pre-existing file, an error would be raised at `Stage.add_leaf()`.
 
 import logging
 from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
 
-from ...stage import Stage, StageConfig
+from ...stage import Stage, StageConfig, StageFileConfig
 from ...tree import TreeSpan
 from ...utils.other_utils import make_jinja_environment
 from ...utils.path_utils import abs_leaf_path, get_relative_path_modifier
@@ -61,7 +61,7 @@ class _Report:
 
 
 class WriteReports(Stage):
-    def __init__(self, config_dict: dict[str, Any]) -> None:
+    def __init__(self, config_dict: StageFileConfig) -> None:
         self.config = WriteReportsConfig.model_validate(config_dict)
         self.requires = []
         self.runs_before = []

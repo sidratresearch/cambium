@@ -1,20 +1,5 @@
-"""Definition and helper functions for the abstract Stage class."""
+"""Definition and helper functions for the abstract Stage class.
 
-from __future__ import annotations
-
-import importlib
-import logging
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
-
-from pydantic import BaseModel, ValidationError
-
-from .utils.other_utils import get_all_subclasses
-
-if TYPE_CHECKING:
-    from .tree import TreeSpan
-
-"""
 When adding a new built-in stage, add it to builtin_stages/__init__.py,
 and add documentation to docs/builtin_stages.md
 
@@ -27,6 +12,21 @@ In general if you're adding a new stage
 - overwrite any of pre_hook(), transform(), post_hook()
 - overwrite the initialize and finalize functions for each hook as needed
 """
+
+from __future__ import annotations
+
+import importlib
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Literal
+
+from pydantic import BaseModel, ValidationError
+
+from .utils.other_utils import get_all_subclasses
+
+if TYPE_CHECKING:
+    from .tree import TreeSpan
+
+StageFileConfig = dict[str, Any]
 
 
 class StageConfig(BaseModel, extra="forbid"):
@@ -44,7 +44,7 @@ class Stage:
     and used.
     """
 
-    def __init__(self, config_dict: dict[str, Any]) -> None:
+    def __init__(self, config_dict: StageFileConfig) -> None:
         self.config = StageConfig.model_validate(config_dict)
         """Validated configuration"""
 
@@ -247,8 +247,7 @@ class Stage:
 
 def populate_stage_dict(
     stage_list: list[str],
-    stage_config: dict[str, dict[str, Any]],
-    logger: logging.Logger,
+    stage_config: dict[str, StageFileConfig],
 ) -> dict[str, Stage]:
     """Importing Built-in Stages and compiling all Stages available to Cambium."""
     from . import builtin_stages
@@ -257,21 +256,11 @@ def populate_stage_dict(
         if stage_name in builtin_stages.__all__:
             continue
 
+        # handle external stages
         if "." in stage_name:
-            import_string, new_name = stage_name.rsplit(".", maxsplit=1)
-            stage_list[i] = new_name
-            try:
-                # test importing the stage
-                _ = getattr(importlib.import_module(import_string), new_name)
-            except AttributeError as e:
-                raise AttributeError(
-                    f"Error importing requested stage {stage_name}: {e}"
-                )
-
-            # convert `package.Stage` to `Stage` in stage config
-            if stage_name in stage_config:
-                stage_config[new_name] = stage_config[stage_name]
-                del stage_config[stage_name]
+            stage_list, stage_config = _rename_external_stage(
+                stage_name, i, stage_list, stage_config
+            )
 
         else:
             raise RuntimeError(
@@ -286,23 +275,19 @@ def populate_stage_dict(
 
     # Adding stages to stage_dict if they're in the stage list:
     for tmp_stage in all_subclasses:
-        if tmp_stage.__name__ in stage_list:
-
+        stage_name = tmp_stage.__name__
+        if stage_name in stage_list:
+            config_dict = stage_config.get(stage_name, {})
             try:
-                if tmp_stage.__name__ in stage_config:
-                    initialized_stage = tmp_stage(stage_config[tmp_stage.__name__])
-                else:
-                    initialized_stage = tmp_stage({})
+                initialized_stage = tmp_stage(config_dict)
             except ValidationError as e:
-                msg = (
-                    f"Error validating configuration for stage `{tmp_stage.__name__}`."
-                )
+                msg = f"Error validating configuration for stage `{stage_name}`."
                 raise RuntimeError(f"{msg} {e}")
             except Exception as e:
-                errormsg = f"Error initializing stage {tmp_stage.__name__}: {e}"
+                errormsg = f"Error initializing stage {stage_name}: {e}"
                 raise RuntimeError(errormsg)
 
-            stage_dict[tmp_stage.__name__] = initialized_stage
+            stage_dict[stage_name] = initialized_stage
 
     # error if any stages requested in the config are missing
     for requested in stage_list:
@@ -311,12 +296,37 @@ def populate_stage_dict(
     # re-order the dictionary to match the user-provided list
     stage_dict = {name: stage_dict[name] for name in stage_list}
 
-    verify_stage_dict(stage_dict)
+    _verify_stage_dict(stage_dict)
 
     return stage_dict
 
 
-def verify_stage_dict(stage_dict: dict[str, Stage]) -> None:
+def _rename_external_stage(
+    stage_name: str,
+    index: int,
+    stage_list: list[str],
+    stage_config: dict[str, StageFileConfig],
+) -> tuple[list[str], dict[str, StageFileConfig]]:
+    """Update the stage tracking converting `package.stage` to `stage`."""
+    # ensure the stage can be imported
+    import_string, new_name = stage_name.rsplit(".", maxsplit=1)
+    try:
+        _ = getattr(importlib.import_module(import_string), new_name)
+    except AttributeError as e:
+        raise AttributeError(f"Error importing requested stage {stage_name}: {e}")
+
+    # convert `package.Stage` to `Stage` in stage list
+    stage_list[index] = new_name
+
+    # convert `package.Stage` to `Stage` in stage config
+    if stage_name in stage_config:
+        stage_config[new_name] = stage_config[stage_name]
+        del stage_config[stage_name]
+
+    return stage_list, stage_config
+
+
+def _verify_stage_dict(stage_dict: dict[str, Stage]) -> None:
     """Verify stage dependencies and ordering.
 
     Raises AssertionError if there are issues.

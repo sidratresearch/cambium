@@ -3,9 +3,8 @@
 import logging
 import sys
 from pathlib import Path
-from typing import Any
 
-from ..stage import Stage, StageConfig
+from ..stage import Stage, StageConfig, StageFileConfig
 from ..tree import TreeSpan
 from ..utils.path_utils import abs_leaf_path, get_leaf_from_path, leaf_final_paths
 
@@ -22,7 +21,7 @@ class EnsureIndexPagesConfig(StageConfig):
 
 class EnsureIndexPages(Stage):
 
-    def __init__(self, config_dict: dict[str, Any]) -> None:
+    def __init__(self, config_dict: StageFileConfig) -> None:
         self.config = EnsureIndexPagesConfig.model_validate(config_dict)
         self.requires = []
         # ensure the .md inital paths for redirect pages don't get templated

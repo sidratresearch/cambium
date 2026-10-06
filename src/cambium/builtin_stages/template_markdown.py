@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from .. import __version__
 from ..config import ThemeConfig
 from ..metadata import LeafMetadata
-from ..stage import Stage, StageConfig
+from ..stage import Stage, StageConfig, StageFileConfig
 from ..tree import TreeSpan
 from ..utils.md_html_utils import markdown_to_html
 from ..utils.other_utils import apply_to_leaves, make_jinja_environment
@@ -75,7 +75,7 @@ class TemplateMarkdownConfig(StageConfig):
 class TemplateMarkdown(Stage):
     # Primary Hook Functions
 
-    def __init__(self, config_dict: dict[str, Any]) -> None:
+    def __init__(self, config_dict: StageFileConfig) -> None:
         self.config = TemplateMarkdownConfig.model_validate(config_dict)
         self.enable_patterns = sort_user_paths(self.config.enable_paths)
         self.disable_patterns = sort_user_paths(self.config.disable_paths)

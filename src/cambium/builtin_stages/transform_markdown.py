@@ -2,9 +2,8 @@
 
 import logging
 from pathlib import Path
-from typing import Any
 
-from ..stage import Stage, StageConfig
+from ..stage import Stage, StageConfig, StageFileConfig
 from ..tree import TreeSpan
 from ..utils.md_html_utils import markdown_to_html
 from ..utils.other_utils import apply_to_leaves
@@ -20,7 +19,7 @@ class TransformMarkdownConfig(StageConfig):
 
 class TransformMarkdown(Stage):
 
-    def __init__(self, config_dict: dict[str, Any]) -> None:
+    def __init__(self, config_dict: StageFileConfig) -> None:
         self.config = TransformMarkdownConfig.model_validate(config_dict)
         self.requires = ["IdentifyMetadata"]
         self.runs_after = ["IdentifyMetadata"]

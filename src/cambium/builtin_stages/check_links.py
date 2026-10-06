@@ -6,9 +6,8 @@ Currently only checks internal links, discarding anchors.
 import logging
 from collections import defaultdict
 from html.parser import HTMLParser
-from typing import Any
 
-from ..stage import Stage, StageConfig
+from ..stage import Stage, StageConfig, StageFileConfig
 from ..tree import TreeSpan
 from ..utils.other_utils import apply_to_leaves, get_href_destination, is_external_link
 from ..utils.path_utils import abs_leaf_path, leaf_final_paths
@@ -44,7 +43,7 @@ class CheckLinksConfig(StageConfig):
 
 class CheckLinks(Stage):
 
-    def __init__(self, config_dict: dict[str, Any]) -> None:
+    def __init__(self, config_dict: StageFileConfig) -> None:
         self.config = CheckLinksConfig.model_validate(config_dict)
         self.requires = []
         self.runs_after = []

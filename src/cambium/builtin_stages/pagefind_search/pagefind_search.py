@@ -3,11 +3,10 @@
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any
 
 from pagefind.index import IndexConfig, PagefindIndex
 
-from ...stage import Stage, StageConfig
+from ...stage import Stage, StageConfig, StageFileConfig
 from ...tree import TreeSpan
 from ...utils.path_utils import abs_leaf_path, abs_static_stage_path
 
@@ -41,7 +40,7 @@ class PagefindSearch(Stage):
     we need to register the post hook as running on at least one leaf.
     """
 
-    def __init__(self, config_dict: dict[str, Any]) -> None:
+    def __init__(self, config_dict: StageFileConfig) -> None:
         self.config = PagefindSearchConfig.model_validate(config_dict)
         self.requires = ["TemplateMarkdown"]  # to have somewhere to put the search box
         self.runs_after = []

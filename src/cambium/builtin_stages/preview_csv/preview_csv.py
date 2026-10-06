@@ -8,7 +8,7 @@ from typing import Any
 from jinja2 import Template
 from pydantic import PositiveInt
 
-from ...stage import Stage, StageConfig
+from ...stage import Stage, StageConfig, StageFileConfig
 from ...tree import TreeSpan
 from ...utils.md_html_utils import wrap_with_div
 from ...utils.other_utils import make_jinja_environment
@@ -33,7 +33,7 @@ class PreviewCSV(Stage):
     def _csv_path_updater(self, csv_path: Path) -> Path:
         return csv_path / "index.md"
 
-    def __init__(self, config_dict: dict[str, Any]) -> None:
+    def __init__(self, config_dict: StageFileConfig) -> None:
         self.config = PreviewCSVConfig.model_validate(config_dict)
         self.enable_patterns = sort_user_paths(self.config.enable_paths)
         self.disable_patterns = sort_user_paths(self.config.disable_paths)

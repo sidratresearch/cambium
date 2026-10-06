@@ -17,7 +17,7 @@ from pydantic import BaseModel, HttpUrl, PositiveInt
 
 from . import __version__
 from .macros.macro_utils import get_available_macros
-from .stage import populate_stage_dict
+from .stage import StageFileConfig, populate_stage_dict
 from .utils.path_utils import sort_user_paths
 
 # At runtime of this file the log level has not been set
@@ -131,7 +131,7 @@ class FileConfiguration(BaseModel):
     ]
     "Ordered List of Stages to Use"
 
-    stage_config: Optional[dict[str, dict[str, Any]]] = {}
+    stage_config: Optional[dict[str, StageFileConfig]] = {}
     "Configuration for specific stages, passed to the Stage constructor"
 
     max_leaves: Optional[PositiveInt] = 10_000
@@ -236,7 +236,7 @@ class WorkingConfiguration:
         # Importing and Compiling Stages
         self.stages = self.input_config.stages
         self.stage_dict = populate_stage_dict(
-            self.stages, self.input_config.stage_config, logger
+            self.stages, self.input_config.stage_config
         )
 
         # Save lists of theme directories
