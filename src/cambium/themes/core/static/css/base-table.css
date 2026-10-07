@@ -35,7 +35,6 @@
       padding: 0.5rem;
       max-width: 20rem;
       vertical-align: bottom;
-      border-bottom: 2px solid var(--cw-border-colour);
       font-weight: 700;
       line-height: 1.1;
       color: var(--cw-primary-colour);
@@ -64,8 +63,13 @@
       }
     }
 
-    tr:last-of-type td {
-      border-bottom: 2px solid var(--cw-border-colour);
+    tbody {
+      tr:first-of-type td {
+        border-top: 2px solid var(--cw-border-colour);
+      }
+      tr:last-of-type td {
+        border-bottom: 2px solid var(--cw-border-colour);
+      }
     }
 
     tr:nth-child(even) {
