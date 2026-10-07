@@ -45,3 +45,9 @@ h2 {
   font-weight: 400;
   font-family: "Oswald";
 }
+
+.site-title {
+  font-family: "Oswald";
+  font-weight: 500;
+  text-transform: uppercase;
+}
