@@ -144,7 +144,7 @@ class FileConfiguration(BaseModel):
     """Builtin Theme to Use"""
 
     domain_name: Optional[HttpUrl] = None
-    """Domain where the site is to be hosted (e.g. 'buildwithcambium.com')"""
+    """Domain where the site is to be hosted (e.g. 'https://buildwithcambium.com')"""
 
     subpath: Optional[str] = None
     """Subpath of the domain where the site will be hosted (e.g. 'science'
