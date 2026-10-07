@@ -10,3 +10,11 @@ pre:has(> code) {
 code {
   font-family: var(--cambium-monospace-font-family);
 }
+
+p {
+  code {
+    background-color: var(--cw-alternate-background-colour);
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+}

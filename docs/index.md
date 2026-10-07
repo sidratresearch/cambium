@@ -22,7 +22,7 @@ In your directory of Markdown files run:
 
 And your website will be in `\_build`
 
-## Creators
+## Who are we
 
 [![Sidrat Research Logo {height=200 .sidrat-logo}](assets/sidratlogo.svg)](https://www.sidratresearch.com/)
 

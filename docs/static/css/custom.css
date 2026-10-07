@@ -1,3 +1,9 @@
+@font-face {
+  font-family: "Oswald";
+  font-style: normal;
+  src: url("../fonts/oswald/Oswald-VariableFont_wght.ttf") format("woff2");
+}
+
 :root {
   --cambium-background-colour-dark: #353d34;
   --cambium-primary-colour-light: #587054;
@@ -22,4 +28,20 @@ html[data-theme="dark"]#cambium-page-index {
   img.main-logo {
     content: url(/assets/cambiummainlogohorizontal-dark.svg);
   }
+}
+
+h2 {
+  text-transform: uppercase;
+  font-size: 1.1em;
+  font-family: "Oswald";
+
+  font-weight: 400;
+  color: var(--cw-primary-colour);
+  padding-top: 1.5em;
+}
+
+.menu-panel .menu-items ul li {
+  text-transform: uppercase;
+  font-weight: 400;
+  font-family: "Oswald";
 }
