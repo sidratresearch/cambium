@@ -24,11 +24,7 @@ contains the ready-for-use version of your site. To preview the site, run
 python -m http.server -d _build
 ```
 
-and visit the site in a browser at
-
-```bash
-localhost:8000
-```
+and visit the site in a browser, at [`http://localhost:8000`](http://localhost:8000/).
 
 Using `ls`, you can also list the files in the `_build` directory to see which
 HTML pages have been created, and visit them directly.
