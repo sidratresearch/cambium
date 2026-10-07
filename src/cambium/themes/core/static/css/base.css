@@ -57,6 +57,10 @@ html[data-theme="dark"] {
   margin-left: auto;
   margin-right: auto;
 }
+.cambium-icon {
+  /* Default style for SVG icons */
+  width: 1rem;
+}
 
 /* Main body styling */
 html {

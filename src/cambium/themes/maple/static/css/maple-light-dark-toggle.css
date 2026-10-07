@@ -21,7 +21,7 @@
 
     svg {
       fill: var(--bg-color);
-      height: 0.8em;
+      width: 0.8em;
       padding: 0.05em;
     }
 
