@@ -162,6 +162,9 @@ footer {
 
   .footer-centre {
     text-align: center;
+    p {
+      margin: 0;
+    }
   }
 
   .footer-right {
