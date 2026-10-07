@@ -10,7 +10,7 @@ max_leaves: 10000
 paths_to_ignore: []
 protected_build_paths: []
 root_directory: .
-site_name: Cambium Docs
+site_name: "Cambium: Static Site Generator"
 stage_config: {}
 stages:
   - PreviewCSV
