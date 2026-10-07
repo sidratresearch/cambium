@@ -10,13 +10,47 @@ pip install cambium
 
 ## Your first run
 
-`cd` to a folder containing some markdown files, and run `cambium`. You should see some descriptive output and a new directory called `_build`. `_build` contains the ready-for-use version of your site.
+Using `cd`, navigate to a directory containing some Markdown (`.md`) files.
+Then, run Cambium:
 
-You can preview your site by running `python -m http.server -d _build` to start a web server from the `_build` directory, and visiting the link that Python outputs. If you see a blank page, that may mean that Cambium has created an empty `index.html` file in `_build`. If Cambium finds a pre-existing `index.md`, `readme.md` or `README.md`, it will use that as the homepage, but otherwise it will create a blank one. You can always list out the files in the build directory to see what HTML pages have been created and visit them directly.
+```bash
+cambium
+```
+
+You should see some descriptive output and a new directory `_build`, which
+contains the ready-for-use version of your site. To preview the site, run
+
+```bash
+python -m http.server -d _build
+```
+
+and visit the site in a browser at
+
+```bash
+localhost:8000
+```
+
+Using `ls`, you can also list the files in the `_build` directory to see which
+HTML pages have been created, and visit them directly.
+
+Please note if Cambium finds a pre-existing index file from this list, it will
+use it as the homepage.
+
+- `index.md`
+- `index.html`
+- `readme.md`
+- `readme.html`
+- `README.md`
+- `README.html`
+
+If an index page cannot be found, Cambium will create a blank one at
+`index.html`.
 
 ## Licensing
 
-The Cambium source is provided under a permissive MIT License. However, Cambium bundles additional files and content distributed under other licenses and copyrights. For example, the default theme uses fonts and icons licensed under the SIL Open Font License and Font Awesome Free License. Where this is the case, these licenses and attendant copyright information are packaged alongside the relevant assets.
+The Cambium source is provided under a permissive MIT License.
+
+Cambium bundles additional files and content distributed under other licenses and copyrights. For example, the default theme uses fonts and icons licensed under the SIL Open Font License and Font Awesome Free License. Where this is the case, these licenses and attendant copyright information are packaged alongside the relevant assets.
 
 ## How Cambium works
 
