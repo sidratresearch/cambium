@@ -1,0 +1,27 @@
+# Cambium 0.6.0.post211.dev0+d84ae0f default configuration
+# Created with `cambium --dump-default-config`
+
+build_directory: _build/
+domain_name: https://www.buildwithcambium.org
+extensions: []
+extensions_to_ignore: []
+logging_level: INFO
+max_leaves: 10000
+paths_to_ignore: []
+protected_build_paths: []
+root_directory: .
+site_name: Cambium Docs
+stage_config: {}
+stages:
+  - PreviewCSV
+  - IdentifyMetadata
+  - WriteReports
+  - TransformMarkdown
+  - TemplateMarkdown
+  - EnsureIndexPages
+  - PagefindSearch
+  - CheckLinks
+subpath: null
+theme: maple
+theme_config:
+  default_colour_mode: dark
