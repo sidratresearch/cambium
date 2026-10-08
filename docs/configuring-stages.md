@@ -7,12 +7,28 @@ This list of enabled stages can be found in your configuration file, and the def
 
 ## Controlling stages
 
-- The list of active stages is controlled by the configuration file `.cambium/config.yaml`. Stages which are named in the config file are enabled, and the order in which they are listed is the order in which they will be run (subject to restrictions imposed by the stages themselves, see LINK Stage Interdependency for more detail).
-- Config docs link to this
-- How do I set configuration options for stages?
-  - Config docs link to this
-  - Within the `stage_config` entry in the configuration file, the name of each stage can be used as a key to a table of values with the options for that stage. EXAMPLE CODE
-  - Stages can be disabled (removed from the list of stages), but remain in the `stage_config` with no issue.
+The list of active stages is controlled by the configuration file `.cambium/config.yaml`. Stages which are named in the config file are enabled, and the order in which they are listed is the order in which they will be run (subject to restrictions imposed by the stages themselves, see [Stage Interdependency](#stage-interdependency) for more detail).
+
+### Stage Configuration
+<!-- Authoritative source - config file docs link here -->
+
+Within the `stage_config` entry in the configuration file, the name of each stage can be used as a key to a table of values with the options for that stage.
+
+```yaml
+stages:
+  - IdentifyMetadata
+  - TransformMarkdown
+  - TemplateMarkdown
+  - EnsureIndexPages
+  - CheckLinks
+
+stage_config:
+  TransformMarkdown:
+    disable_paths:
+      - example.md # do not convert example.md to HTML
+```
+
+Stages can be disabled (removed from the list of stages), but remain in the `stage_config` with no issue.
 
 ## Builtin Stages
 
@@ -42,7 +58,7 @@ The builtin stages are listed below along with their purpose and configuration o
 
 ### `PagefindSearch`
 
-[Pagefind](https://pagefind.app/) is a search engine for static sites. Enabling this stage runs the search indexer on all of the built webpages, and bundles the search index and required JavaScript into the built site. Note that the search bar will not appear unless your theme supports it. [Link to themes?]
+[Pagefind](https://pagefind.app/) is a search engine for static sites. Enabling this stage runs the search indexer on all of the built webpages, and bundles the search index and required JavaScript into the built site. Note that the search bar will not appear unless your theme supports it.
 
 #### Configuration
 
@@ -56,7 +72,7 @@ The builtin stages are listed below along with their purpose and configuration o
 
 #### Configuration
 
-- `enable_paths` and `disable_paths` allow you to customize which files have previews created. Both are lists of strings in the same format as [LINK to config]. By default, all CSV files are enabled.
+- `enable_paths` and `disable_paths` allow you to customize which files have previews created. Both are lists of strings in the same format as the configuration entry [`paths_to_ignore`](./config-file.md#paths_to_ignore). By default, all CSV files are enabled.
 - `max_preview_rows` is the number of rows from a CSV to embed into the HTML table. The default value `None` embeds all rows.
 
 ### `Sitemap`
@@ -69,11 +85,11 @@ The builtin stages are listed below along with their purpose and configuration o
 
 ### `TransformMarkdown`
 
-`TransformMarkdown` converts Markdown documents into HTML. This is also where Cambium-specific markup features (e.g., LINKS) are applied, and links between Markdown files are updated to point to the resulting HTML files.
+`TransformMarkdown` converts Markdown documents into HTML. This is also where Cambium-specific markup features (e.g., <span style="color: red;">LINKS</span>) are applied, and links between Markdown files are updated to point to the resulting HTML files.
 
 #### Configuration
 
-- `enable_paths` and `disable_paths` allow you to customize which files are converted from Markdown to HTML. Both are lists of strings in the same format as [LINK to config]. By default, all Markdown files are enabled.
+- `enable_paths` and `disable_paths` allow you to customize which files are converted from Markdown to HTML. Both are lists of strings in the same format as the configuration entry [`paths_to_ignore`](./config-file.md#paths_to_ignore). By default, all Markdown files are enabled.
 
 ### `WriteReports`
 
@@ -85,13 +101,30 @@ The builtin stages are listed below along with their purpose and configuration o
 - `report_directory` is where in the output directory the reports will go. Defaults to `_cambium-reports/`.
 - `dev_only` indicates whether report pages should only be built when running the development server. Defaults to `False` which will build reports for both the development server, and the final build.
 
-## How do I install, use, and configure additional stages?
+## Using non-builtin stages
 
-- Anything loaded from an external package needs to be imported by Cambium, via the `extensions` key in the configuration. The stage can then be loaded by adding the entry `package_name.stage_name` to the stages list (assuming the stage can be directly imported from the package)
-- When configuring external stages, the entry in `stage_config` should use the same `package_name.stage_name` structure as in the list of stages.
-- EXAMPLE YAML as in cambium-astro
+Naturally, Cambium has support for using externally-packaged stages. Anything loaded from an external package needs to be imported by Cambium, via the `extensions` key in the configuration. The stage can then be loaded by adding the entry `package_name.stage_name` to the stages list (assuming the stage can be directly imported from the package). When configuring external stages, the entry in `stage_config` should use the same `package_name.stage_name` structure as in the list of stages.
+
+An example configuration might look like:
+
+```yaml
+extensions:
+  - cambium_astro # allow using cambium_astro stages
+
+stages:
+  - PreviewCSV
+  - cambium_astro.PreviewFITS # enable the PreviewFITS stage
+  - IdentifyMetadata
+  - WriteReports
+  - TransformMarkdown
+  - TemplateMarkdown
+  - EnsureIndexPages
+  - PagefindSearch
+  - CheckLinks
+```
 
 ## Stage interdependency
 
-- Stages may "require" other stages, which simply means that the dependency must also be present. For example, `TransformMarkdown` requires the `IdentifyMetadata` stage (as `IdentifyMetadata` finds all of the links that `TransformMarkdown` will need to update).
-- Some stages also need to run in specific orders. For example, if `TemplateMarkdown` and `CheckLinks` are both enabled, then `TemplateMarkdown` needs to be listed first, as enforced by its `runs_before` attribute.
+Stages may "require" other stages, which simply means that the dependency must also be present. For example, `TransformMarkdown` requires the `IdentifyMetadata` stage (as `IdentifyMetadata` finds all of the links that `TransformMarkdown` will need to update).
+
+Some stages also need to run in specific orders. For example, if `TemplateMarkdown` and `CheckLinks` are both enabled, then `TemplateMarkdown` needs to be listed first, as enforced by its `runs_before` attribute.
