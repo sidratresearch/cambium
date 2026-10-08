@@ -1,4 +1,4 @@
-pre {
+pre:has(> code) {
   font-family: "Intel One Mono VF", monospace;
   font-size: 0.75em;
   border-top-color: var(--cw-primary-colour);
@@ -9,10 +9,12 @@ pre {
   border-bottom-width: 1px;
   margin-top: 1.75em;
   margin-bottom: 1.75em;
-}
-
-pre:has(> code) {
   padding-left: 0;
   padding-right: 0;
   background-color: transparent;
+
+  /* Overrides background colour from inline code */
+  > code {
+    background-color: transparent;
+  }
 }
