@@ -1,10 +1,8 @@
 # Configuration File
 
-When `cambium` is run, it will look for a configuration file called `config.yaml` in a folder named `.cambium` in the current directory. The `--config` option can also be passed to specify another location.
+When `cambium` is run, it will look for a configuration file called `config.yaml` in a folder named `.cambium` in the current directory. The [`--config`](./command-line-options.md#--config) option can also be passed to specify another location.
 
-## Example
-
-`--dump-default-config`
+A Cambium configuration file is a YAML document. The default configuration for your installed version can be seen by running [`cambium --dump-default-config`](./command-line-options.md#--dump-default-config).
 
 ## Options
 

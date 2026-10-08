@@ -85,7 +85,7 @@ The builtin stages are listed below along with their purpose and configuration o
 
 ### `TransformMarkdown`
 
-`TransformMarkdown` converts Markdown documents into HTML. This is also where Cambium-specific markup features (e.g., <span style="color: red;">LINKS</span>) are applied, and links between Markdown files are updated to point to the resulting HTML files.
+`TransformMarkdown` converts Markdown documents into HTML. This is also where Cambium-specific markup features (such as [Macros](./writing-content.md#macros) and [Custom Markup](./writing-content.md#custom-markup)) are applied, and links between Markdown files are updated to point to the resulting HTML files.
 
 #### Configuration
 
