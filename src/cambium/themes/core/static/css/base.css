@@ -196,8 +196,13 @@ blockquote {
   font-style: italic;
   border-top: 2px solid var(--cw-primary-colour);
   border-bottom: 2px solid var(--cw-primary-colour);
+
+  > :last-child {
+    margin-bottom: 0;
+  }
 }
 
+/* Alerts */
 blockquote.alert {
   padding: 1em;
   margin-top: 2em;
@@ -223,22 +228,21 @@ blockquote.alert {
       margin-bottom: 0em;
     }
   }
-}
 
-blockquote.alert-caution {
-  border-left: 0.5em solid var(--cw-caution-colour);
-  p {
-    &:first-child {
-      color: var(--cw-caution-colour);
+  &.alert-caution {
+    border-left: 0.5em solid var(--cw-caution-colour);
+    p {
+      &:first-child {
+        color: var(--cw-caution-colour);
+      }
     }
   }
-}
-
-blockquote.alert-warning {
-  border-left: 0.5em solid var(--cw-warning-colour);
-  p {
-    &:first-child {
-      color: var(--cw-warning-colour);
+  &.alert-warning {
+    border-left: 0.5em solid var(--cw-warning-colour);
+    p {
+      &:first-child {
+        color: var(--cw-warning-colour);
+      }
     }
   }
 }

@@ -3,6 +3,7 @@
 code {
   font-family: var(--cambium-monospace-font-family);
   text-transform: none;
+  font-style: normal;
 }
 
 /* Code blocks */
@@ -15,7 +16,6 @@ pre:has(> code) {
 
 /* Inline code */
 p,
-ul,
 li {
   code {
     background-color: var(--cw-alternate-background-colour);
