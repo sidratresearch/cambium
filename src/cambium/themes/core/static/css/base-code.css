@@ -16,8 +16,10 @@ pre:has(> code) {
 /* Inline code */
 p,
 ul,
-li code {
-  background-color: var(--cw-alternate-background-colour);
-  padding-left: 5px;
-  padding-right: 5px;
+li {
+  code {
+    background-color: var(--cw-alternate-background-colour);
+    padding-left: 5px;
+    padding-right: 5px;
+  }
 }
