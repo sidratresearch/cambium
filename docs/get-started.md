@@ -1,6 +1,6 @@
 # Getting started with Cambium
 
-## Installation
+## Quickstart - installation and first run
 
 Cambium can be installed from PyPi via pip:
 
@@ -8,9 +8,7 @@ Cambium can be installed from PyPi via pip:
 pip install cambium
 ```
 
-## Your first run
-
-Using `cd`, navigate to a directory containing some Markdown (`.md`) files.
+Navigate to a directory containing some Markdown (`.md`) files.
 Then, run Cambium:
 
 ```bash
@@ -26,8 +24,7 @@ python -m http.server -d _build
 
 and visit the site in a browser, at [`http://localhost:8000`](http://localhost:8000/).
 
-Using `ls`, you can also list the files in the `_build` directory to see which
-HTML pages have been created, and visit them directly.
+You can also list the files in the `_build` directory to see which HTML pages have been created, and visit them directly.
 
 Please note if Cambium finds a pre-existing index file from this list, it will
 use it as the homepage.
@@ -42,35 +39,11 @@ use it as the homepage.
 If an index page cannot be found, Cambium will create a blank one at
 `index.html`.
 
-## Licensing
+## What features are built in?
 
-The Cambium source is provided under a permissive MIT License.
-
-Cambium bundles additional files and content distributed under other licenses and copyrights. For example, the default theme uses fonts and icons licensed under the SIL Open Font License and Font Awesome Free License. Where this is the case, these licenses and attendant copyright information are packaged alongside the relevant assets.
-
-## How Cambium works
-
-- there are stages
-- one major stage is transformMD which renders markdown documents into HTML with the help of a Jinja template
-- Cambium copies your processed files, as well as some of its own additional files into the build directory
-
-## Editing the configuration
-
-Cambium reads the configuration file at `.cambium/config.yaml` if it exists. You can create this file with the default options by running
-
-```bash
-mkdir .cambium && cambium --dump-default-config >.cambium/config.yaml
-```
-
-## Custom styling
-
-On top of the default style, Cambium loads `_build/static/css/custom.css`.
-
-If `.cambium/theme/static/css/custom.css` exists, this is what will be used. If not, and `static/css/custom.css` exists, it will be used instead (following the usual rules of priority ordering of static files). If neither of these exist, an empty file will be created.
-
-This is done to provide a location for CSS custom to be loaded from without needing to override the Jinja template, and to ensure that said location always exists, even as an empty file, to avoid 404s. This all also applies to `_build/static/js/custom.js`.
-
-To assist in page-specific styling, Cambium applies a unique `id` to the `html` tag on each page.
+- link to [Writing Content](./writing-content.md)
+- alerts, markdown table alignment, table sorting, search previewCSV
+- md inside HTML will not be converted
 
 ## Using the development server
 
@@ -80,15 +53,40 @@ The port used for the web server, as well as the frequency Cambium checks for fi
 
 Changes to the configuration file are _not_ applied, and in fact if the configuration file changes, Cambium will exit the dev server to make this clear.
 
-## Advanced customization with Jinja
+## How and where to write a config file
 
-Cambium uses Jinja templates to organize the rendering of Markdown content into HTML. If you aren't happy with using a pre-built theme, you can override Jinja templates by creating your own in `.cambium/theme/templates`.
+Cambium reads the configuration file at `.cambium/config.yaml` if it exists. You can create this file with the default options by running
 
-We recommend copying an existing template and making modifications rather than starting entirely from scratch. When modifying, be careful to retain elements such as the development server block in `base.html.jinja`.
+```bash
+mkdir .cambium && cambium --dump-default-config >.cambium/config.yaml
+```
 
-The Jinja templates can also read in content from files located in `.cambium/jinja_variables`. Files in that directory will have their contents available as Jinja environment variables. In the `default` theme, if a file named `menu` exists in that directory, that will trigger the rendering of a site menu in the header, containing the contents of the `menu`. Markdown files will be parsed into HTML, so it is often convenient to create `menu.md`.
+## Basic Configuration options
 
-## Pre-built Themes
+- root and build directories (can be CLI or file)
+- stages (see [Configuring Stages](./configuring-stages.md))
+- site name
+- theme (see [Customizing the Website](./customizing-the-website.md))
 
-Cambium comes with the pre-made _maple_ theme. If you would like to use another built-in theme, just change the `theme` entry in your configuration file. Currently only _maple_ and _root_ are available.
-Themes can provide static files (CSS, JS, other assets) as well as Jinja templates. Any files not provided will be pulled from the "fallback" `root` theme. Any theme assets can of course be overridden by placing your own files within one of the static folders (see [Custom Styling](#custom-styling)).
+## What is Cambium's philosophy
+
+## What to do if there are issues
+
+- `--fail-fast`, `--verbose`, and `--show-traceback`
+- where to report issues
+
+## How Cambium works
+
+- there are stages
+- one major stage is transformMD which renders markdown documents into HTML with the help of a Jinja template
+- Cambium copies your processed files, as well as some of its own additional files into the build directory
+
+## Status and future outlook
+
+- Why should I trust in future development
+- planned features
+- "pre-alpha"
+
+## What is Cambium an alternative to?
+
+- migration instructions

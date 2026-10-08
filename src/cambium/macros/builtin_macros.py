@@ -72,6 +72,7 @@ class TableOfContents(Macro):
         inline = kwargs.get("inline", False)
         mindepth = kwargs.get("mindepth", 2)
         maxdepth = kwargs.get("maxdepth", 6)
+        section = kwargs.get("section")
         if (
             not isinstance(mindepth, int)
             or not isinstance(maxdepth, int)
@@ -82,6 +83,31 @@ class TableOfContents(Macro):
             raise RuntimeError(
                 "mindepth and maxdepth must be integers [1,6] with mindepth <= maxdepth"
             )
+        section_options = [entry["id"] for entry in toc_entries]
+        if section is not None:
+            if section not in section_options:
+                raise RuntimeError(
+                    f"No heading '{section}' found to generate table of contents for. "
+                    f"Available headings: {section_options}"
+                )
+
+            toc_level = next(
+                entry["level"] for entry in toc_entries if section == entry["id"]
+            )
+
+            filtered_toc_entries = []
+            started = False
+            for entry in toc_entries:
+                if entry["id"] == section:
+                    started = True
+                    continue
+                if not started:
+                    continue
+                if entry["level"] <= toc_level:
+                    break
+                filtered_toc_entries.append(entry)
+
+            toc_entries = filtered_toc_entries
 
         toc_string = ""
         if toc_entries is not None:
