@@ -7,7 +7,7 @@ This list of enabled stages can be found in your configuration file, and the def
 
 ## Controlling stages
 
-The list of active stages is controlled by the configuration file `.cambium/config.yaml`. Stages which are named in the config file are enabled, and the order in which they are listed is the order in which they will be run (subject to restrictions imposed by the stages themselves, see [Stage Interdependency](#stage-interdependency) for more detail).
+The list of active stages is controlled by the `stages` key of your [configuration file](./config-file.md). Stages which are named in the config file are enabled, and the order in which they are listed is the order in which they will be run (subject to restrictions imposed by the stages themselves, see [Stage Interdependency](#stage-interdependency) for more detail).
 
 ### Stage Configuration
 <!-- Authoritative source - config file docs link here -->
