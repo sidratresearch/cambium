@@ -1,5 +1,11 @@
 @import url(base-variables.css);
 
+code {
+  font-family: var(--cambium-monospace-font-family);
+  text-transform: none;
+}
+
+/* Code blocks */
 pre:has(> code) {
   background-color: var(--cw-alternate-background-colour);
   scrollbar-color: var(--cw-border-colour) var(--cw-secondary-font-colour);
@@ -7,14 +13,9 @@ pre:has(> code) {
   overflow-x: auto;
 }
 
-code {
-  font-family: var(--cambium-monospace-font-family);
-}
-
-p {
-  code {
-    background-color: var(--cw-alternate-background-colour);
-    padding-left: 5px;
-    padding-right: 5px;
-  }
+/* Inline code */
+p code {
+  background-color: var(--cw-alternate-background-colour);
+  padding-left: 5px;
+  padding-right: 5px;
 }
