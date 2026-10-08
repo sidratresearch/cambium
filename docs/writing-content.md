@@ -77,6 +77,8 @@ Attributes can also be applied to certain block elements: headings, lists, block
 
 #### Headings, Lists, and Quotes
 
+The following Markdown example:
+
 ```md
 <!-- {.special-heading} -->
 ## This heading is special
@@ -91,6 +93,8 @@ Attributes can also be applied to certain block elements: headings, lists, block
 >
 > This quote uses Cambium's alert classes to get the styling of a note alert, but a custom heading.
 ```
+
+renders to:
 
 ```HTML
 <h2 id="this-heading-is-special" class="special-heading">
@@ -111,6 +115,8 @@ Attributes can also be applied to certain block elements: headings, lists, block
 
 The markup applied to the table and image blocks goes directly to the `table` and `img` tags, within the special Cambium wrappers.
 
+The following Markdown example:
+
 ```md
 <!-- {id="network-table"} -->
 | IP Address  | Hostname |
@@ -122,6 +128,8 @@ The markup applied to the table and image blocks goes directly to the `table` an
 <!-- {style="max-width: 100px;"} -->
 ![Image description](./image.jpg)
 ```
+
+renders to:
 
 ```HTML
 <div class="cambium-table-holder">
@@ -159,33 +167,188 @@ Cambium only supports custom markup on fenced code blocks (those using triple ba
 
 The markup attributes will be applied to the inner `code` tag, along with any `language-` class.
 
-~~~md
+With a specified language:
+
+````md
 ```python {.python-examples}
 print("Hello world!")
 ```
-~~~
+````
 
-~~~html
+becomes:
+
+```html
 <pre>
     <code class="python-examples language-python">print("Hello world!")</code>
 </pre>
-~~~
+```
 
 Markup is still applied without a language declaration:
 
-~~~md
+````md
 ```{data-no-language}
 Just some pre-formatted text in a code tag.
 ```
-~~~
+````
 
-~~~html
+becomes:
+
+```html
 <pre>
     <code data-no-language>Just some pre-formatted text in a code tag.</code>
 </pre>
-~~~
-
+```
 
 ## Macros
 
-- what are they, how can they be used, what's available from the get-go, how can new macros be added
+Cambium provides a "macros" feature, where Python functions can be called from within your Markdown document. These macros are called via HTML comments, so operate at the block level only - a macro cannot be called in the middle of a paragraph.
+
+Macros can take parameters, as well as consume part of the document as content to be modified.
+
+To call a macro, call it like a function in an HTML comment:
+
+```md
+<!-- MyMacro() -->
+```
+
+Arguments are passed as Python code, with separating commas:
+
+```md
+<!-- MyMacro(2, "maximum", block_style=True) -->
+```
+
+Only simple Python datatypes are valid for use in macro parameters: compound types such as lists, tuples, and dicts cannot be used.
+
+To pass a segment of your document to the macro, use the `start` and `stop` keywords (include parameters in the start call if relevanst):
+
+```md
+<!-- MyMacro() start -->
+The macro will recieve this as plain text.
+<!-- MyMacro() stop -->
+```
+
+Macros that receive content will get it as the original Markdown text, not transformed to HTML. Any macro calls which are inside this content will *not* be executed.
+
+### Builtin macros
+
+#### `CambiumLink`
+
+A minimal example of a macro - inserts a link to the Cambium website.
+
+Markdown:
+
+```md
+<!-- CambiumLink() -->
+```
+
+HTML:
+
+```html
+<a href="https://buildwithcambium.org">Cambium</a>
+```
+
+#### `CaptionedImage`
+
+Creates a `figure` element.
+
+Markdown:
+
+```md
+<!-- CaptionedImage("image.png", alt="Descriptive text") start -->
+Caption for the image.
+<!-- CaptionedImage() stop -->
+```
+
+HTML:
+
+```html
+<div class="cambium-img-holder">
+    <figure>
+        <img src="image.png" alt="Descriptive text">
+        <figcaption>Caption for the image.</figcaption>
+    </figure>
+</div>
+```
+
+#### `TableOfContents`
+
+Creates a table of contents for headings on the current page, rendered as a `nav` tag containing a nested list of `ul` tags, each with a `toc-level-[LEVEL]` class indicating the heading level.
+
+Markdown:
+
+```md
+<!-- TableOfContents() -->
+
+## First H2
+
+### First H3
+
+### Second H3
+
+## Second H2
+
+## Third H2
+```
+
+HTML (omitting the heading tags):
+
+```html
+<nav class="cambium-table-of-contents">
+  <ul class="toc-level-2">
+    <li><a href="#first-h2">First H2</a></li>
+    <ul class="toc-level-3">
+      <li><a href="#first-h3">First H3</a></li>
+      <li><a href="#second-h3">Second H3</a></li>
+    <li><a href="#second-h2">Second H2</a></li>
+    <li><a href="#third-h2">Third H2</a></li>
+  </ul>
+</nav>
+```
+
+Takes the following keyword arguments:
+
+- `mindepth` - default 2, the lowest heading level to include.
+- `maxdepth` - default 6, the highest heading level to include.
+- `section` - if passed, this must be the `id` of a heading in the current page, the rendered ToC will only include headings within that part of the document. Modifying the previous example:
+
+    ```md
+    <!-- TableOfContents(section="first-h2") -->
+
+    ## First H2
+
+    ### First H3
+
+    ### Second H3
+
+    ## Second H2
+
+    ## Third H2
+    ```
+
+    now renders:
+
+    ```html
+    <nav class="cambium-table-of-contents">
+      <ul class="toc-level-3">
+        <li><a href="#first-h3">First H3</a></li>
+        <li><a href="#second">Second H3</a></li>
+      </ul>
+    </nav>
+    ```
+
+- `inline` - if `True`, the `nav` tag will also include a `cambium-inline-table-of-contents` class.
+
+### Using non-builtin macros
+
+In order to be available to Cambium, the package providing a macro must be included in the `extensions` key of the configuration file:
+
+```yaml
+extensions:
+  - package_with_macros
+```
+
+Then, with the macro importable at `package_with_macros.CustomMacro`, that import syntax is used to call the macro:
+
+```md
+<!-- package_with_macros.CustomMacro() -->
+```
