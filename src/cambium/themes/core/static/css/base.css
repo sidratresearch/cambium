@@ -162,12 +162,13 @@ ul {
 }
 
 /* Remove vertical space from sublists */
-li > ul,
-li > ol {
-  margin-bottom: 0;
-  margin-top: 0;
-  > li:last-of-type {
-    padding-bottom: 0;
+li,
+ol,
+ul {
+  > ul,
+  > ol {
+    margin-bottom: 0;
+    margin-top: 0;
   }
 }
 
