@@ -25,13 +25,12 @@ body[data-pf-theme="dark"] {
   width: 25px;
 }
 
-/* Border radius of the entire search results modal */
-:is(*, #\#):is(*, #\#):is(*, #\#) dialog.pf-modal {
-  border-radius: var(--pf-border-radius);
-}
-
-:is(*, #\#):is(*, #\#):is(*, #\#) .pf-heading-chip {
-  border-radius: var(--pf-border-radius);
+:is(*, #\#):is(*, #\#):is(*, #\#) {
+  & dialog.pf-modal, /* search modal */
+  &.pf-input-clear,  /* clear search input */
+  &.pf-heading-chip  /* sub-result boxes */ {
+    border-radius: var(--pf-border-radius);
+  }
 }
 
 /* Make the focus border primary colour within results modal */
