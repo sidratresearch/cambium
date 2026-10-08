@@ -311,7 +311,21 @@ def add_heading_anchors(
             continue
 
         content = get_element_text(child)
-        default_anchor = slugify(content)
+
+        # TODO: this doesn't handle consecutive hyphens within the main body, which gh would preserve
+        # would just need to write a custom function
+
+        # split out leading and trailing hyphens
+        parts = re.fullmatch(
+            "(?P<leading>-*)(?P<text>.*?)(?P<trailing>-*)", content
+        ).groupdict()
+
+        # slugify the main content, allowing underscores
+        default_anchor = slugify(parts["text"], regex_pattern="[^-_a-z0-9]+")
+
+        # replace leading/trailing
+        default_anchor = parts["leading"] + default_anchor + parts["trailing"]
+
         if len(default_anchor) == 0:
             # entirely HTML headings will result in empty anchors...
             # if you're doing that you should probably just include an ID in your HTML
