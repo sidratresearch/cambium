@@ -109,14 +109,19 @@ def get_href_destination(
     if is_external_link(href):
         return "external", None
 
+    source_directory = tree.leaves["final_path"][source_uuid].parent
+
     destination = href
     if destination.startswith("/"):
+        # destination relative to root
         destination = absolute_to_relative_path(destination, tree)
+
+        # destination relative to current file
+        destination = "../" * len(source_directory.parts) + destination
         if destination is None:
             return "unknown absolute", None
 
     # go from link contents to a Path
-    source_directory = tree.leaves["final_path"][source_uuid].parent
     resolved = _get_path_from_href(destination, source_directory, tree)
 
     # skip links to static files
