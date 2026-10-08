@@ -72,14 +72,6 @@ def main(
             rich_help_panel="Configuration",
         ),
     ] = False,
-    build_directory: Annotated[
-        str | None,
-        typer.Option(
-            "--build-directory",
-            help="Location to build site into, overrides configuration file",
-            rich_help_panel="Configuration",
-        ),
-    ] = CLI_DEFAULTS["build_directory"],
     root_directory: Annotated[
         str | None,
         typer.Option(
@@ -88,6 +80,14 @@ def main(
             rich_help_panel="Configuration",
         ),
     ] = CLI_DEFAULTS["root_directory"],
+    build_directory: Annotated[
+        str | None,
+        typer.Option(
+            "--build-directory",
+            help="Location to build site into, overrides configuration file",
+            rich_help_panel="Configuration",
+        ),
+    ] = CLI_DEFAULTS["build_directory"],
     # Development Server
     dev_server: Annotated[
         bool,

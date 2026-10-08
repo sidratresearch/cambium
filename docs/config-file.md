@@ -14,13 +14,11 @@ When `cambium` is run, it will look for a configuration file called `config.yaml
 
 #### `root_directory`
 
-This is the source of your website content. By default, the site will be created from the files is the present working directory, but if `root_directory` is configured (or `--root-directory` is passed on the command line), that will be the source of content for the site.
-
-Note that if you run `cambium --root-directory other` without specifying `--config`, Cambium will load the configuration file from the current directory, if any.
+See [documentation for the CLI option `--root-directory`](./command-line-options.md#--root-directory).
 
 #### `build_directory`
 
-The directory to create to place your built website. Defaults to `_build`. Unless given as an absolute path, this will always be relative to the root directory. Can also be given on the command line as `--build-directory`.
+See [documentation for the CLI option `--build-directory`](./command-line-options.md#--build-directory).
 
 #### `paths_to_ignore`
 
