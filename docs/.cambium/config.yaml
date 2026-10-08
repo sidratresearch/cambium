@@ -1,17 +1,14 @@
 # Cambium 0.6.0.post211.dev0+d84ae0f default configuration
 # Created with `cambium --dump-default-config`
 
-build_directory: _build/
 domain_name: https://www.buildwithcambium.org
-extensions: []
-extensions_to_ignore: []
-logging_level: INFO
-max_leaves: 10000
-paths_to_ignore: []
-protected_build_paths: []
-root_directory: .
 site_name: "Cambium: Static Site Generator"
-stage_config: {}
+subpath: "" # verify the absolute links in menu.md
+
+theme: maple
+theme_config:
+  default_colour_mode: dark
+
 stages:
   - PreviewCSV
   - IdentifyMetadata
@@ -21,7 +18,3 @@ stages:
   - EnsureIndexPages
   - PagefindSearch
   - CheckLinks
-subpath: null
-theme: maple
-theme_config:
-  default_colour_mode: dark
