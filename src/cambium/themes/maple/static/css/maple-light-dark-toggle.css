@@ -53,11 +53,11 @@
 }
 
 html[data-theme="dark"] {
-  .toggle-input + .toggle-label::after {
+  .toggle-label::after {
     left: 21px;
   }
 
-  .toggle-input + .toggle-label {
+  .toggle-label {
     background-color: var(--cw-toggle-colour);
     .dark-icon {
       visibility: hidden;

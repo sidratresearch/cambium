@@ -52,7 +52,6 @@
   position: relative;
   height: 28px;
   width: 28px;
-  outline: none;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -167,7 +166,8 @@ footer {
     }
   }
 
-  .footer-right {
+  .footer-right a {
+    display: block;
     svg {
       color: var(--cw-primary-colour);
       height: 3rem;

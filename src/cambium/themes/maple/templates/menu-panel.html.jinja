@@ -10,15 +10,16 @@
       <span></span>
     </button>
     <div class="toggle">
-      <input
-        type="checkbox"
-        id="light-dark-toggle"
-        class="toggle-input"
-        aria-label="Toggle light/dark mode"
-      />
-      <label for="light-dark-toggle" class="toggle-label">
+      <label for="light-dark-toggle" class="toggle-label" tabindex="0">
         {% include "icon-light-mode.html.jinja" %}
         {% include "icon-dark-mode.html.jinja" %}
+
+        <input
+          type="checkbox"
+          id="light-dark-toggle"
+          class="toggle-input"
+          aria-label="Toggle light/dark mode"
+        />
       </label>
     </div>
   </div>

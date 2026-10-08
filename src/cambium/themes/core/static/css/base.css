@@ -247,6 +247,11 @@ blockquote.alert {
   }
 }
 
+:focus-visible {
+  outline: 2px solid var(--cw-primary-colour);
+  outline-offset: 2px;
+}
+
 /* Tablet styling */
 @media (max-width: 1000px) or (min-width: 601px) {
   .main-content {
