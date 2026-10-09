@@ -7,7 +7,8 @@
 
 :root {
   --cambium-background-colour-dark: #353d34;
-  --cambium-primary-colour-light: #587054;
+  --cambium-primary-colour-light: #34632e;
+  /* --cambium-primary-colour-light: #587054; */
   --cambium-primary-colour-dark: #e8cf9e;
   --cambium-alternate-background-colour-light: #fff2d9;
   --cambium-alternate-background-colour-dark: #273325;
@@ -51,4 +52,8 @@ h2 {
   font-family: "Oswald";
   font-weight: 500;
   text-transform: uppercase;
+}
+
+code {
+  font-size: 0.9em;
 }
