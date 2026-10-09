@@ -33,6 +33,8 @@ builtin_paths_to_ignore: list[str] = [
     "*/.*",
     "__pycache__",
     "*.*~",  # tempfiles made while saving may end in ~
+    "_build",  # any existing build directories
+    # TODO: match this is actually requested build dir or something?
 ]
 """Built-in Cambium Directories to Ignore"""
 
