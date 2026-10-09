@@ -9,18 +9,15 @@
     >
       <span></span>
     </button>
-    <div class="toggle">
-      <label for="light-dark-toggle" class="toggle-label" tabindex="0">
+    <div class="toggle-colour-mode">
+      <button
+        id="light-dark-toggle-button"
+        class="toggle-colour-mode-button"
+        aria-label="Toggle light/dark mode"
+      >
         {% include "icon-light-mode.html.jinja" %}
         {% include "icon-dark-mode.html.jinja" %}
-
-        <input
-          type="checkbox"
-          id="light-dark-toggle"
-          class="toggle-input"
-          aria-label="Toggle light/dark mode"
-        />
-      </label>
+      </button>
     </div>
   </div>
   <div class="site-title">{{ site_name }}</div>

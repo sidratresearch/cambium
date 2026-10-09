@@ -3,6 +3,7 @@
   font-weight: 200 900;
   font-style: normal;
   font-stretch: normal;
+  font-display: swap;
   src: url("IntelOneMono-VariableFont_wght.woff2") format("woff2");
 }
 
@@ -11,5 +12,6 @@
   font-weight: 200 900;
   font-style: italic;
   font-stretch: normal;
+  font-display: swap;
   src: url("IntelOneMono-Italic-VariableFont_wght.woff2") format("woff2");
 }
