@@ -19,11 +19,9 @@ We built Cambium because we needed a way to help scientific and technical teams 
 
 ## Try it yourself
 
-To install Cambium: `pip install cambium`
-
-In your directory of Markdown files run: `cambium`
-
-And your website will be in `\_build`
+1. Install Cambium: `pip install cambium`
+2. In your directory of Markdown files run: `cambium`
+3. Your website will be in the new directory `_build/`
 
 ## Who are we
 

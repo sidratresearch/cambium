@@ -1,7 +1,7 @@
 # Stages
 
 Cambium converts your documents into a website by running a series of "stages". Each stage has a specific purpose and may affect all files, or only a subset. Cambium runs these stages (each of which may have multiple parts, called "hooks") in the order specified by your configuration.
-This list of enabled stages can be found in your configuration file, and the default list can be seen with `cambium --dump-default-config`.
+This list of enabled stages can be found in your configuration file, and the default list can be seen with [`cambium --dump-default-config`](./command-line-options.md#--dump-default-config).
 
 <!-- TableOfContents(maxdepth=2) -->
 
@@ -10,8 +10,8 @@ This list of enabled stages can be found in your configuration file, and the def
 The list of active stages is controlled by the `stages` key of your [configuration file](./config-file.md). Stages which are named in the config file are enabled, and the order in which they are listed is the order in which they will be run (subject to restrictions imposed by the stages themselves, see [Stage Interdependency](#stage-interdependency) for more detail).
 
 ### Stage Configuration
-<!-- Authoritative source - config file docs link here -->
 
+<!-- Authoritative source - config file docs link here -->
 Within the `stage_config` entry in the configuration file, the name of each stage can be used as a key to a table of values with the options for that stage.
 
 ```yaml

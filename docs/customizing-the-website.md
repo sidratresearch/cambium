@@ -10,6 +10,7 @@ A few options for website design are present in the [configuration file](./confi
 
 <!-- Ignoring the `maple` key of `theme_config` for now, since we don't have any entries there, or support external themes yet -->
 
+<!-- Authoritative source - config file docs link here -->
 `theme_config` allows for simple theme configuration, without creating any additional files. Currently it can have the key `default_colour_mode` which defines whether the website should default to dark or light mode. If `default_colour_mode` is not set, the default colourscheme is chosen by the theme designer.
 
 An example snippet of a configuration file might be:

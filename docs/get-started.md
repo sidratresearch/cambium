@@ -53,7 +53,7 @@ The port used for the web server, as well as the frequency Cambium checks for fi
 
 Changes to the configuration file are _not_ applied, and in fact if the configuration file changes, Cambium will exit the dev server to make this clear.
 
-## How and where to write a config file
+## How and where to write a configuration file
 
 Cambium reads the configuration file at `.cambium/config.yaml` if it exists. You can create this file with the default options by running
 
