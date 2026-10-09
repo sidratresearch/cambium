@@ -80,7 +80,7 @@ The set of templating and styling files to use when building the site. Currently
 
 #### `theme_config`
 
-Configuration options for the theme, if any. See [Customizing the Website](./customizing-the-website.md) for information on what options are available and how to use them.
+Configuration options for the theme, if any. See [Customizing the Website](./customizing-the-website.md#configuration-file) for information on what options are available and how to use them.
 
 ### Additional options
 
