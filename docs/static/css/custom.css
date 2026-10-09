@@ -13,6 +13,13 @@
   --cambium-alternate-background-colour-light: #fff2d9;
   --cambium-alternate-background-colour-dark: #273325;
 }
+
+.header-bar .header-centre {
+  a.site-title {
+    color: var(--cw-primary-colour);
+  }
+}
+
 #cambium-page-index {
   .main-content {
     padding-top: 0;
