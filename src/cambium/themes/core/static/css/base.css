@@ -254,7 +254,7 @@ blockquote.alert {
 }
 
 /* Tablet styling */
-@media (max-width: 1000px) or (min-width: 601px) {
+@media (max-width: 1000px) and (min-width: 601px) {
   .main-content {
     max-width: var(--cambium-tablet-max-width);
   }
