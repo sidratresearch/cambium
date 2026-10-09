@@ -16,7 +16,7 @@
 
   {# Site data and content #}
   <title>{{ title }}</title>
-  <link rel="icon" type="image/png" href="{{ relative_path_modifier }}static/images/favicon.png" />
+  {% include "favicon.html.jinja" %}
 
   {# Grabbable with JS #}
   <meta name="cambium-initial-path" content="{{ initial_path }}" />

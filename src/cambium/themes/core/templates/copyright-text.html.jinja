@@ -1,0 +1,7 @@
+{# Cambium theme: Core #}
+{# This snippet is not used in Core directly, but is availabl for any theme to use #}
+{% if footer_content is defined %}
+  {{ footer_content }}
+{% else %}
+  {{ "&copy; " ~ site_name ~ " " ~ build_time_utc.year }}
+{% endif %}
