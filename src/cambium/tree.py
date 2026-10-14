@@ -209,7 +209,7 @@ class TreeSpan:
                 final_path = path_initial_final["final"]
                 if final_path in theme_static_paths:
                     raise RuntimeError(
-                        f"A theme is attempting to write the user-only file {path.name}"
+                        f"A theme is attempting to write the user-only file {final_path.name}"
                     )
 
     # ----------------------------------------------------------------#
@@ -416,9 +416,11 @@ class TreeSpan:
 
         # move files from tmp to build
         for leaf_uuid in self.leaves["uuids"]:
-            from_path = self.config.tmp_dir / self.leaves["latest_path"][leaf_uuid]
-            to_path = self.build_directory / self.leaves["final_path"][leaf_uuid]
-            logger.debug(f"Copying {from_path}->{to_path}")
+            from_print = self.leaves["latest_path"][leaf_uuid]
+            from_path = self.config.tmp_dir / from_print
+            to_print = self.leaves["final_path"][leaf_uuid]
+            to_path = self.build_directory / to_print
+            logger.debug(f"Copying temporary file {from_print} -> {to_print}")
             try:
                 shutil.copy(from_path, to_path)
             except OSError:
@@ -583,7 +585,7 @@ class TreeSpan:
     def _copy_static_files(self, source_dir: Path, dest_dir: Path) -> None:
         """Copy files into _build/static, and overwrite existing files."""
         logger.debug(
-            f"Copying files from `{source_dir}` to output. "
+            f"Copying files from {source_dir} to output. "
             f"Existing files in {dest_dir} will be overwritten."
         )
         dest_dir = self.build_directory / dest_dir
@@ -597,7 +599,9 @@ class TreeSpan:
             directory.mkdir(exist_ok=True, parents=True)
 
         for initial_path, final_path in files:
-            logger.debug(f"Copying static file {initial_path} to {final_path}")
+            initial_print = initial_path.relative_to(source_dir)
+            final_print = final_path.relative_to(self.build_directory)
+            logger.debug(f"Copying static file {initial_print} to {final_print}")
             shutil.copy(initial_path, final_path)
             # ensure the file is writable in case it will be overwritten
             final_path.chmod(stat.S_IWUSR | stat.S_IRUSR | initial_path.stat().st_mode)

@@ -100,7 +100,7 @@ class PagefindSearch(Stage):
                 tree.build_directory
                 / self.abs_pagefind_directory.relative_to(tree.build_directory)
             )
-            logger.info(f"Writing pagefind files to {pf_dir_print}")
+            logger.debug(f"Writing pagefind files to {pf_dir_print}")
 
             await index.write_files(str(self.abs_pagefind_directory))
 

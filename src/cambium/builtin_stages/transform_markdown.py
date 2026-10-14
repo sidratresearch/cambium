@@ -67,3 +67,4 @@ class TransformMarkdown(Stage):
             leaf_uuid=leaf_uuid,
         )
         html_path.write_text(html)
+        logger.debug(f"Wrote {markdown_path} to HTML")

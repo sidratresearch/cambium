@@ -127,6 +127,7 @@ class PreviewCSV(Stage):
 
         csv_path = tree.leaves["initial_path"][md_uuid]
         tree.leaves["metadata"][md_uuid].title = csv_path.name
+        logger.debug(f"Wrote preview page for {csv_path}")
 
     def _pre_hook_csv(self, csv_uuid: str, tree: TreeSpan) -> None:
         md_uuid = self.csv_to_md[csv_uuid]
