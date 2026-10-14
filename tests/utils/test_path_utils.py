@@ -76,6 +76,7 @@ def _prepare_filesystem(root_directory: Path, to_create: list[str]) -> None:
                 ".hidden-directory/2.txt",
                 ".hidden-directory/.hidden-file",
                 ".cambium/config.yaml",
+                ".cambium/config.yml",
                 "src/__pycache__/code",
                 "a/3.txt",
                 "a/3.txt~",

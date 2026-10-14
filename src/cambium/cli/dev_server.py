@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def run_dev_server(
-    tree: TreeSpan, build: Callable[[TreeSpan], None], config_path: Path | None
+    tree: TreeSpan, build: Callable[[TreeSpan], None], cli_config_path: Path | None
 ) -> None:
     """Run Cambium in development server mode.
 
@@ -35,6 +35,10 @@ def run_dev_server(
         tree.config.dev_server_port, tree.build_directory
     )
     check_server_process(server_process)
+
+    config_paths = [tree.root_directory / path for path in config.config_default_paths]
+    if cli_config_path is not None:
+        config_paths.append(cli_config_path)
 
     try:
         watched_files = get_watched_files(tree)
@@ -52,7 +56,7 @@ def run_dev_server(
                 logger.debug("Checking for file changes.")
                 last_checked = current_time
                 files_changed, watched_files, config_changed = check_file_changes(
-                    watched_files, tree, config_path
+                    watched_files, tree, config_paths
                 )
                 if config_changed:
                     logger.warning("Config file changed, closing dev server")
@@ -124,22 +128,19 @@ def check_server_process(server_process: multiprocessing.Process) -> None:
 
 
 def check_file_changes(
-    watched_files: str, tree: TreeSpan, config_path: Path | None
+    watched_files: str, tree: TreeSpan, config_paths: list[Path]
 ) -> tuple[bool, str, bool]:
     """Check if any files have changed, compared to `watched_files`."""
     new_file_status = get_watched_files(tree)
 
     files_changed = str(watched_files) != str(new_file_status)
 
-    config_path = (
-        config_path
-        if config_path is not None
-        else tree.root_directory / config.config_default_path
-    )
-    config_previous = watched_files.get(config_path, None)
-    config_current = new_file_status.get(config_path, None)
-
-    config_changed = config_previous != config_current
+    config_changed = False
+    for path in config_paths:
+        config_previous = watched_files.get(path, None)
+        config_current = new_file_status.get(path, None)
+        if config_previous != config_current:
+            config_changed = True
 
     return files_changed, new_file_status, config_changed
 

@@ -24,7 +24,7 @@ from .utils.path_utils import sort_user_paths
 # So by default, only warnings and errors are shown
 logger = logging.getLogger(__name__)
 
-config_default_path = Path(".cambium/config.yaml")
+config_default_paths = [Path(".cambium/config.yaml"), Path(".cambium/config.yml")]
 """Default configuration path (relative to cwd/root)."""
 
 builtin_paths_to_ignore: list[str] = [
@@ -539,12 +539,13 @@ def read_input_configuration(
 
         return translate_yaml_configuration(cli_path)
 
-    # Attempting to read default config path
+    # Attempting to read from default config paths
+    for path in config_default_paths:
+        if path.exists():
+            return translate_yaml_configuration(path)
 
-    if config_default_path.exists():
-        return translate_yaml_configuration(config_default_path)
-    else:
-        return {}
+    # return empty config
+    return {}
 
 
 def translate_yaml_configuration(config_path: Path) -> dict[str, Any]:

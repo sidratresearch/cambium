@@ -58,7 +58,7 @@ Changes to the configuration file are _not_ applied, and in fact if the configur
 Cambium reads the configuration file at `.cambium/config.yaml` if it exists. You can create this file with the default options by running
 
 ```bash
-mkdir .cambium && cambium --dump-default-config >.cambium/config.yaml
+mkdir .cambium && cambium --dump-default-config > .cambium/config.yaml
 ```
 
 ## Basic Configuration options

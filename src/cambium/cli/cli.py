@@ -56,7 +56,9 @@ def main(
         Path | None,
         typer.Option(
             "--config",
-            help=f"Location of configuration file (checks for {config.config_default_path} if unset)",
+            help="Location of configuration file (checks for {} if unset)".format(
+                " or ".join(str(p) for p in config.config_default_paths)
+            ),
             rich_help_panel="Configuration",
             exists=True,
             file_okay=True,

@@ -25,7 +25,7 @@ Display the CLI help message.
 
 ### `--config`
 
-Specify the path to a Cambium [configuration file](./config-file.md) - if not given, Cambium will look for `.cambium/config.yaml`.
+Specify the path to a Cambium [configuration file](./config-file.md) - if not given, Cambium will check for `.cambium/config.yaml` and `.cambium/config.yml`.
 
 ### `--dump-default-config`
 
