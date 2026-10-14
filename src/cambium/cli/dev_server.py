@@ -155,6 +155,8 @@ def get_watched_files(tree: TreeSpan) -> str:
     the file level to support incremental rebuilds.
     """
     _, paths = walk_directory_tree(tree.root_directory, tree.config.ignore_lists)
+    paths = [tree.root_directory / p for p in paths]
+
     for other_dir in [
         tree.root_directory / "static",
         tree.root_directory / ".cambium",

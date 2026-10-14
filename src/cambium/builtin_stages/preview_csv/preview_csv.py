@@ -131,7 +131,9 @@ class PreviewCSV(Stage):
 
     def _pre_hook_csv(self, csv_uuid: str, tree: TreeSpan) -> None:
         md_uuid = self.csv_to_md[csv_uuid]
-        csv_content = tree.leaves["initial_path"][md_uuid].read_text()
+        csv_content = (
+            tree.root_directory / tree.leaves["initial_path"][md_uuid]
+        ).read_text()
         abs_leaf_path(tree, csv_uuid).write_text(csv_content)
 
 
@@ -154,7 +156,7 @@ def get_md_content(
     download_filename = tree.leaves["initial_path"][csv_uuid].name
 
     csv_data = []
-    csv_path = tree.leaves["initial_path"][md_uuid]
+    csv_path = tree.root_directory / tree.leaves["initial_path"][md_uuid]
     with csv_path.open() as csvfile:
         dialect = csv.Sniffer().sniff(csvfile.read(1024))
         csvfile.seek(0)
