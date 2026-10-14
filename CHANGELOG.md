@@ -8,26 +8,30 @@
 - Stages should add new leaves with `Stage.add_leaf()` rather than the (now renamed) `TreeSpan.add_leaf()`
 - Exceptions are now mostly handled in a two-step process, where `TreeSpan` raises a `CambiumError`, which `cli.py` converts into a `ClickException`, hiding traceback
 - Error messages are not duplicated in the log
-- Several theme elements (header, footer, default font) have been moved from root to maple
 - Reorganize utility functions
 - Namespace custom Jinja globals (removed `.cambium/jinja_variables`), with some predefined top-level options, and the rest moved into theme folders
+- Improve page title detection and display
+- Major styling changes for both core and Maple themes
+- Changed how heading anchors are generated to improve compatibility with other themes
+- Relocated auto-loaded `custom.css` and `custom.js`
 
 ### Added
 
 - Add fallback system for site title
-- Add protections for `static/css/custom.css` and `static/js/custom.js`
+- Add protections for `static/custom.css` and `static/custom.js`
 - Add `--fail-fast` and `--show-traceback` CLI options
 - Add configuration options for `TemplateMarkdown`, `TransformMarkdown`, and `WriteReports`
 - Add syntax for parsing HTML comments in Markdown as attributes to apply to rendered HTML
 - Add syntax for parsing specially formatted text inside Markdown links, images, and fenced code blocks as attributes to apply to rendered HTML
-- Add documentation page with a table of supported Markdown features
-- Add Maple theme variable `footer_text`
 - Add `extensions` configuration entry to list Python modules that Cambium should load
 - Add warning on startup if there may be unremoved temporary directories
 - Add default menu content
 - Add default favicon
 - Add shared and theme-specific entries in the config file
-- Add custom macro functionality, with some builtin options for macros usable in markdown documents
+- Add custom macro functionality, with some builtin options for macros usable in Markdown documents
+- Add actual documentation
+- Add documentation page with a table of supported Markdown features
+- Add `config.yml` as a valid config file
 
 ### Fixed
 
@@ -35,6 +39,8 @@
 - Fix dev server not cleaning up after itself all the time
 - Fix issues where Windows paths were not correctly handled due to backslashes
 - Fix unreliable temporary directory cleanup
+- Unify how external stages are referenced in the config file
+- Fix issues with `--root-directory` and Cambium trying to read relative paths
 
 ## [0.6.0] - 2026-08-20
 
