@@ -46,7 +46,7 @@ The builtin stages are listed below along with their purpose and configuration o
 
 ### `EnsureIndexPages`
 
-`EnsureIndexPages` adds blank "index.html" pages to folders which don't have them. This prevents anyone from seeing the list of files present in the folder. Additionally, it can redirect "README.html" files to instead be located at "index.html".
+`EnsureIndexPages` adds blank "index.html" pages to folders which don't have them. This prevents anyone from seeing the list of files present in the folder. Additionally, it can redirect "README.html" files to instead be located at "index.html". Note that it doesn't add these blank index pages into `static/` or any of its subfolders.
 
 #### Configuration
 
