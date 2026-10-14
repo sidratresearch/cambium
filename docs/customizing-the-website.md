@@ -44,7 +44,7 @@ An example `menu.md` might be:
 - [Home](/index.html)
 - [Get Started](/get-started.html)
 - [Configuration File](/config-file.html)
-- [PyPi](https://pypi.org/project/cambium/)
+- [PyPI](https://pypi.org/project/cambium/)
 ```
 
 ### Favicon

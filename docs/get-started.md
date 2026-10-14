@@ -2,7 +2,7 @@
 
 ## Quickstart - installation and first run
 
-Cambium can be installed from PyPi via pip:
+Cambium can be installed from PyPI via pip:
 
 ```bash
 pip install cambium
