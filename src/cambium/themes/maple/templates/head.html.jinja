@@ -38,5 +38,7 @@
   <link rel="stylesheet" href="{{ relative_path_modifier }}static/css/theme.css" />
 
   {# User CSS #}
-  <link rel="stylesheet" href="{{ relative_path_modifier }}static/css/custom.css" />
+  {% if user_css_file != none %}
+    <link rel="stylesheet" href="{{ relative_path_modifier }}{{ user_css_file }}" />
+  {% endif %}
 </head>

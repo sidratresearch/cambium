@@ -38,6 +38,8 @@ class GlobalJinjaVariables(BaseModel, extra="forbid"):
     auto_menu_contents: list[dict[str, str]]
     homepage_filename: str | None
     theme_config: ThemeConfig
+    user_css_file: Path | None
+    user_js_file: Path | None
 
 
 class PageJinjaVariables(BaseModel, extra="forbid"):
@@ -176,6 +178,18 @@ class TemplateMarkdown(Stage):
             auto_menu_contents=[],
             homepage_filename=None,
             theme_config=tree.config.theme_config,
+            # provide the final paths of additional CSS and JS files only
+            # if they exist to be copied over
+            user_css_file=(
+                None
+                if tree.config.user_only_theme_files["css"]["initial"] is None
+                else tree.config.user_only_theme_files["css"]["final"]
+            ),
+            user_js_file=(
+                None
+                if tree.config.user_only_theme_files["js"]["initial"] is None
+                else tree.config.user_only_theme_files["js"]["final"]
+            ),
         )
 
         # Autogenerate the menu contents, and check for a homepage

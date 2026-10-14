@@ -94,6 +94,8 @@ class TreeSpan:
 
         self._apply_tree_hooks()
         self._build_final_tree()
+        self._check_custom_theme_file("css")
+        self._check_custom_theme_file("js")
         self._check_protected_static_paths()
 
     # ----------------------------------------------------------------#
@@ -178,14 +180,34 @@ class TreeSpan:
                 f"Protected build paths prevent the following files/directories from being created in {self.build_directory}: {bad_paths_str}"
             )
 
+    def _check_custom_theme_file(self, extension: str) -> None:
+        """Check if and where the custom.[extension] files exist."""
+        # files can be in either .cambium/ (priority) or static/
+        config_path = Path(f".cambium/custom.{extension}")
+        static_path = Path(f"static/custom.{extension}")
+
+        if config_path.exists():
+            self.config.user_only_theme_files[extension]["initial"] = config_path
+            if static_path.exists():
+                logger.warning(
+                    f"Both {static_path} and {config_path} exist. "
+                    f"{static_path} will be overwritten by {config_path} in the build directory."
+                )
+        elif static_path.exists():
+            self.config.user_only_theme_files[extension]["initial"] = static_path
+        else:
+            # dev server means this could change between rounds
+            self.config.user_only_theme_files[extension]["initial"] = None
+
     def _check_protected_static_paths(self) -> None:
         """Enforce that themes can't provide certain files."""
         for source_dir, dest_dir in self.config.static_directories["theme"]:
             theme_static_paths = [
                 p[1] for p in self._get_static_paths(source_dir, dest_dir)[1]
             ]
-            for path in self.config.user_only_theme_files:
-                if path in theme_static_paths:
+            for path_initial_final in self.config.user_only_theme_files.values():
+                final_path = path_initial_final["final"]
+                if final_path in theme_static_paths:
                     raise RuntimeError(
                         f"A theme is attempting to write the user-only file {path.name}"
                     )
@@ -408,15 +430,19 @@ class TreeSpan:
         # copy static files over
         for static_type in ["stage", "theme", "user"]:
             for source_dir, dest_dir in self.config.static_directories[static_type]:
-                self._copy_static_files(source_dir, dest_dir)
+                self._copy_static_files(source_dir.absolute(), dest_dir)
 
-        # populate "required" static files
-        for path in [
-            self.build_directory / file for file in self.config.user_only_theme_files
-        ]:
-            if not path.exists():
-                path.parent.mkdir(exist_ok=True)
-                path.write_text("")
+        # copy user-only files
+        for initial_final in self.config.user_only_theme_files.values():
+            initial_path, final_path = initial_final["initial"], initial_final["final"]
+            if initial_path is not None:
+                final_path = self.build_directory / final_path
+                final_path.parent.mkdir(exist_ok=True)
+                final_print = final_path.relative_to(self.build_directory)
+                logger.debug(
+                    f"Copying custom theme file {initial_path} to {final_print}"
+                )
+                shutil.copy(initial_path, final_path)
 
     # ----------------------------------------------------------------#
     #                    other internal functions                    #

@@ -22,4 +22,6 @@
 {% endfor %}
 
 {# User JS #}
-<script src="{{relative_path_modifier}}static/js/custom.js" type="module"></script>
+{% if user_js_file != none %}
+  <script src="{{relative_path_modifier}}{{user_js_file}}" type="module"></script>
+{% endif %}

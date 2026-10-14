@@ -259,9 +259,10 @@ class WorkingConfiguration:
         self.populate_template_directories(
             builtin_themes_directory, selected_theme_directory
         )
-        self.user_only_theme_files = [
-            Path("static") / p for p in ("css/custom.css", "js/custom.js")
-        ]
+        self.user_only_theme_files = {
+            "css": {"initial": None, "final": Path("static/css/custom.css")},
+            "js": {"initial": None, "final": Path("static/css/custom.js")},
+        }
         """Static files that can only be provided by the user."""
 
         self.theme_name = self.input_config.theme
