@@ -28,6 +28,8 @@ body[data-pf-theme="dark"] {
 :is(*, #\#):is(*, #\#):is(*, #\#) {
   & dialog.pf-modal, /* search modal */
   &.pf-input-clear,  /* clear search input */
+  &.pf-keyboard-key,  /* keyboard shortcut indicator */
+  &.pf-skeleton, /* loading template */
   &.pf-heading-chip  /* sub-result boxes */ {
     border-radius: var(--pf-border-radius);
   }
