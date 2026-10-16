@@ -114,6 +114,7 @@ def _apply_macros(
 
         # grab the actual class definition from the macro name
         macro_class = available_macros[requested_macro["macro_name"]]
+        logger.debug(f"Found macro call to {requested_macro['macro_name']}")
 
         # parse the macro command into args and kwargs
         try:
@@ -169,6 +170,9 @@ def _apply_macros(
             macro_result = macro_class.apply(
                 leaf_uuid, tree, content=content, args=args, kwargs=kwargs
             )
+            # developer error, but nice to clarify
+            if macro_result is None:
+                raise RuntimeError("Macro returned None (expected string)")
         except Exception as e:
             raise RuntimeError(
                 f"Error executing macro call {requested_macro['original_str']}: {e}"

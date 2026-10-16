@@ -59,7 +59,12 @@ class CaptionedImage(Macro):
 
 
 class TableOfContents(Macro):
-    """Output a table of contents for this page."""
+    """Output a table of contents for this page.
+
+    The headings are collected from Markdown syntax only, and this is done
+    early in Cambium's run. So HTML headings, or headings injected by other
+    macros will not be included.
+    """
 
     @classmethod
     def apply(
