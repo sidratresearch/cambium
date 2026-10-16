@@ -1,6 +1,7 @@
 """Macro functions built into Cambium."""
 
 from logging import getLogger
+from pathlib import Path
 
 from ..metadata import TableOfContentsEntry
 from ..tree import TreeSpan
@@ -123,6 +124,28 @@ class TableOfContents(Macro):
             classes.append("cambium-inline-table-of-contents")
         classes_string = " ".join(classes)
         return f'<nav class="{classes_string}">\n{toc_string}\n</nav>'
+
+
+class IncludeFile(Macro):
+    """Inject the contents of another file.
+
+    Contents will be included as an HTML block, so if you are including a
+    Markdown file, it won't get transformed.
+    """
+
+    @classmethod
+    def apply(cls, leaf_uuid: str, tree: TreeSpan, args: MacroArgs, **_kwargs) -> str:
+        if len(args) == 0:
+            raise RuntimeError("Missing filename argument")
+        if len(args) > 1:
+            raise RuntimeError("IncludeFile only accepts one argument")
+
+        filename: str = args[0]
+        current_directory = tree.leaves["initial_path"][leaf_uuid].parent
+        filepath = (current_directory / filename).resolve()
+
+        # any errors will be caught outside the macro
+        return filepath.read_text()
 
 
 def _render_toc(
