@@ -81,9 +81,9 @@ class PagefindSearch(Stage):
         self.abs_pagefind_directory = abs_static_stage_path(
             tree, self.__class__.__name__
         )
-        asyncio.run(self._post_tree_hook(tree, html_leaves))
+        asyncio.run(self._build_index(tree, html_leaves))
 
-    async def _post_tree_hook(self, tree: TreeSpan, html_leaves: list[str]) -> None:
+    async def _build_index(self, tree: TreeSpan, html_leaves: list[str]) -> None:
         """Read all HTML pages into the Pagefind index."""
         logger.info("Building Pagefind index")
 
