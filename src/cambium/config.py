@@ -260,8 +260,8 @@ class WorkingConfiguration:
             builtin_themes_directory, selected_theme_directory
         )
         self.user_only_theme_files = {
-            "css": {"initial": None, "final": Path("static/css/custom.css")},
-            "js": {"initial": None, "final": Path("static/css/custom.js")},
+            "css": {"initial": None, "final": Path("static/custom.css")},
+            "js": {"initial": None, "final": Path("static/custom.js")},
         }
         """Static files that can only be provided by the user."""
 

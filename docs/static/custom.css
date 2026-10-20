@@ -2,7 +2,7 @@
   font-family: "Oswald";
   font-style: normal;
   font-display: swap;
-  src: url("../fonts/oswald/Oswald-VariableFont_wght.ttf") format("woff2");
+  src: url("./fonts/oswald/Oswald-VariableFont_wght.ttf") format("woff2");
 }
 
 :root {
