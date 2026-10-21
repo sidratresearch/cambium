@@ -25,17 +25,44 @@
     padding-top: 0;
   }
 
-  h1#cambium-documentation {
+  header .header-centre .site-title {
     display: none;
   }
+
+  h1 {
+    display: none;
+  }
+
+  div.cambium-img-holder:has(.main-logo) {
+    margin-bottom: 0;
+  }
   img.main-logo {
-    content: url(/assets/cambiummainlogohorizontal-light.svg);
+    content: url(../assets/CambiumTextLogo-transparent-light.svg);
+  }
+
+  .subtitle {
+    text-align: center;
+    padding-top: 0;
+    font-size: 2rem;
+    font-weight: 500;
+  }
+
+  ul.docs-index-nav {
+    list-style: none;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 1rem 0;
+    font-size: 1.2rem;
+    li {
+      padding: 0;
+    }
   }
 }
 
 html[data-theme="dark"]#cambium-page-index {
   img.main-logo {
-    content: url(/assets/cambiummainlogohorizontal-dark.svg);
+    content: url(../assets/CambiumTextLogo-transparent-dark.svg);
   }
 }
 

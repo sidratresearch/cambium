@@ -5,4 +5,3 @@
 - [Configuration File](/config-file.html)
 - [Customizing the Website](/customizing-the-website.html)
 - [Configuring Stages](/configuring-stages.html)
-- [Markdown Features - to be (re)moved](/markdown-features.html)

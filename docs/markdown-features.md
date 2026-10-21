@@ -1,13 +1,13 @@
-# Markdown in Cambium
+# Markdown Features
 
-Cambium uses the markdown parser [Marko](https://marko-py.readthedocs.io/en/latest/) with it's built-in GitHub flavoured markdown (GFM) extension in order to parse markdown documents and render them as HTML.
+Cambium uses the Markdown parser [Marko](https://marko-py.readthedocs.io/en/latest/) with it's built-in GitHub flavoured markdown (GFM) extension in order to parse markdown documents and render them as HTML.
 
-The following table shows a list of common markdown features and their support in Cambium. It should be reasonably up to date with respect to the features currently available for use in Cambium. The list of unsupported features is naturally incomplete, but represents a rough approximation of the featureset Cambium may expand to cover.
+The following table shows a list of common Markdown features and their support in Cambium. It should be reasonably up to date with respect to the features currently available for use in Cambium. The list of unsupported features is naturally incomplete, but represents a rough approximation of the featureset Cambium may expand to cover.
 
 | Feature                                           | Supported via Marko? | Additional Cambium Features |
 | :------------------------------------------------ | -------------------- | :-------------------------- |
 | [Thematic breaks][thematic-breaks]                | ✅                   |                             |
-| [`#` (ATX) Headings][thematic-breaks]             | ✅                   | Custom attributes           |
+| [`#` (ATX) Headings][thematic-breaks]             | ✅                   | [Custom markup][custom-markup] |
 | [Underlined (setext) headings][setext-headings]   | ✅                   | Custom attributes           |
 | [Indented code blocks][indented-code-blocks]      | ✅                   |                             |
 | [Fenced code blocks][fenced-code-blocks]          | ✅                   | Custom attributes           |
@@ -33,6 +33,8 @@ The following table shows a list of common markdown features and their support i
 | [LaTeX (GitHub Extra)][latex-gh-extra]            | ❌                   |                             |
 | [Definition lists (GitLab)][definitions-gl-extra] | ❌                   |                             |
 | [Frontmatter (GitLab)][frontmatter-gl-extra]      | ❌                   |                             |
+
+[custom-markup]: ./writing-content.md#custom-markup
 
 [thematic-breaks]: https://spec.commonmark.org/0.31.2/#thematic-breaks
 [atx-headings]: https://spec.commonmark.org/0.31.2/#atx-headings

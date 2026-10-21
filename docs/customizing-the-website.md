@@ -69,6 +69,8 @@ To override the Cambium CSS variables, define your preferred versions inside the
 }
 ```
 
+To assist in page-specific styling, Cambium applies a unique `id` to the `html` tag on each page. This `id` is generated from the final path to that page, for example, a when Cambium creates the file `docs/extra-info.html`, it will add `id="cambium-page-docs-extra-info"` to the `html` tag.
+
 ### Combining CSS Files
 
 If you would like to use multiple CSS files, we recommend combining them with the [`@import` rule {target="_blank"}](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@import). Keep in mind that from the `.cambium/` folder, only `custom.css` will be copied to the build directory. Therefore, for this case, we recommend writing all of your CSS files in `static/`, and using relative imports from there.

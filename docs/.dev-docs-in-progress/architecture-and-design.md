@@ -29,3 +29,9 @@ After performing the initial walk of the directory tree, `TreeSpan` stores the r
 In order to coordinate the actions that need to be performed on the leaves, the `TreeSpan` also runs the tree hooks for every stage and holds the list of hooks to run on each leaf.
 
 Since it is the tree's job to manage leaves, it contains some helper functions for stages to use when they need to interact with the leaves.
+
+## Error Handling
+
+Unless the `--show-traceback` flag is active, the final exception raised to the user should always be `click.ClickException` or `typer.BadParameter` as these result in clean error messages.
+
+Within stages, all errors should end up being caught by the `TreeSpan` (which transforms them into `CambiumError`s, adding some additional information in the process). The `cli` module then transforms `CambiumError`s into `ClickException`s.

@@ -1,6 +1,6 @@
-# Writing content for Cambium
+# Writing Content for Cambium
 
-As a Markdown-focused project, most of the content written for a Cambium website should likely be in Markdown format. Exactly which features are included in a given Markdown tool varies wildly - Cambium aims to incorporate a common sense set of features. Under the hood we use the CommonMark compliant parser [Marko](https://marko-py.readthedocs.io/en/latest/), along with its builtin GitHub Flavoured Markdown (GFM) extension.
+As a Markdown-focused project, most of the content written for a Cambium website should likely be in Markdown format. Exactly which features are included in a given Markdown tool varies wildly - Cambium aims to incorporate a common sense set of features. Under the hood we use the CommonMark compliant parser [Marko](https://marko-py.readthedocs.io/en/latest/), along with its builtin GitHub Flavoured Markdown (GFM) extension. For a listing of supported syntax, visit [Markdown Features](./markdown-features.md).
 
  For the cases where additional control is needed, Markdown documents can contain blocks of HTML. Cambium passes these HTML blocks through unchanged, so your output exactly matches your input.
 
@@ -20,6 +20,10 @@ We aim to produce the same ids as other systems, so that links will work regardl
 Cambium automatically wraps tables and images in `div` tags with a special class. This allows for improved default styling that can be opted out of as-needed by writing the HTML for your content directly within the Markdown.
 
 Since this is intended to style full-width elements, images which appear to be inline (i.e., embedded within text, rather than surrounded by blank lines) will not be wrapped.
+
+### Table Sorting
+
+Cambium includes some JavaScript which turns table headings into clickable buttons which sort the table by the respective column. Reset the sorting by reloading the page.
 
 ## Custom Markup
 

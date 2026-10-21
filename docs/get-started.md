@@ -1,6 +1,8 @@
 # Getting started with Cambium
 
-## Quickstart - installation and first run
+<!-- TableOfContents(maxdepth=2) -->
+
+## Quickstart
 
 Cambium can be installed from PyPI via pip:
 
@@ -8,15 +10,13 @@ Cambium can be installed from PyPI via pip:
 pip install cambium
 ```
 
-Navigate to a directory containing some Markdown (`.md`) files.
-Then, run Cambium:
+Navigate to a directory containing some Markdown files. Then, run Cambium:
 
 ```bash
 cambium
 ```
 
-You should see some descriptive output and a new directory `_build`, which
-contains the ready-for-use version of your site. To preview the site, run
+You should see some descriptive output and a new directory `_build`, which contains the ready-for-use version of your site. To preview the site, use your favourite live server, or use Python's native HTTP server with:
 
 ```bash
 python -m http.server -d _build
@@ -24,69 +24,29 @@ python -m http.server -d _build
 
 and visit the site in a browser, at [`http://localhost:8000`](http://localhost:8000/).
 
-You can also list the files in the `_build` directory to see which HTML pages have been created, and visit them directly.
+If your directory had a file named `index.md` or `index.html`, that file will be displayed. Otherwise, if you had a Markdown or HTML file named `readme` or `README`, that file will be rendered to `index.html`. If none of these are present, Cambium creates a blank `index.html`, and you'll need to navigate to a specific URL.
 
-Please note if Cambium finds a pre-existing index file from this list, it will
-use it as the homepage.
+## Built-in features
 
-- `index.md`
-- `index.html`
-- `readme.md`
-- `readme.html`
-- `README.md`
-- `README.html`
+Cambium includes support for all basic Markdown syntax, some common Markdown extensions, and some custom features on top of that. See the page on [writing content for Cambium](./writing-content.md) for details.
 
-If an index page cannot be found, Cambium will create a blank one at
-`index.html`.
-
-## What features are built in?
-
-- link to [Writing Content](./writing-content.md)
-- alerts, markdown table alignment, table sorting, search previewCSV
-- md inside HTML will not be converted
+In addition to Markdown processing, by default Cambium builds your website with search, a light and dark theme, and a menu listing all top-level pages.
 
 ## Using the development server
 
-Running `cambium --dev` starts Cambium in development server mode. In this mode, Cambium opens an http server in the background, allowing you to view your site in a browser (by default the URL is [http://localhost:8000](http://localhost:8000)), and watches your files for changes, re-building the site on each change.
+Running `cambium --dev` starts Cambium in development server mode. In this mode, Cambium opens an http server in the background, allowing you to view your site in a browser, and watches your files for changes, re-building the site on each change. For details and configuration, see the [Development Server documentation](./command-line-options.md#development-server).
 
-The port used for the web server, as well as the frequency Cambium checks for file changes are both configurable.
+## Configuring Cambium
 
-Changes to the configuration file are *not* applied, and in fact if the configuration file changes, Cambium will exit the dev server to make this clear.
+Cambium's [command line options](./command-line-options.md) can affect the input and output locations and verbosity of Cambium, but for anything that affects the final look and functionality of the website Cambium uses a YAML configuration file. Cambium will automatically apply configuration found in `.cambium/config.yaml` or `.cambium/config.yml`.
 
-## How and where to write a configuration file
-
-Cambium reads the configuration file at `.cambium/config.yaml` if it exists. You can create this file with the default options by running
-
-```bash
-mkdir .cambium && cambium --dump-default-config > .cambium/config.yaml
-```
-
-## Basic Configuration options
-
-- root and build directories (can be CLI or file)
-- stages (see [Configuring Stages](./configuring-stages.md))
-- site name
-- theme (see [Customizing the Website](./customizing-the-website.md))
-
-## What is Cambium's philosophy
-
-## What to do if there are issues
-
-If you run into issues with Cambium, there are several steps than can be taken to help diagnose the issue.
-
-1. If you have a configuration file, test if the issue occurs without it.
-   - If the problem resolves, try reverting individual configuration entries to their default values to narrow down which value triggers the issue.
-2. Check if the issue seems to be caused by a specific file. If so, there may be something about that file which Cambium cannot handle (e.g., macros called with incorrect arguments, or a malformed CSV).
-   - Renaming the file to start with a `.` will cause Cambium to ignore it - this can be a good way to verify if one specific file is problematic.
-3. Run Cambium with all of its debugging options: `cambium --fail-fast --verbose --show-traceback`. This will cause Cambium to show full debugging output, quit the first time it encounters an error, and produce the full Python traceback.
-
-Issues should be reported on [GitHub {target="_blank"}](https://github.com/sidratresearch/cambium). Include the version being used (`cambium --version`), along with anything found from the above steps. If a specific file or configuration is causing an issue, providing a complete copy of the files will help greatly.
+Options such as the site name, search configuration, and files to ignore can all be set [in the configuration file](./config-file.md).
 
 ## How Cambium works
 
 Cambium runs through a series of phases: a setup section, some main work phases, and a finalization. The setup and finalization are primarily housekeeping and copying files, the actual process of converting Markdown content into a website takes place within the work phases.
 
-Cambium is built from a series of modular "stages". Each stage can optionally process data during each of the work phases, but some are done earlier than others. For example, [`PreviewCSV`](./configuring-stages.md#previewcsv) writes Markdown files early on, which are converted to HTML by [`TransformMarkdown`](./configuring-stages.md#transformmarkdown), and then placed into the theme-provided template by [`TemplateMarkdown`](./configuring-stages.md#templatemarkdown).
+Cambium is built from a series of modular ["stages"](./configuring-stages.md). Each stage can optionally process data during each of the work phases, but some are done earlier than others. For example, [`PreviewCSV`](./configuring-stages.md#previewcsv) writes Markdown files early on, which are converted to HTML by [`TransformMarkdown`](./configuring-stages.md#transformmarkdown), and then placed into the theme-provided template by [`TemplateMarkdown`](./configuring-stages.md#templatemarkdown).
 
 Cambium processes all of the files and makes all modifications within a temporary directory. This ensures that under no circumstances is your original content modified. After all of the stages are complete, Cambium copies everything from the temporary location into the build directory.
 
@@ -106,12 +66,14 @@ Additionally, Cambium may create or relocate other files into `static`. The CSS 
 
 In addition to theme files, some [stages](./configuring-stages.md) may also need to write files to the build directory. These may be specific styles, or data files (such as a search index). In this case, files will be written to the build directory under `static/_cambium/` in a directory with the same names as the stage.
 
-## Status and future outlook
+## What to do if there are issues
 
-- Why should I trust in future development
-- planned features
-- "pre-alpha"
+If you run into issues with Cambium, there are several steps than can be taken to help diagnose the issue.
 
-## What is Cambium an alternative to?
+1. If you have a configuration file, test if the issue occurs without it.
+   - If the problem resolves, try reverting individual configuration entries to their default values to narrow down which value triggers the issue.
+2. Check if the issue seems to be caused by a specific file. If so, there may be something about that file which Cambium cannot handle (e.g., macros called with incorrect arguments, or a malformed CSV).
+   - Renaming the file to start with a `.` will cause Cambium to ignore it - this can be a good way to verify if one specific file is problematic.
+3. Run Cambium with all of its debugging options: `cambium --fail-fast --verbose --show-traceback`. This will cause Cambium to show full debugging output, quit the first time it encounters an error, and produce the full Python traceback.
 
-- migration instructions
+Issues should be reported on [GitHub {target="_blank"}](https://github.com/sidratresearch/cambium). Include the version being used (`cambium --version`), along with anything found from the above steps. If a specific file or configuration is causing an issue, providing a complete copy of the files will help greatly.

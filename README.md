@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://buildwithcambium.org">
-        <img src="https://raw.githubusercontent.com/sidratresearch/cambium/main/docs/assets/cambiumlogo.png" width="200" height="200" alt="Cambium logo">
+        <img src="./docs/assets/CambiumMainLogoVertical.svg" width="200" height="200" alt="Cambium logo">
     </a>
 </p>
 
@@ -16,16 +16,17 @@
 </div>
 <br />
 
-A Python-based static site generator for repositories of organized markdown pages.
+A Python-based static site generator for repositories of organized Markdown pages.
 
-**This package is under active development and is pre-alpha. Please use with caution.**
+> [!WARNING]
+> This package is under active development and is pre-alpha. Please use with caution. See [the documentation](./docs/index.md#status-and-future-outlook) for details on what the development status means for stability.
 
 ## Why Use Cambium?
 
-- Do you have a bunch of markdown files that you'd like to turn into a static site?
+- Do you have a bunch of Markdown files that you'd like to turn into a static site?
 - Do you want to create a rapidly-changing wiki, knowledge base or documentation site that can be hosted without worrying about server requirements?
 - Do you want to manage your documents using tools you already know and love
-- Do you want to store your source files in a git repository, a directory on Dropbox, OneDrive, or other place that you can just have files?
+- Do you want to store your source files in a Git repository, a directory on Dropbox, OneDrive, or other place that you can just have files?
 - Do you want to be able to customize the look-and-feel of your generated site in a simple fashion?
 - Do you want to avoid lock-in to a specific site generator?
 
@@ -33,10 +34,10 @@ A Python-based static site generator for repositories of organized markdown page
 
 Cambium is built on the following design principles:
 
-- You should be able to organize your markdown documents in whatever way you'd like
-- Your markdown repository should not have to know that it is being used by Cambium
-- Cambium-specific features or macros should be clean and obvious in the markdown
-- Cambium should be able to work elegantly on a repository of markdown documents with no configuration
+- You should be able to organize your Markdown documents in whatever way you'd like
+- Your Markdown repository should not have to know that it is being used by Cambium
+- Cambium-specific features or macros should be clean and obvious in the Markdown
+- Cambium should be able to work elegantly on a repository of Markdown documents with no configuration
 - Your final deployment destination should not matter
 
 ## Installation Instructions
@@ -60,7 +61,7 @@ This will create a `_build` directory, containing the output HTML. The contents 
 ## Creators
 
 <a href="https://www.sidratresearch.com/">
-    <img src="https://raw.githubusercontent.com/sidratresearch/cambium/main/docs/assets/sidratlogo.svg" width="150" height="150">
+    <img src="./docs/assets/SidratLogo.svg" width="150" height="150">
 </a>
 
 Cambium is a project of [Sidrat Research](https://www.sidratresearch.com).
