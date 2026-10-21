@@ -5,9 +5,11 @@ from pathlib import Path
 
 import pytest
 import typer
+import yaml
 
 from cambium import config
 from cambium.cli import cli
+from cambium.tree import TreeSpan
 
 
 def default_configuration() -> None:
@@ -100,3 +102,21 @@ def test_root_build(tmp_path: Path) -> None:
             },
             verbosity,
         )
+
+
+def test_protected_build_paths(tmp_path: Path) -> None:
+    """Verify that if Cambium would write a file to a protected build path, it errors instead."""
+    config_path = tmp_path / ".cambium/config.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.touch()
+
+    config_path.write_text(yaml.dump({"protected_build_paths": ["index.html"]}))
+
+    cli.setup_config(
+        config_path,
+        {**cli.CLI_DEFAULTS, "root_directory": str(tmp_path)},
+        verbosity_boost=0,
+    )
+
+    with pytest.raises(RuntimeError, match="Protected build paths"):
+        TreeSpan(config.current_config)
