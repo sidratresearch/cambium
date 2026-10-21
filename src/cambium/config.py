@@ -540,9 +540,14 @@ def read_input_configuration(
         return translate_yaml_configuration(cli_path)
 
     # Attempting to read from default config paths
-    for path in config_default_paths:
-        if path.exists():
-            return translate_yaml_configuration(path)
+    existing_config_paths = [p for p in config_default_paths if p.exists()]
+    if len(existing_config_paths) > 1:
+        paths = ", ".join(str(p) for p in existing_config_paths)
+        raise ValueError(
+            f"Found multiple possible Cambium configuration files: {paths}."
+        )
+    if len(existing_config_paths) == 1:
+        return translate_yaml_configuration(existing_config_paths[0])
 
     # return empty config
     return {}
