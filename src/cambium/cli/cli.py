@@ -205,7 +205,7 @@ def main(
 
         build(treespan)
 
-        logger.info("Cambium complete!")
+        logger.info(f"Cambium complete! Site built to {treespan.build_directory}")
 
     except typer.BadParameter:
         raise
