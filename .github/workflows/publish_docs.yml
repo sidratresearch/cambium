@@ -1,0 +1,70 @@
+name: Update Cambium website
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build-docs:
+    name: Build documentation with Cambium
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      # get latest released version of cambium - this will be used to build the docs
+      - name: Checkout latest Cambium release
+        run: |
+          latestRelease="$(gh release list --exclude-drafts --exclude-pre-releases --limit 1 --json name --jq '.[0].name')"
+          git checkout $latestRelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Cambium
+        run: pip install .
+
+      - name: Build docs
+        run: cambium --root-directory docs --config docs/.cambium/config.yaml --verbose
+
+      - name: Upload docs as artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: cambium-docs
+          path: docs/_build
+
+
+  publish-docs:
+    name: Publish documentation to website
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - build-docs
+
+    steps:
+      - name: Download built docs artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: cambium-docs
+          path: dist/
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Upload to Blob Storage
+        uses: azure/CLI@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az storage blob upload-batch --account-name cambiumwebsite  --auth-mode key --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --overwrite -d '$web' -s dist
