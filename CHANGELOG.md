@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/sidratresearch/cambium/tree/main)
 
+## [1.0.0-rc.1] - 2026-10-23
+
+### Changed
+
+- Updated locked dependencies
+- Minor doc updates
+
+### Added
+
+- Add GitHub action for building documentation
+
 ## [0.7.0] - 2026-10-21
 
 ### Changed
@@ -99,6 +110,7 @@
 
 ## [0.2] - 2026-05-15
 
+[1.0.0-rc.1]: https://github.com/sidratresearch/cambium/releases/tag/v1.0.0-rc.1
 [0.7.0]: https://github.com/sidratresearch/cambium/releases/tag/v0.7.0
 [0.6.0]: https://github.com/sidratresearch/cambium/releases/tag/v0.6.0
 [0.5.10]: https://github.com/sidratresearch/cambium/releases/tag/v0.5.10
