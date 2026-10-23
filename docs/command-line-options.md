@@ -53,6 +53,8 @@ Start Cambium in development server mode. In this mode, Cambium opens an http se
 
 Changes to the configuration file are _not_ applied, and in fact if the configuration file changes, Cambium will exit the server to make this clear.
 
+Note that due to the volume of output, it is not recommended to use `--dev` in combination with `--verbose`.
+
 ### `--port`
 
 Port to use for the development server. Defaults to 8000. No effect when used without `--dev`.
