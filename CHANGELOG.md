@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/sidratresearch/cambium/tree/main)
 
+## [1.0.0-rc.2] - 2026-10-23
+
+### Fixed
+
+- Fix custom theme files failing to apply when running with a specified root directory
+
 ## [1.0.0-rc.1] - 2026-10-23
 
 ### Changed

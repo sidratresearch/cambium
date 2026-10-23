@@ -183,8 +183,8 @@ class TreeSpan:
     def _check_custom_theme_file(self, extension: str) -> None:
         """Check if and where the custom.[extension] files exist."""
         # files can be in either .cambium/ (priority) or static/
-        config_path = Path(f".cambium/custom.{extension}")
-        static_path = Path(f"static/custom.{extension}")
+        config_path = self.root_directory / f".cambium/custom.{extension}"
+        static_path = self.root_directory / f"static/custom.{extension}"
 
         if config_path.exists():
             self.config.user_only_theme_files[extension]["initial"] = config_path
