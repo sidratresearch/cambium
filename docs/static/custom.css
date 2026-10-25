@@ -44,6 +44,7 @@
 
   .subtitle {
     text-align: center;
+    margin-top: 0;
     padding-top: 0;
     padding-bottom: 0.75em;
     font-size: 2rem;
