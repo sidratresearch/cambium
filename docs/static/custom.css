@@ -10,7 +10,9 @@
   --cambium-primary-colour-light: #34632e;
   /* --cambium-primary-colour-light: #587054; */
   --cambium-primary-colour-dark: #e8cf9e;
-  --cambium-alternate-background-colour-light: #fff2d9;
+  --cambium-secondary-colour-light: #149403;
+  --cambium-secondary-colour-dark: #fba700;
+  --cambium-alternate-background-colour-light: #f7f4ee;
   --cambium-alternate-background-colour-dark: #273325;
 }
 
@@ -43,6 +45,7 @@
   .subtitle {
     text-align: center;
     padding-top: 0;
+    padding-bottom: 0.75em;
     font-size: 2rem;
     font-weight: 500;
   }
@@ -50,10 +53,18 @@
   ul.docs-index-nav {
     list-style: none;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
-    padding: 1rem 0;
-    font-size: 1.2rem;
+    margin-top: 1em;
+    padding-top: 0.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    padding-bottom: 0.5em;
+    border-top: 1pt solid var(--cw-primary-colour);
+    border-bottom: 1pt solid var(--cw-primary-colour);
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
     li {
       padding: 0;
     }
@@ -73,7 +84,12 @@ h2 {
 
   font-weight: 400;
   color: var(--cw-primary-colour);
-  padding-top: 1.5em;
+  margin-top: 1em;
+}
+
+h3 {
+  margin-top: 1.5em;
+  color: var(--cw-primary-colour);
 }
 
 .menu-panel .menu-items ul li {
@@ -90,4 +106,10 @@ h2 {
 
 code {
   font-size: 0.9em;
+}
+
+pre:has(> code) {
+  background-color: var(--cw-alternate-background-colour);
+  padding-left: 0.25em;
+  padding-right: 0.25em;
 }

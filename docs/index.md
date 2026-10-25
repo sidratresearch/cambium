@@ -1,6 +1,6 @@
 # Cambium
 
-<!-- {height=400 .main-logo} -->
+<!-- {height=250 .main-logo} -->
 ![Cambium](./assets/CambiumTextLogo.png)
 <!-- Image gets replaced in CSS -->
 
