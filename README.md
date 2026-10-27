@@ -1,6 +1,7 @@
 <p align="center">
     <a href="https://buildwithcambium.org">
-        <img src="./docs/assets/CambiumMainLogoVertical.svg" width="200" height="200" alt="Cambium logo">
+        <!-- Use full path for visibility on PyPI -->
+        <img src="https://raw.githubusercontent.com/sidratresearch/cambium/refs/heads/main/docs/assets/CambiumMainLogoVertical.svg" width="200" height="200" alt="Cambium logo">
     </a>
 </p>
 
@@ -61,7 +62,8 @@ This will create a `_build` directory, containing the output HTML. The contents 
 ## Creators
 
 <a href="https://www.sidratresearch.com/">
-    <img src="./docs/assets/SidratLogo.svg" width="150" height="150">
+    <!-- Use full path for visibility on PyPI -->
+    <img src="https://raw.githubusercontent.com/sidratresearch/cambium/refs/heads/main/docs/assets/SidratLogo.svg" width="150" height="150" alt="Sidrat Research Logo">
 </a>
 
 Cambium is a project of [Sidrat Research](https://www.sidratresearch.com).
