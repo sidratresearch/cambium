@@ -1,1 +1,1 @@
-&copy; The Cambium Team 2026
+&copy; Sidrat Research and Contributors 2026

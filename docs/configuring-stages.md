@@ -9,7 +9,7 @@ This list of enabled stages can be found in your configuration file, and the def
 
 The list of active stages is controlled by the `stages` key of your [configuration file](./config-file.md). Stages which are named in the config file are enabled, and the order in which they are listed is the order in which they will be run (subject to restrictions imposed by the stages themselves, see [Stage Interdependency](#stage-interdependency) for more detail).
 
-### Stage Configuration
+### Stage configuration
 
 <!-- Authoritative source - config file docs link here -->
 Within the `stage_config` entry in the configuration file, the name of each stage can be used as a key to a table of values with the options for that stage.
@@ -30,7 +30,7 @@ stage_config:
 
 Stages can be disabled (removed from the list of stages), but remain in the `stage_config` with no issue.
 
-## Builtin Stages
+## Builtin stages
 
 The builtin stages are listed below along with their purpose and configuration options (if any).
 
@@ -77,7 +77,7 @@ The builtin stages are listed below along with their purpose and configuration o
 
 ### `Sitemap`
 
-`Sitemap` generates a `sitemap.xml` in the top-level of your site. It requires that the `domain_name` option be set in your configuration. (Link)
+`Sitemap` generates a `sitemap.xml` in the top-level of your site. It requires that the [`domain_name` option](./config-file.md#domain_name) be set in your configuration.
 
 ### `TemplateMarkdown`
 

@@ -10,22 +10,22 @@ However, there are cases where a middle ground between Markdown and HTML is desi
 
 <!-- TableOfContents(maxdepth=3) -->
 
-## Heading Anchors
+## Heading anchors
 
 Like GitHub and GitLab (among others), Cambium automatically adds `id` attributes to headings. This allows you to link directly to specific sections of your page.
 We aim to produce the same ids as other systems, so that links will work regardless of whether your Markdown is rendered by Cambium or another service.
 
-## Wrapped Images and Tables
+## Wrapped images and tables
 
 Cambium automatically wraps tables and images in `div` tags with a special class. This allows for improved default styling that can be opted out of as-needed by writing the HTML for your content directly within the Markdown.
 
 Since this is intended to style full-width elements, images which appear to be inline (i.e., embedded within text, rather than surrounded by blank lines) will not be wrapped.
 
-### Table Sorting
+### Table sorting
 
 Cambium includes some JavaScript which turns table headings into clickable buttons which sort the table by the respective column. Reset the sorting by reloading the page.
 
-## Custom Markup
+## Custom markup
 
 Cambium's custom markup allows you to add HTML classes and attributes to arbitrary blocks of content, without embedding the entire block in HTML. This markup is intended to be as invisible as possible when documents are rendered outside of Cambium.
 
@@ -35,7 +35,7 @@ If an attribute is specified multiple times, only the first declaration will be 
 >[!NOTE]
 > Cambium does not enforce correctness or validate the custom markup being used, this has the potential to result in incorrect HTML.
 
-### Inline Markup
+### Inline markup
 
 Inline markup can be applied only to images and links, in both cases the markup is denoted with in curly braces at the end of the descriptive text.
 
@@ -75,11 +75,11 @@ becomes:
 </a>
 ```
 
-### Block Markup
+### Block markup
 
 Attributes can also be applied to certain block elements: headings, lists, block quotes, tables, images, and code blocks. In these cases, the markup is embedded in an HTML comment directly before the element.
 
-#### Headings, Lists, and Quotes
+#### Headings, lists, and quotes
 
 The following Markdown example:
 
@@ -115,7 +115,7 @@ renders to:
 </blockquote>
 ```
 
-#### Images and Tables
+#### Images and tables
 
 The markup applied to the table and image blocks goes directly to the `table` and `img` tags, within the special Cambium wrappers.
 
@@ -165,7 +165,7 @@ renders to:
 </div>
 ```
 
-#### Code Blocks
+#### Code blocks
 
 Cambium only supports custom markup on fenced code blocks (those using triple backticks or tildes). For these, the markup goes on the same line as the opening code fence, after a language declaration (if any).
 

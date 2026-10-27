@@ -45,7 +45,7 @@ The directory to create to place your built website. Defaults to `_build`. Unles
 
 Passing a value on the command line overrides the configuration file setting, if present.
 
-## Development Server
+## Development server
 
 ### `--dev`
 
@@ -67,7 +67,7 @@ How often (in seconds) to poll the filesystem for changes when running the devel
 
 Equivalent to `--build-directory`, but for the development server. This directory will be deleted when the server exits. Defaults to `.cambium-dev/`. No effect when used without `--dev`.
 
-## Logging and Output
+## Logging and output
 
 ### `--verbose` / `-v`
 

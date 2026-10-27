@@ -4,7 +4,7 @@ Cambium is designed to make good-looking websites by default, as well as have se
 
 <!-- TableOfContents(maxdepth=3) -->
 
-## Configuration File Options
+## Configuration file options
 
 A few options for website design are present in the [configuration file](./config-file.md#theme). The `theme` entry allows you to select the all-in-one package to use as a starting point, and beyond that, there is the `theme_config` key. The [`site_name`](./config-file.md#site_name) is also used by the theme.
 
@@ -24,11 +24,11 @@ theme_config:
   default_colour_mode: dark
 ```
 
-## Reusable Content
+## Reusable content
 
 Cambium can read specially named files as custom pieces of re-usable content. These files are located in the `.cambium/` folder, and are identified by the file name - without the extension.
 
-### Site Menu
+### Site menu
 
 Cambium will automatically generate a list of links that can be used as a menu. All pages in the top level of your website (`/page-name.html`), and index pages of the next level down (`/directory-name/index.html`) will be included. Your theme may choose how and where to display the menu items.
 
@@ -51,7 +51,7 @@ An example `menu.md` might be:
 
 Cambium provides a default favicon of the Cambium logo. To replace it, place your own image (must have the extension `.png`) at `static/images/favicon.png`. To use other filetypes see [Advanced Customization](#advanced-customization).
 
-### Footer Content
+### Footer content
 
 By default, Cambium generates some text that can be used as a copyright line, with the copyright symbol, site name, and current year. Maple displays this text in both the page footer and at the bottom of the site menu.
 
@@ -71,11 +71,11 @@ To override the Cambium CSS variables, define your preferred versions inside the
 
 To assist in page-specific styling, Cambium applies a unique `id` to the `html` tag on each page. This `id` is generated from the final path to that page, for example, a when Cambium creates the file `docs/extra-info.html`, it will add `id="cambium-page-docs-extra-info"` to the `html` tag.
 
-### Combining CSS Files
+### Combining CSS files
 
 If you would like to use multiple CSS files, we recommend combining them with the [`@import` rule {target="_blank"}](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@import). Keep in mind that from the `.cambium/` folder, only `custom.css` will be copied to the build directory. Therefore, for this case, we recommend writing all of your CSS files in `static/`, and using relative imports from there.
 
-### Cambium CSS Variables
+### Cambium CSS variables
 
 Cambium and its themes define many CSS variables to ensure consistent styling and make customization easy. These are prefixed with either `--cambium-` or `--cw-`, to differentiate them from any variables you may wish to use separately.
 
@@ -106,7 +106,7 @@ The font used across your Cambium website is set by the following variables. If 
 | The font weight, or how thick the font is                                                       | `--cambium-font-weight`           | 400         |
 | Monospace font family, used for code                                                            | `--cambium-monospace-font-family` | "Intel One Mono VF", monospace |
 
-## Advanced Customization
+## Advanced customization
 
 In some cases, you may wish to replace some of the files used by a theme in their entirety. This may include the CSS, JavaScript, image assets, or Jinja templates used to generate HTML. In this case, you can create the folder `.cambium/theme/`.
 
