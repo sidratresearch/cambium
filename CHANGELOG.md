@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/sidratresearch/cambium/tree/main)
 
+## [1.0.0] - 2026-10-29
+
+Full release of Cambium!
+
 ## [1.0.0-rc.2] - 2026-10-27
 
 ### Changed
@@ -121,6 +125,7 @@
 
 ## [0.2] - 2026-05-15
 
+[1.0.0]: https://github.com/sidratresearch/cambium/releases/tag/v1.0.0
 [1.0.0-rc.2]: https://github.com/sidratresearch/cambium/releases/tag/v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/sidratresearch/cambium/releases/tag/v1.0.0-rc.1
 [0.7.0]: https://github.com/sidratresearch/cambium/releases/tag/v0.7.0
