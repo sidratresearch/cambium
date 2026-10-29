@@ -17,7 +17,7 @@ authors = [
 ]
 requires-python = ">=3.11,<4.0"
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 4 - Beta",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
@@ -56,10 +56,10 @@ dev = [
 ]
 
 [tool.poetry]
+version = "0.0.0"
 requires-plugins.poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [
   "plugin",
 ] }
-version = "0.0.0"
 
 [tool.poetry-dynamic-versioning]
 enable = true

@@ -10,7 +10,7 @@
 <br />
 
 <div>
-    <img src="https://img.shields.io/badge/status-pre--alpha-orange" alt="status: pre-alpha"/>
+    <img src="https://img.shields.io/pypi/status/cambium" alt="Development status: Beta"/>
     <img src="https://img.shields.io/pypi/v/cambium" alt="Currently available on PyPI"/>
     <img src="https://img.shields.io/pypi/pyversions/cambium" alt="List of compatible Python versions"/>
     <img src="https://img.shields.io/pypi/l/cambium" alt="MIT licensed"/>
@@ -19,8 +19,8 @@
 
 A Python-based static site generator for repositories of organized Markdown pages.
 
-> [!WARNING]
-> This package is under active development and is pre-alpha. Please use with caution. See [the documentation](./docs/index.md#status-and-future-outlook) for details on what the development status means for stability.
+> [!IMPORTANT]
+> This package is under active development, and some things are subject to change. See [the documentation](./docs/index.md#status-and-future-outlook) for details on what the development status means for stability.
 
 ## Why Use Cambium?
 
